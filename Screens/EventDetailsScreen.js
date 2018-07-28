@@ -22,6 +22,9 @@ export default class EventDetailsScreen extends React.Component {
       event: null,
       socialDetails: {}
     }
+
+    this.favoriteEvent = this.favoriteEvent.bind(this);
+    this.incrementCommentCount = this.incrementCommentCount.bind(this);
   }
 
   async componentDidMount() {
@@ -35,10 +38,17 @@ export default class EventDetailsScreen extends React.Component {
   }
 
   async favoriteEvent(eventId) {
-    const { event } = this.state;
+    const { event, socialDetails } = this.state;
     event.liked = !event.liked;
-    this.setState({ event });
     const { data } = await eventsService.likeEvent(eventId, event.liked);
+    event.liked ? socialDetails.numLikes ++ : socialDetails.numLikes --;
+    this.setState({ event });
+  }
+
+  incrementCommentCount() {
+    const { socialDetails } = this.state;
+    socialDetails.numComments ++;
+    this.setState({ socialDetails });
   }
 
   render() {
@@ -47,7 +57,8 @@ export default class EventDetailsScreen extends React.Component {
     if (event) {
       return(
         <Card
-          title={<EventDetailsHeader title={event.title} />}
+          // title={<EventDetailsHeader title={event.title} />}
+          title={event.title}
           containerStyle={styles.container}
         >
           <ScrollView contentContainerStyle={{height: '100%'}}>
@@ -67,7 +78,7 @@ export default class EventDetailsScreen extends React.Component {
                   style={styles.rightIcon}
                   color='#fb3958'
                   name='comment'
-                  onPress={() => this.props.navigation.navigate('Comments', { eventId: event.id })}
+                  onPress={() => this.props.navigation.navigate('Comments', { eventId: event.id, incrementCommentCount: this.incrementCommentCount.bind(this) })}
                 />
                 <Text style={styles.socialCount}>{socialDetails.numComments}</Text>
               </View>

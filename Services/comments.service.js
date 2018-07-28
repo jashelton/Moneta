@@ -14,5 +14,5 @@ async function getComments(eventId) {
 
 async function createComment(eventId, text) {
   const headers = await authHelper.authHeaders();
-  return axios.post( `${ENDPOINT}/comments/${eventId}`, { text }, headers);
+  return axios.post( `${ENDPOINT}/events/${eventId}/comments`, { text }, headers);
 }

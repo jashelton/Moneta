@@ -1,7 +1,7 @@
 import React from 'react';
 import MapView from 'react-native-maps';
+import { Constants, Location, ImagePicker, Permissions } from 'expo';
 import { View, ScrollView, TouchableHighlight, Image, StyleSheet } from 'react-native';
-import { ImagePicker, Permissions } from 'expo';
 import { Icon, Overlay, Button, ButtonGroup } from 'react-native-elements';
 import { TextField } from 'react-native-material-textfield';
 
@@ -41,10 +41,10 @@ export default class MapScreen extends React.Component {
       isVisible: false,
       selectedIndex: 0,
       markers: [],
-      title: 'Title',
-      // image: null,
-      image: { location: 'https://s3.amazonaws.com/moneta-event-images/user_undefined/2018-7-27_1532741518863' },
-      description: 'Description'
+      title: '',
+      image: null,
+      description: '',
+      currentLocation: {}
     }
 
     this.newMarker = this.newMarker.bind(this);
@@ -62,30 +62,35 @@ export default class MapScreen extends React.Component {
     });
   }
 
+  _getLocationAsync = async () => {
+    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    if (status !== 'granted') {
+      this.setState({
+        errorMessage: 'Permission to access location was denied',
+      });
+    }
+
+    const currentLocation = await Location.getCurrentPositionAsync({});
+    this.setState({ currentLocation });
+  };
+
   newMarker() {
+    this._getLocationAsync();
     this.setState({isVisible: true});
   }
 
   async createEvent() {
-    const { markers, title, description, image } = this.state;
+    const { markers, title, description, image, currentLocation } = this.state;
     const event = {
       title,
       description,
       image,
-      coordinate: this.returnCoords()
+      coordinate: currentLocation.coords
     };
 
-    const data = await eventsService.createEvent(event);
-
-    markers.push(event);
+    const { data } = await eventsService.createEvent(event);
+    markers.push(data.event);
     this.setState({markers, isVisible: false});
-  }
-
-  returnCoords() { // TODO: Just for testing
-    return {
-      latitude: 35.9098794,
-      longitude: -78.9127328,
-    }
   }
 
   createDateString() {
@@ -142,6 +147,10 @@ export default class MapScreen extends React.Component {
         />
         <MapView
           style={{ flex: 1 }}
+          showsUserLocation={true}
+          followsUserLocation={true}
+          showsPointsOfInterest={true}
+          mapType="hybrid"
           initialRegion={{
             latitude: 35.9098794,
             longitude: -78.9127328,

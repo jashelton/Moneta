@@ -34,25 +34,34 @@ export default class CommentsScreen extends React.Component {
   async createComment() {
     let { eventId, newComment, comments } = this.state;
     const { data } = await commentsService.createComment(eventId, newComment);
+
     comments.push(data.comment);
     newComment = '';
     this.setState({comments, newComment});
+    // Call back to EventDetailsScreen to increment the comment count.  This will need to be updated once delete comment is avail.
+    await this.props.navigation.state.params.incrementCommentCount();
   }
 
   render() {
     const { comments, newComment, userData } = this.state;
     return(
       <KeyboardAvoidingView style={styles.container} behavior='padding'>
-        <ScrollView style={styles.commentsContainer}>
-          {comments.length && comments.map((comment, i) => (
-            <ListItem
-              key={i}
-              title={comment.text}
-              subtitle={`${userData.first_name} ${userData.last_name}`}//TODO: Make this real... data is an storage... may as well use profile image as well.
-              subtitleStyle={{fontSize: 12, color: 'grey'}}
-            />
-          ))}
-        </ScrollView>
+        { comments.length ?
+          <ScrollView style={styles.commentsContainer}>
+            {comments.length && comments.map((comment, i) => (
+              <ListItem
+                key={i}
+                title={comment.text}
+                subtitle={`${userData.first_name} ${userData.last_name}`}//TODO: Make this real... data is an storage... may as well use profile image as well.
+                subtitleStyle={{fontSize: 12, color: 'grey'}}
+              />
+            ))}
+          </ScrollView>
+          :
+          <View style={[styles.commentsContainer, styles.emptyContainer]}>
+            <Text>There are currently no comments for this event.</Text>
+          </View>
+        }
         <Divider />
         <View style={styles.newCommentContainer}>
           <TextField
@@ -85,5 +94,9 @@ const styles = StyleSheet.create({
   newCommentContainer: {
     height: '30%',
     padding: 15
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
   }
 })
