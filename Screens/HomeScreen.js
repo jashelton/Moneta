@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Icon } from 'react-native-elements';
+import { Icon, ListItem } from 'react-native-elements';
 
 export default class HomeScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
@@ -31,7 +31,11 @@ export default class HomeScreen extends React.Component {
   render() {
     return(
       <View style={styles.container}>
-        <Text>Home Screen</Text>
+        <ListItem title="Home Screen" />
+        <ListItem title="Trending Events?" />
+        <ListItem title="Like Events?" />
+        <ListItem title="User Profile?" />
+        <ListItem title="Could market the app by distributing markers throughout the world and offer a prize to whoever finds them." />
       </View>
     );
   }
@@ -41,8 +45,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    // alignItems: 'center',
+    // justifyContent: 'center',
   },
   rightIcon: {
     marginRight: 10

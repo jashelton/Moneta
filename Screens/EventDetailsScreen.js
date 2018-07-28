@@ -2,6 +2,18 @@ import React from 'react';
 import { View, ScrollView, Text, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import { Card, Divider } from 'react-native-elements';
 
+export class EventDetailsHeader extends React.Component {
+  render() {
+    return(
+      <View>
+        <Text>
+          {this.props.title}
+        </Text>
+      </View>
+    );
+  }
+}
+
 export default class EventDetailsScreen extends React.Component {
   constructor(props) {
     super(props);
@@ -24,13 +36,13 @@ export default class EventDetailsScreen extends React.Component {
     if (event) {
       return(
         <Card
-          title={event.title}
+          title={<EventDetailsHeader title={event.title} />}
           containerStyle={styles.container}
         >
           <ScrollView contentContainerStyle={{height: '100%'}}>
             <Image style={styles.uploadedImage} source={{uri: event.image.location}} />
             <Divider style={{marginBottom: 15}} />
-            <Text>{event.desc}</Text>
+            <Text>{event.description}</Text>
           </ScrollView>
         </Card>
       ); 

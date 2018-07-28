@@ -7,6 +7,7 @@ import { TextField } from 'react-native-material-textfield';
 
 import { RNS3 } from 'react-native-aws3';
 import { AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, BUCKET, BUCKET_REGION } from 'react-native-dotenv';
+import { eventsService } from '../Services';
 
 export default class MapScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
@@ -43,7 +44,7 @@ export default class MapScreen extends React.Component {
       title: 'Title',
       // image: null,
       image: { location: 'https://s3.amazonaws.com/moneta-event-images/user_undefined/2018-7-27_1532741518863' },
-      desc: 'Description'
+      description: 'Description'
     }
 
     this.newMarker = this.newMarker.bind(this);
@@ -51,7 +52,10 @@ export default class MapScreen extends React.Component {
     this.updateIndex = this.updateIndex.bind(this);
   }
 
-  componentDidMount() {
+  async componentDidMount() {
+    const { data } = await eventsService.getEvents();
+    this.setState({markers: data});
+
     this.options.keyPrefix = `user_${this.props.user_id}/`; // TODO: USER CURRENT DOESNT EXIST
     this.props.navigation.setParams({
       newMarker: () => this.newMarker()
@@ -62,14 +66,18 @@ export default class MapScreen extends React.Component {
     this.setState({isVisible: true});
   }
 
-  createEvent() {
-    const { markers, title, desc, image } = this.state;
+  async createEvent() {
+    const { markers, title, description, image } = this.state;
     const event = {
       title,
-      desc,
+      description,
       image,
       coordinate: this.returnCoords()
-    }
+    };
+
+    const data = await eventsService.createEvent(event);
+    console.log('event response');
+    console.log(data);
 
     markers.push(event);
     this.setState({markers, isVisible: false});
@@ -125,7 +133,8 @@ export default class MapScreen extends React.Component {
   }
 
   render() {
-    const { selectedIndex, image } = this.state;
+    const { selectedIndex, image, markers, isVisible, title, description } = this.state;
+    console.log(markers);
     const buttons = ['Me', 'Friends', 'All'];
     return (
       <View style={styles.container}>
@@ -143,7 +152,7 @@ export default class MapScreen extends React.Component {
             longitudeDelta: 0.0421,
           }}
         >
-          { this.state.markers.map((m, i) => (
+          { markers.length && markers.map((m, i) => (
             <MapView.Marker
               key={i}
               onPress={() => this.props.navigation.navigate('EventDetails', { event: m })}
@@ -157,19 +166,19 @@ export default class MapScreen extends React.Component {
         {/* Modal for creating event... could be pulled out into its own Screen */}
         <Overlay
           containerStyle={{height: '100%'}}
-          isVisible={this.state.isVisible}
+          isVisible={isVisible}
           onBackdropPress={() => this.setState({isVisible: false})}
         >
           <ScrollView contentContainerStyle={{flex: 1, flexDirection: 'column'}}>
             <TextField
               label='Title'
-              value={this.state.title}
+              value={title}
               onChangeText={(title) => this.setState({ title }) }
             />
             <TextField
               ref={this.aboutRef}
-              value={this.state.desc}
-              onChangeText={(desc) => this.setState({ desc })}
+              value={description}
+              onChangeText={(description) => this.setState({ description })}
               returnKeyType='next'
               multiline={true}
               blurOnSubmit={true}
