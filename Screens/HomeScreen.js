@@ -32,10 +32,12 @@ export default class HomeScreen extends React.Component {
     return(
       <View style={styles.container}>
         <ListItem title="Home Screen" />
+        <ListItem title="Create Account Alias to display in comments and likes?" />
         <ListItem title="Trending Events?" />
         <ListItem title="Like Events?" />
         <ListItem title="User Profile?" />
         <ListItem title="Could market the app by distributing markers throughout the world and offer a prize to whoever finds them." />
+        <ListItem title="Only need to return coords and event id with each pin initially, re-query for details and join liked for liked_by_me" />
       </View>
     );
   }

@@ -4,15 +4,29 @@ import { authHelper } from '../Helpers';
 
 export const eventsService = {
   getEvents,
-  createEvent
+  getEventDetails,
+  createEvent,
+  likeEvent
 }
+
+console.log('HELLO FROM OUTSIDE FUNCTIONS');
 
 async function getEvents() {
   const headers = await authHelper.authHeaders();
   return axios.get(`${ENDPOINT}/events`, headers);
 }
 
+async function getEventDetails(eventId) {
+  const headers = await authHelper.authHeaders();
+  return axios.get(`${ENDPOINT}/events/${eventId}/details`, headers);
+}
+
 async function createEvent(event) {
   const headers = await authHelper.authHeaders();
   return axios.post(`${ENDPOINT}/events/create`, event, headers);
+}
+
+async function likeEvent(eventId, like) {
+  const headers = await authHelper.authHeaders();
+  return axios.post(`${ENDPOINT}/events/${eventId}/like`, { like: like ? 1 : 0 }, headers)
 }

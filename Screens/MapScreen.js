@@ -76,8 +76,6 @@ export default class MapScreen extends React.Component {
     };
 
     const data = await eventsService.createEvent(event);
-    console.log('event response');
-    console.log(data);
 
     markers.push(event);
     this.setState({markers, isVisible: false});
@@ -121,7 +119,6 @@ export default class MapScreen extends React.Component {
             };
 
             const image = response.body.postResponse;
-            console.log(image);
             this.setState({ image });
           })
           .catch(err => console.log(err))
@@ -134,8 +131,8 @@ export default class MapScreen extends React.Component {
 
   render() {
     const { selectedIndex, image, markers, isVisible, title, description } = this.state;
-    console.log(markers);
     const buttons = ['Me', 'Friends', 'All'];
+
     return (
       <View style={styles.container}>
         <ButtonGroup

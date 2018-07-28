@@ -7,6 +7,5 @@ export const authHelper = {
 async function authHeaders() {
   let data = await AsyncStorage.getItem('user_data');
   data = JSON.parse(data);
-  console.log(data.jwt);
   return { headers: { 'Authorization': `JWT ${data.jwt}` }}
 }
