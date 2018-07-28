@@ -1,5 +1,8 @@
 {
   "expo": {
     "sdkVersion": "27.0.0"
+  },
+  "ios": {
+    "googleMapsApiKey": "AIzaSyAZTKr5_Zg21AwqV_f2x3H4LsQjjXTRAk8"
   }
 }
