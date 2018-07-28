@@ -20,7 +20,7 @@ export default class EventDetailsScreen extends React.Component {
     super(props);
     this.state = {
       event: null,
-      numComments: null
+      socialDetails: {}
     }
   }
 
@@ -31,7 +31,7 @@ export default class EventDetailsScreen extends React.Component {
     this.setState({ event });
 
     const { data } = await eventsService.getEventDetails(event.id);
-    this.setState({ numComments: data.numComments });
+    this.setState({ socialDetails: data });
   }
 
   async favoriteEvent(eventId) {
@@ -42,7 +42,7 @@ export default class EventDetailsScreen extends React.Component {
   }
 
   render() {
-    const { event, numComments } = this.state;
+    const { event, socialDetails } = this.state;
 
     if (event) {
       return(
@@ -60,16 +60,16 @@ export default class EventDetailsScreen extends React.Component {
                   name={!event.liked ? 'favorite-border' : 'favorite'}
                   onPress={() => this.favoriteEvent(event.id)}
                 />
-                <Text>{numComments}</Text>
+                <Text style={styles.socialCount}>{socialDetails.numLikes}</Text>
               </View>
               <View style={styles.iconWrapper}>
                 <Icon
                   style={styles.rightIcon}
                   color='#fb3958'
                   name='comment'
-                  // onPress={() => this.goToCommen(event.id)} //this.props.navigation.natigate('Comments', eventInfo)
+                  onPress={() => this.props.navigation.navigate('Comments', { eventId: event.id })}
                 />
-                <Text>0</Text>
+                <Text style={styles.socialCount}>{socialDetails.numComments}</Text>
               </View>
             </View>
             <Divider style={{marginBottom: 15}} />
@@ -90,6 +90,9 @@ const styles = StyleSheet.create({
   },
   rightIcon: {
     marginRight: 10
+  },
+  socialCount: {
+    marginLeft: 5
   },
   uploadedImage: {
     width: '100%',

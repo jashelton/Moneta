@@ -7,13 +7,15 @@ import EventDetailsScreen from '../Screens/EventDetailsScreen';
 
 import AuthLoadingScreen from '../Screens/AuthLoadingScreen';
 import LoginScreen from '../Screens/LoginScreen';
+import CommentsScreen from '../Screens/CommentsScreen';
 
 const AppStack = createStackNavigator(
   // ROUTES:
   {
     Home: HomeScreen,
     Map: MapScreen,
-    EventDetails: EventDetailsScreen
+    EventDetails: EventDetailsScreen,
+    Comments: CommentsScreen
   },
   {
     initialRouteName: 'Home',

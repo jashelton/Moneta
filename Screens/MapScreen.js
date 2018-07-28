@@ -2,7 +2,7 @@ import React from 'react';
 import MapView from 'react-native-maps';
 import { View, ScrollView, TouchableHighlight, Image, StyleSheet } from 'react-native';
 import { ImagePicker, Permissions } from 'expo';
-import { Icon, Overlay, Button, ButtonGroup, Input, Card } from 'react-native-elements';
+import { Icon, Overlay, Button, ButtonGroup } from 'react-native-elements';
 import { TextField } from 'react-native-material-textfield';
 
 import { RNS3 } from 'react-native-aws3';
@@ -173,7 +173,6 @@ export default class MapScreen extends React.Component {
               onChangeText={(title) => this.setState({ title }) }
             />
             <TextField
-              ref={this.aboutRef}
               value={description}
               onChangeText={(description) => this.setState({ description })}
               returnKeyType='next'
@@ -189,8 +188,8 @@ export default class MapScreen extends React.Component {
                 <Image style={styles.uploadedImage} source={{uri: image.location}} />
               }
             </TouchableHighlight>
-            <Button style={styles.btnSubmit} title='Submit' onPress={this.createEvent} />
-            </ScrollView>
+            <Button title='Submit' onPress={this.createEvent} />
+          </ScrollView>
         </Overlay>
       </View>
     )
