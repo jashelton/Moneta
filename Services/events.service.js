@@ -26,7 +26,7 @@ async function createEvent(event) {
   return axios.post(`${ENDPOINT}/events/create`, event, headers);
 }
 
-async function likeEvent(eventId, like) {
+async function likeEvent(eventId, liked) {
   const headers = await authHelper.authHeaders();
-  return axios.post(`${ENDPOINT}/events/${eventId}/like`, { like: like ? 1 : 0 }, headers)
+  return axios.post(`${ENDPOINT}/events/${eventId}/like`, { liked: liked ? 1 : 0 }, headers)
 }
