@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
-import { View, Text } from 'react-native';
 import { createStackNavigator, createSwitchNavigator } from 'react-navigation';
 
 import HomeScreen from '../Screens/HomeScreen';
 import MapScreen from '../Screens/MapScreen';
 import EventDetailsScreen from '../Screens/EventDetailsScreen';
+
+import AuthLoadingScreen from '../Screens/AuthLoadingScreen';
+import LoginScreen from '../Screens/LoginScreen';
 
 const AppStack = createStackNavigator(
   // ROUTES:
@@ -27,16 +29,16 @@ const AppStack = createStackNavigator(
   }
 )
 
-// const AuthStack = createStackNavigator({ Login: LoginScreen });
+const AuthStack = createStackNavigator({ Login: LoginScreen });
 
 export const Navigator = createSwitchNavigator(
   {
-    // AuthLoading: AuthLoadingScreen,
+    AuthLoading: AuthLoadingScreen,
     App: AppStack,
-    // Auth: AuthStack,
+    Auth: AuthStack,
   },
   {
-    initialRouteName: 'App',
+    initialRouteName: 'AuthLoading',
   }
 );
 

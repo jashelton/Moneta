@@ -1,6 +1,6 @@
 import React from 'react';
 import MapView from 'react-native-maps';
-import { View, ScrollView, Text, TextInput, TouchableHighlight, Image, StyleSheet } from 'react-native';
+import { View, ScrollView, TouchableHighlight, Image, StyleSheet } from 'react-native';
 import { ImagePicker, Permissions } from 'expo';
 import { Icon, Overlay, Button, ButtonGroup, Input, Card } from 'react-native-elements';
 import { TextField } from 'react-native-material-textfield';
