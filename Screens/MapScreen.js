@@ -1,6 +1,6 @@
 import React from 'react';
 import MapView from 'react-native-maps';
-import { Constants, Location, ImagePicker, Permissions } from 'expo';
+import { Location, ImagePicker, Permissions } from 'expo';
 import { View, ScrollView, TouchableHighlight, Image, StyleSheet } from 'react-native';
 import { Icon, Overlay, Button, ButtonGroup } from 'react-native-elements';
 import { TextField } from 'react-native-material-textfield';
@@ -8,6 +8,7 @@ import { TextField } from 'react-native-material-textfield';
 import { RNS3 } from 'react-native-aws3';
 import { AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, BUCKET, BUCKET_REGION } from 'react-native-dotenv';
 import { eventsService } from '../Services';
+import { authHelper } from '../Helpers';
 
 export default class MapScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
@@ -44,7 +45,8 @@ export default class MapScreen extends React.Component {
       title: '',
       image: null,
       description: '',
-      currentLocation: {}
+      currentLocation: {},
+      user_data: {}
     }
 
     this.newMarker = this.newMarker.bind(this);
@@ -56,10 +58,13 @@ export default class MapScreen extends React.Component {
     const { data } = await eventsService.getEvents();
     this.setState({markers: data});
 
-    this.options.keyPrefix = `user_${this.props.user_id}/`; // TODO: USER CURRENT DOESNT EXIST
     this.props.navigation.setParams({
       newMarker: () => this.newMarker()
     });
+
+    const user_data = await authHelper.getParsedUserData();
+    this.options.keyPrefix = `user_${user_data.id}/`;
+    this.setState({user_data});
   }
 
   _getLocationAsync = async () => {
