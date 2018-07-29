@@ -9,7 +9,6 @@ import { RNS3 } from 'react-native-aws3';
 import { AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, BUCKET, BUCKET_REGION } from 'react-native-dotenv';
 import { eventsService } from '../Services';
 import { authHelper, LocationHelper } from '../Helpers';
-import { resolve } from 'rsvp';
 
 export default class MapScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
@@ -40,15 +39,15 @@ export default class MapScreen extends React.Component {
     super(props);
 
     this.state = {
+      title: '',
+      description: '',
+      imageFile: null,
+      currentLocation: {},
+      localImage: null,
+      markers: [],
+      user_data: {},
       isVisible: false,
       selectedIndex: 0,
-      markers: [],
-      title: '',
-      localImage: null,
-      imageFile: null,
-      description: '',
-      currentLocation: {},
-      user_data: {},
       eventPrivacy: 'Public',
       filterOptions: ['All', 'Friends', 'Me']
     }
@@ -186,7 +185,7 @@ export default class MapScreen extends React.Component {
           { markers.length && markers.map((m, i) => (
             <MapView.Marker
               key={i}
-              onPress={() => this.props.navigation.navigate('EventDetails', { event: m })}
+              onPress={() => this.props.navigation.navigate('EventDetails', { eventId: m.id })}
               ref={marker => { this.marker = marker }}
               coordinate={m.coordinate}
             />

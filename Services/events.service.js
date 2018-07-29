@@ -20,11 +20,10 @@ async function getEvents(filter) {
   });
 }
 
-async function getEventDetails(event, userLocation) {
+async function getEventDetails(eventId, userLocation) {
   const { headers } = await authHelper.authHeaders();
-  return axios.get(`${ENDPOINT}/events/${event.id}/details`, {
+  return axios.get(`${ENDPOINT}/events/${eventId}/details`, {
     params: {
-      event,
       userLocation
     },
     headers

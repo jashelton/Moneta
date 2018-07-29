@@ -9,8 +9,8 @@ export class EventDetailsHeader extends React.Component {
   render() {
     return(
       <View style={styles.headerContainer}>
-        <Text>{this.props.user.first_name} {this.props.user.last_name}</Text>
-        <Text style={styles.subText}>{new Date(this.props.event.created_at).toISOString().substring(0, 10)}</Text>
+        <Text>{this.props.name}</Text>
+        <Text style={styles.subText}>{new Date(this.props.date).toISOString().substring(0, 10)}</Text>
       </View>
     );
   }
@@ -21,7 +21,6 @@ export default class EventDetailsScreen extends React.Component {
     super(props);
     this.state = {
       event: null,
-      socialDetails: {},  // TODO: This isn't really 'socialDetails' anymore
       user: {}
     }
 
@@ -33,31 +32,29 @@ export default class EventDetailsScreen extends React.Component {
 
   async componentDidMount() {
     const { navigation } = this.props;
-    const event = navigation.getParam('event', null);
+    const eventId = navigation.getParam('eventId', null);
     navigation.setParams({ deleteEvent: () => this.deleteEvent()});
 
-    this.setState({ event });
-
     const currentLocation = await LocationHelper.getCurrentLocation();
-    const { data } = await eventsService.getEventDetails(event, currentLocation);
-    this.setState({ socialDetails: data });
+    const { data } = await eventsService.getEventDetails(eventId, currentLocation);
+    this.setState({ event: data });
 
     const user = await authHelper.getParsedUserData();
     this.setState({user});
   }
 
   async favoriteEvent(eventId) {
-    const { event, socialDetails } = this.state;
+    const { event } = this.state;
     event.liked = !event.liked;
-    const { data } = await eventsService.likeEvent(eventId, event.liked);
-    event.liked ? socialDetails.numLikes ++ : socialDetails.numLikes --;
+    const { data } = await eventsService.likeEvent(event.id, event.liked);
+    event.liked ? event.likes_count ++ : event.likes_count --;
     this.setState({ event });
   }
 
   incrementCommentCount() {
-    const { socialDetails } = this.state;
-    socialDetails.numComments ++;
-    this.setState({ socialDetails });
+    const { event } = this.state;
+    event.comment_count ++;
+    this.setState({ event });
   }
 
   verifyDeleteEvent() {
@@ -87,17 +84,17 @@ export default class EventDetailsScreen extends React.Component {
   }
 
   render() {
-    const { event, socialDetails, user } = this.state;
+    const { event, user } = this.state;
 
     if (event) {
       return(
         <View style={styles.container}>
           <Card
-            title={<EventDetailsHeader event={event} details={socialDetails} user={user} />}
+            title={<EventDetailsHeader date={event.created_at} name={event.name} />}
             containerStyle={styles.container}
           >
             <View style={{height: '100%'}}>
-              <Image style={styles.uploadedImage} source={{uri: event.image.location}} />
+              <Image style={styles.uploadedImage} source={{uri: event.image}} />
               <View style={styles.iconGroup}>
                 <View style={styles.iconWrapper}>
                   <Icon
@@ -106,7 +103,7 @@ export default class EventDetailsScreen extends React.Component {
                     name={!event.liked ? 'favorite-border' : 'favorite'}
                     onPress={() => this.favoriteEvent(event.id)}
                   />
-                  <Text style={styles.socialCount}>{socialDetails.numLikes}</Text>
+                  <Text style={styles.socialCount}>{event.likes_count}</Text>
                 </View>
                 <View style={styles.iconWrapper}>
                   <Icon
@@ -115,7 +112,7 @@ export default class EventDetailsScreen extends React.Component {
                     name='comment'
                     onPress={() => this.props.navigation.navigate('Comments', { eventId: event.id, incrementCommentCount: this.incrementCommentCount.bind(this) })}
                   />
-                  <Text style={styles.socialCount}>{socialDetails.numComments}</Text>
+                  <Text style={styles.socialCount}>{event.comment_count}</Text>
                 </View>
               </View>
 
@@ -124,8 +121,8 @@ export default class EventDetailsScreen extends React.Component {
               <View style={styles.eventBody}>
                 <View style={{marginBottom: 15}}>
                   <Text style={styles.titleText}>{event.title}</Text>
-                  { socialDetails.distanceFrom && socialDetails.distanceFrom.status === 'OK' &&
-                    <Text style={styles.subText}>{socialDetails.distanceFrom.distance.text}</Text>
+                  { event.distanceFrom && event.distanceFrom.status === 'OK' &&
+                    <Text style={styles.subText}>{event.distanceFrom.distance.text}</Text>
                   }
                 </View>
                 <Text style={styles.eventText}>{event.description}</Text>
