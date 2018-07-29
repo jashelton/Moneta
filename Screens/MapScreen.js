@@ -40,7 +40,7 @@ export default class MapScreen extends React.Component {
 
     this.state = {
       isVisible: false,
-      selectedIndex: 2,
+      selectedIndex: 0,
       markers: [],
       title: '',
       image: null,
@@ -48,7 +48,7 @@ export default class MapScreen extends React.Component {
       currentLocation: {},
       user_data: {},
       eventPrivacy: 'Public',
-      filterOptions: ['Me', 'Friends', 'All']
+      filterOptions: ['All', 'Friends', 'Me']
     }
 
     this.newMarker = this.newMarker.bind(this);
@@ -157,9 +157,8 @@ export default class MapScreen extends React.Component {
         <MapView
           style={{ flex: 1 }}
           showsUserLocation={true}
-          followsUserLocation={true}
           showsPointsOfInterest={true}
-          // mapType="hybrid"
+          mapType="hybrid"
           initialRegion={{
             latitude: 35.9098794,
             longitude: -78.9127328,
