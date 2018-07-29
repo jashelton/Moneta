@@ -1,0 +1,1 @@
+export const WARNING_RED = '#B33A3A';

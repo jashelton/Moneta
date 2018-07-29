@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, ScrollView, Image, Text, StyleSheet, ActivityIndicator } from 'react-native';
-import { Card, Divider, Icon } from 'react-native-elements';
+import { View, Image, Text, StyleSheet, ActivityIndicator, AlertIOS } from 'react-native';
+import { Card, Divider, Icon, Button } from 'react-native-elements';
 import { eventsService } from '../Services';
 import { authHelper, LocationHelper } from '../Helpers';
+import { WARNING_RED } from '../common/styles/common-styles';
 
 export class EventDetailsHeader extends React.Component {
   render() {
@@ -26,11 +27,14 @@ export default class EventDetailsScreen extends React.Component {
 
     this.favoriteEvent = this.favoriteEvent.bind(this);
     this.incrementCommentCount = this.incrementCommentCount.bind(this);
+    this.verifyDeleteEvent = this.verifyDeleteEvent.bind(this);
+    this.deleteEvent = this.deleteEvent.bind(this);
   }
 
   async componentDidMount() {
     const { navigation } = this.props;
     const event = navigation.getParam('event', null);
+    navigation.setParams({ deleteEvent: () => this.deleteEvent()});
 
     this.setState({ event });
 
@@ -56,51 +60,95 @@ export default class EventDetailsScreen extends React.Component {
     this.setState({ socialDetails });
   }
 
+  verifyDeleteEvent() {
+    AlertIOS.alert(
+      'Delete Event',
+      `Are you sure you want to delete: ${this.state.event.title}?`,
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        },
+        {
+          text: 'Delete',
+          onPress: () => this.deleteEvent()
+        }
+      ]
+    )
+  }
+
+  async deleteEvent() {
+    const { event } = this.state;
+    const data = await eventsService.deleteEvent(event.id);
+
+    if (data.status === 200) {
+      // TODO: Filter this event out of 'markers' on MapScreen
+    }
+  }
+
   render() {
     const { event, socialDetails, user } = this.state;
 
     if (event) {
       return(
-        <Card
-          title={<EventDetailsHeader event={event} details={socialDetails} user={user} />}
-          containerStyle={styles.container}
-        >
-          <ScrollView contentContainerStyle={{height: '100%'}}>
-            <Image style={styles.uploadedImage} source={{uri: event.image.location}} />
-            <View style={styles.iconGroup}>
-              <View style={styles.iconWrapper}>
-                <Icon
-                  style={styles.rightIcon}
-                  color='#fb3958'
-                  name={!event.liked ? 'favorite-border' : 'favorite'}
-                  onPress={() => this.favoriteEvent(event.id)}
-                />
-                <Text style={styles.socialCount}>{socialDetails.numLikes}</Text>
+        <View style={styles.container}>
+          <Card
+            title={<EventDetailsHeader event={event} details={socialDetails} user={user} />}
+            containerStyle={styles.container}
+          >
+            <View style={{height: '100%'}}>
+              <Image style={styles.uploadedImage} source={{uri: event.image.location}} />
+              <View style={styles.iconGroup}>
+                <View style={styles.iconWrapper}>
+                  <Icon
+                    style={styles.rightIcon}
+                    color='#fb3958'
+                    name={!event.liked ? 'favorite-border' : 'favorite'}
+                    onPress={() => this.favoriteEvent(event.id)}
+                  />
+                  <Text style={styles.socialCount}>{socialDetails.numLikes}</Text>
+                </View>
+                <View style={styles.iconWrapper}>
+                  <Icon
+                    style={styles.rightIcon}
+                    color='#fb3958'
+                    name='comment'
+                    onPress={() => this.props.navigation.navigate('Comments', { eventId: event.id, incrementCommentCount: this.incrementCommentCount.bind(this) })}
+                  />
+                  <Text style={styles.socialCount}>{socialDetails.numComments}</Text>
+                </View>
               </View>
-              <View style={styles.iconWrapper}>
-                <Icon
-                  style={styles.rightIcon}
-                  color='#fb3958'
-                  name='comment'
-                  onPress={() => this.props.navigation.navigate('Comments', { eventId: event.id, incrementCommentCount: this.incrementCommentCount.bind(this) })}
-                />
-                <Text style={styles.socialCount}>{socialDetails.numComments}</Text>
+
+              <Divider style={{marginBottom: 15}} />
+
+              <View style={styles.eventBody}>
+                <View style={{marginBottom: 15}}>
+                  <Text style={styles.titleText}>{event.title}</Text>
+                  { socialDetails.distanceFrom && socialDetails.distanceFrom.status === 'OK' &&
+                    <Text style={styles.subText}>{socialDetails.distanceFrom.distance.text}</Text>
+                  }
+                </View>
+                <Text style={styles.eventText}>{event.description}</Text>
               </View>
             </View>
-
-            <Divider style={{marginBottom: 15}} />
-
-            <View style={styles.eventBody}>
-              <View style={{marginBottom: 15}}>
-                <Text style={styles.titleText}>{event.title}</Text>
-                { socialDetails.distanceFrom && socialDetails.distanceFrom.status === 'OK' &&
-                  <Text style={styles.subText}>{socialDetails.distanceFrom.distance.text}</Text>
-                }
-              </View>
-              <Text style={styles.eventText}>{event.description}</Text>
-            </View>
-          </ScrollView>
-        </Card>
+          </Card>
+          { event.user_id && event.user_id === user.id &&
+            <Button
+              style={styles.deleteEventBtn}
+              buttonStyle={{backgroundColor: WARNING_RED}}
+              icon={
+                <Icon
+                  name='delete'
+                  size={20}
+                  color='#fff'
+                />
+              }
+              iconLeft
+              title='Delete Event'
+              onPress={this.verifyDeleteEvent}
+            />
+          }
+        </View>
       ); 
     } else {
       return(<View style={styles.container}> <ActivityIndicator /> </View>)
@@ -152,6 +200,10 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     marginBottom: 15
+  },
+  deleteEventBtn: {
+    marginRight: 15,
+    marginLeft: 15,
   }
 });
 

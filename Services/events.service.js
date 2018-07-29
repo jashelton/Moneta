@@ -7,6 +7,7 @@ export const eventsService = {
   getEventDetails,
   createEvent,
   likeEvent,
+  deleteEvent,
 }
 
 console.log('HELLO FROM OUTSIDE FUNCTIONS');
@@ -35,4 +36,9 @@ async function createEvent(event) {
 async function likeEvent(eventId, liked) {
   const headers = await authHelper.authHeaders();
   return axios.post(`${ENDPOINT}/events/${eventId}/like`, { liked: liked ? 1 : 0 }, headers)
+}
+
+async function deleteEvent(eventId) {
+  const headers = await authHelper.authHeaders();
+  return axios.put(`${ENDPOINT}/events/${eventId}/delete`, null, headers)
 }
