@@ -1,8 +1,8 @@
 import React from 'react';
 import MapView from 'react-native-maps';
 import { ImagePicker, Permissions } from 'expo';
-import { View, ScrollView, TouchableHighlight, Image, StyleSheet } from 'react-native';
-import { Icon, Overlay, Button, ButtonGroup } from 'react-native-elements';
+import { View, Text, ScrollView, TouchableHighlight, Image, StyleSheet, Modal, Switch } from 'react-native';
+import { Icon, Button, ButtonGroup } from 'react-native-elements';
 import { TextField } from 'react-native-material-textfield';
 
 import { RNS3 } from 'react-native-aws3';
@@ -46,7 +46,8 @@ export default class MapScreen extends React.Component {
       image: null,
       description: '',
       currentLocation: {},
-      user_data: {}
+      user_data: {},
+      eventPrivacy: 'Public' 
     }
 
     this.newMarker = this.newMarker.bind(this);
@@ -127,8 +128,13 @@ export default class MapScreen extends React.Component {
     this.setState({selectedIndex})
   }
 
+  updatePrivacySettings(val) {
+    const eventPrivacy = val ? 'Public' : 'Private' ;
+    this.setState({eventPrivacy});
+  }
+
   render() {
-    const { selectedIndex, image, markers, isVisible, title, description } = this.state;
+    const { selectedIndex, image, markers, isVisible, title, description, eventPrivacy } = this.state;
     const buttons = ['Me', 'Friends', 'All'];
 
     return (
@@ -163,12 +169,23 @@ export default class MapScreen extends React.Component {
         </MapView>
 
         {/* Modal for creating event... could be pulled out into its own Screen */}
-        <Overlay
-          containerStyle={{height: '100%'}}
-          isVisible={isVisible}
-          onBackdropPress={() => this.setState({isVisible: false})}
+        <Modal
+          animationType="slide"
+          transparent={false}
+          visible={isVisible}
         >
-          <ScrollView contentContainerStyle={{flex: 1, flexDirection: 'column'}}>
+          <View style={styles.modalHeader}>
+            <Button title='Cancel' clear={true} onPress={() => this.setState({isVisible: false})}/>
+            <Button title='Save' clear={true} onPress={this.createEvent}/>
+          </View>
+          <ScrollView contentContainerStyle={{flex: 1, flexDirection: 'column', padding: 15}}>
+            <View style={styles.eventPrivacyContainer}>
+              <Text>Create event as: {eventPrivacy}</Text>
+              <Switch
+                value={eventPrivacy === 'Public' ? true : false}
+                onValueChange={(value) => this.updatePrivacySettings(value)}
+              />
+            </View>
             <TextField
               label='Title'
               value={title}
@@ -190,9 +207,8 @@ export default class MapScreen extends React.Component {
                 <Image style={styles.uploadedImage} source={{uri: image.location}} />
               }
             </TouchableHighlight>
-            <Button title='Submit' onPress={this.createEvent} />
           </ScrollView>
-        </Overlay>
+        </Modal>
       </View>
     )
   }
@@ -202,8 +218,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  modalHeader: {
+    height: 60,
+    backgroundColor: '#1C7ED7',
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+  },
   rightIcon: {
     marginRight: 10
+  },
+  eventPrivacyContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   imageUpload: {
     width: '100%',

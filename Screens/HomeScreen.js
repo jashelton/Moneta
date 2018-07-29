@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Icon, ListItem } from 'react-native-elements';
+import { View, Text, StyleSheet, Modal, TouchableHighlight  } from 'react-native';
+import { Icon } from 'react-native-elements';
 
 export default class HomeScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
@@ -14,13 +14,23 @@ export default class HomeScreen extends React.Component {
           color="#fff"
           onPress={navigation.getParam('navigateToMap')}
         />
+      ),
+      headerLeft: (
+        <Icon
+          containerStyle={styles.leftIcon}
+          size={28}
+          name="person"
+          color="#fff"
+          onPress={navigation.getParam('navigateToProfile')}
+        />
       )
     }
   }
 
   componentDidMount() {
     this.props.navigation.setParams({
-      navigateToMap: () => this.navigateTo('Map')
+      navigateToMap: () => this.navigateTo('Map'),
+      navigateToProfile: () => this.navigateTo('UserProfile')
     });
   }
 
@@ -31,17 +41,27 @@ export default class HomeScreen extends React.Component {
   render() {
     return(
       <View style={styles.container}>
-        <ListItem title="Home Screen" />
-        <ListItem title="Create Account Alias to display in comments and likes?" />
-        <ListItem title="Trending Events?" />
-        <ListItem title="Public/Private/Only Friends Event Post" />
-        <ListItem title="Like Events?" />
-        <ListItem title="User Profile?" />
-        <ListItem title="Distance from Event" />
-        <ListItem title="Report Event" />
-        <ListItem title="Tags/Categories for Events to filter on" />
-        <ListItem title="Could market the app by distributing markers throughout the world and offer a prize to whoever finds them." />
-        <ListItem title="Only need to return coords and event id with each pin initially, re-query for details and join liked for liked_by_me" />
+        <Text>Home Screen</Text>
+        {/* <Modal
+          animationType="slide"
+          transparent={false}
+          visible={true}
+          onRequestClose={() => {
+            alert('Modal has been closed.');
+          }}>
+          <View style={{marginTop: 22}}>
+            <View>
+              <Text>Hello World!</Text>
+
+              <TouchableHighlight
+                onPress={() => {
+                  this.setModalVisible(!this.state.modalVisible);
+                }}>
+                <Text>Hide Modal</Text>
+              </TouchableHighlight>
+            </View>
+          </View>
+        </Modal> */}
       </View>
     );
   }
@@ -50,9 +70,14 @@ export default class HomeScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: '#fff',
   },
   rightIcon: {
     marginRight: 10
   },
+  leftIcon: {
+    marginLeft: 10
+  }
 });
