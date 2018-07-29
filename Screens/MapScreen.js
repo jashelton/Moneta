@@ -9,6 +9,7 @@ import { RNS3 } from 'react-native-aws3';
 import { AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, BUCKET, BUCKET_REGION } from 'react-native-dotenv';
 import { eventsService } from '../Services';
 import { authHelper, LocationHelper } from '../Helpers';
+import { resolve } from 'rsvp';
 
 export default class MapScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
@@ -43,7 +44,8 @@ export default class MapScreen extends React.Component {
       selectedIndex: 0,
       markers: [],
       title: '',
-      image: null,
+      localImage: null,
+      imageFile: null,
       description: '',
       currentLocation: {},
       user_data: {},
@@ -54,6 +56,7 @@ export default class MapScreen extends React.Component {
     this.newMarker = this.newMarker.bind(this);
     this.createEvent = this.createEvent.bind(this);
     this.updateIndex = this.updateIndex.bind(this);
+    this.prepS3Upload = this.prepS3Upload.bind(this);
   }
 
   async componentDidMount() {
@@ -83,7 +86,7 @@ export default class MapScreen extends React.Component {
   }
 
   async createEvent() {
-    const { markers, title, description, image, currentLocation, eventPrivacy } = this.state;
+    const { markers, title, description, currentLocation, eventPrivacy, imageFile } = this.state;
     if (title === '' || description === '') {
       alert('You must include a Title and Description');
       return;
@@ -91,21 +94,31 @@ export default class MapScreen extends React.Component {
     const event = {
       title,
       description,
-      image,
       privacy: eventPrivacy,
       coordinate: currentLocation.coords
     };
 
-    const { data } = await eventsService.createEvent(event);
-    markers.push(data.event);
-    this.setState({
-      markers,
-      isVisible: false,
-      title: '',
-      description: '',
-      image: '',
-      eventPrivacy: 'Public'
-    });
+    try {
+      const s3Upload = await RNS3.put(imageFile, this.options);
+      event.image = s3Upload.body.postResponse;
+      const { data } = await eventsService.createEvent(event);
+
+      markers.push(data.event);
+
+      this.setState({
+        markers,
+        isVisible: false,
+        title: '',
+        description: '',
+        localImage: null,
+        eventPrivacy: 'Public',
+        imageFile: null
+      });
+    } catch (err) {
+      console.log(err);
+      return;
+    }
+    
   }
 
   createDateString() {
@@ -115,7 +128,8 @@ export default class MapScreen extends React.Component {
     return `${time.getFullYear()}-${time.getMonth() + 1}-${time.getDate()}_${now}`;
   }
 
-  uploadImage = async() => {
+  // Check permission on CAMERA_ROLL and store what is needed to upload image to S3.
+  async prepS3Upload() {
     let { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
 
     if (status !== 'granted') {
@@ -130,18 +144,10 @@ export default class MapScreen extends React.Component {
     });
 
     if (!result.cancelled) {
-      const file = { uri: result.uri, name: this.createDateString(), type: result.type };
-
-      RNS3.put(file, this.options)
-          .then(response => {
-            if (response.status !== 201) {
-              throw new Error("Failed to upload image.");
-            };
-
-            const image = response.body.postResponse;
-            this.setState({ image });
-          })
-          .catch(err => console.log(err))
+      const { imageFile, localImage } = this.state;
+      imageFile = { uri: result.uri, name: this.createDateString(), type: result.type }; // Required fields for S3 upload
+      localImage = result.uri; // Path to image to display to user before S3 upload
+      this.setState({localImage, imageFile});
     }
   }
 
@@ -156,7 +162,7 @@ export default class MapScreen extends React.Component {
   }
 
   render() {
-    const { selectedIndex, image, markers, isVisible, title, description, eventPrivacy, filterOptions } = this.state;
+    const { selectedIndex, localImage, markers, isVisible, title, description, eventPrivacy, filterOptions } = this.state;
 
     return (
       <View style={styles.container}>
@@ -220,11 +226,11 @@ export default class MapScreen extends React.Component {
               label='Description'
               characterRestriction={140}
             />
-            <TouchableHighlight underlayColor="#eee" style={styles.imageUpload} onPress={this.uploadImage}>
-              { !image ?
+            <TouchableHighlight underlayColor="#eee" style={styles.imageUpload} onPress={this.prepS3Upload}>
+              { !localImage ?
                 <Icon style={styles.iconBtn} color="#d0d0d0" name="add-a-photo" />
                 :
-                <Image style={styles.uploadedImage} source={{uri: image.location}} />
+                <Image style={styles.uploadedImage} source={{uri: localImage}} />
               }
             </TouchableHighlight>
           </ScrollView>
