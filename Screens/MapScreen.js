@@ -74,11 +74,12 @@ export default class MapScreen extends React.Component {
   }
 
   async createEvent() {
-    const { markers, title, description, image, currentLocation } = this.state;
+    const { markers, title, description, image, currentLocation, eventPrivacy } = this.state;
     const event = {
       title,
       description,
       image,
+      privacy: eventPrivacy,
       coordinate: currentLocation.coords
     };
 
