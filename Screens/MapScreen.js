@@ -40,14 +40,15 @@ export default class MapScreen extends React.Component {
 
     this.state = {
       isVisible: false,
-      selectedIndex: 0,
+      selectedIndex: 2,
       markers: [],
       title: '',
       image: null,
       description: '',
       currentLocation: {},
       user_data: {},
-      eventPrivacy: 'Public' 
+      eventPrivacy: 'Public',
+      filterOptions: ['Me', 'Friends', 'All']
     }
 
     this.newMarker = this.newMarker.bind(this);
@@ -56,8 +57,7 @@ export default class MapScreen extends React.Component {
   }
 
   async componentDidMount() {
-    const { data } = await eventsService.getEvents();
-    this.setState({markers: data});
+    this.getEvents(this.state.selectedIndex);
 
     this.props.navigation.setParams({
       newMarker: () => this.newMarker()
@@ -68,13 +68,22 @@ export default class MapScreen extends React.Component {
     this.setState({user_data});
   }
 
+  async getEvents(selectedIndex) {
+    const { filterOptions } = this.state;
+    const selectedFilter = filterOptions[selectedIndex];
+    const { data } = await eventsService.getEvents(selectedFilter);
+    let { markers } = this.state;
+    markers = data;
+    this.setState({markers});
+  }
+
   async newMarker() {
     const currentLocation = await LocationHelper.getCurrentLocation();
     this.setState({currentLocation, isVisible: true});
   }
 
   async createEvent() {
-    const { markers, title, description, image, currentLocation, eventPrivacy } = this.state;
+    const { markers, title, description, image, currentLocation, eventPrivacy, selectedIndex, filterOptions } = this.state;
     const event = {
       title,
       description,
@@ -126,7 +135,8 @@ export default class MapScreen extends React.Component {
   }
 
   updateIndex (selectedIndex) {
-    this.setState({selectedIndex})
+    this.setState({selectedIndex});
+    this.getEvents(selectedIndex);
   }
 
   updatePrivacySettings(val) {
@@ -135,22 +145,21 @@ export default class MapScreen extends React.Component {
   }
 
   render() {
-    const { selectedIndex, image, markers, isVisible, title, description, eventPrivacy } = this.state;
-    const buttons = ['Me', 'Friends', 'All'];
+    const { selectedIndex, image, markers, isVisible, title, description, eventPrivacy, filterOptions } = this.state;
 
     return (
       <View style={styles.container}>
         <ButtonGroup
           onPress={this.updateIndex}
-          selectedIndex={ selectedIndex }
-          buttons={buttons}
+          selectedIndex={selectedIndex}
+          buttons={filterOptions}
         />
         <MapView
           style={{ flex: 1 }}
           showsUserLocation={true}
           followsUserLocation={true}
           showsPointsOfInterest={true}
-          mapType="hybrid"
+          // mapType="hybrid"
           initialRegion={{
             latitude: 35.9098794,
             longitude: -78.9127328,

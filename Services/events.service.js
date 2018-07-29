@@ -10,15 +10,18 @@ export const eventsService = {
   deleteEvent,
 }
 
-console.log('HELLO FROM OUTSIDE FUNCTIONS');
-
-async function getEvents() {
-  const headers = await authHelper.authHeaders();
-  return axios.get(`${ENDPOINT}/events`, headers);
+async function getEvents(filter) {
+  const { headers } = await authHelper.authHeaders();
+  return axios.get(`${ENDPOINT}/events`, {
+    params: {
+      filter
+    },
+    headers
+  });
 }
 
 async function getEventDetails(event, userLocation) {
-  const headers = await authHelper.authHeaders();
+  const { headers } = await authHelper.authHeaders();
   return axios.get(`${ENDPOINT}/events/${event.id}/details`, {
     params: {
       event,
