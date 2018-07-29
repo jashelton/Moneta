@@ -1,6 +1,6 @@
 import React from 'react';
 import MapView from 'react-native-maps';
-import { Location, ImagePicker, Permissions } from 'expo';
+import { ImagePicker, Permissions } from 'expo';
 import { View, ScrollView, TouchableHighlight, Image, StyleSheet } from 'react-native';
 import { Icon, Overlay, Button, ButtonGroup } from 'react-native-elements';
 import { TextField } from 'react-native-material-textfield';
@@ -8,7 +8,7 @@ import { TextField } from 'react-native-material-textfield';
 import { RNS3 } from 'react-native-aws3';
 import { AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, BUCKET, BUCKET_REGION } from 'react-native-dotenv';
 import { eventsService } from '../Services';
-import { authHelper } from '../Helpers';
+import { authHelper, LocationHelper } from '../Helpers';
 
 export default class MapScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
@@ -67,21 +67,9 @@ export default class MapScreen extends React.Component {
     this.setState({user_data});
   }
 
-  _getLocationAsync = async () => {
-    let { status } = await Permissions.askAsync(Permissions.LOCATION);
-    if (status !== 'granted') {
-      this.setState({
-        errorMessage: 'Permission to access location was denied',
-      });
-    }
-
-    const currentLocation = await Location.getCurrentPositionAsync({});
-    this.setState({ currentLocation });
-  };
-
-  newMarker() {
-    this._getLocationAsync();
-    this.setState({isVisible: true});
+  async newMarker() {
+    const currentLocation = await LocationHelper.getCurrentLocation();
+    this.setState({currentLocation, isVisible: true});
   }
 
   async createEvent() {

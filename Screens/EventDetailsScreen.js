@@ -1,15 +1,15 @@
 import React from 'react';
-import { View, ScrollView, Text, Image, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, ScrollView, Image, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { Card, Divider, Icon } from 'react-native-elements';
 import { eventsService } from '../Services';
+import { authHelper, LocationHelper } from '../Helpers';
 
 export class EventDetailsHeader extends React.Component {
   render() {
     return(
-      <View>
-        <Text>
-          {this.props.title}
-        </Text>
+      <View style={styles.headerContainer}>
+        <Text>{this.props.user.first_name} {this.props.user.last_name}</Text>
+        <Text style={styles.subText}>{new Date(this.props.event.created_at).toISOString().substring(0, 10)}</Text>
       </View>
     );
   }
@@ -20,7 +20,8 @@ export default class EventDetailsScreen extends React.Component {
     super(props);
     this.state = {
       event: null,
-      socialDetails: {}
+      socialDetails: {},  // TODO: This isn't really 'socialDetails' anymore
+      user: {}
     }
 
     this.favoriteEvent = this.favoriteEvent.bind(this);
@@ -33,8 +34,12 @@ export default class EventDetailsScreen extends React.Component {
 
     this.setState({ event });
 
-    const { data } = await eventsService.getEventDetails(event.id);
+    const currentLocation = await LocationHelper.getCurrentLocation();
+    const { data } = await eventsService.getEventDetails(event, currentLocation);
     this.setState({ socialDetails: data });
+
+    const user = await authHelper.getParsedUserData();
+    this.setState({user});
   }
 
   async favoriteEvent(eventId) {
@@ -52,13 +57,12 @@ export default class EventDetailsScreen extends React.Component {
   }
 
   render() {
-    const { event, socialDetails } = this.state;
+    const { event, socialDetails, user } = this.state;
 
     if (event) {
       return(
         <Card
-          // title={<EventDetailsHeader title={event.title} />}
-          title={event.title}
+          title={<EventDetailsHeader event={event} details={socialDetails} user={user} />}
           containerStyle={styles.container}
         >
           <ScrollView contentContainerStyle={{height: '100%'}}>
@@ -83,8 +87,18 @@ export default class EventDetailsScreen extends React.Component {
                 <Text style={styles.socialCount}>{socialDetails.numComments}</Text>
               </View>
             </View>
+
             <Divider style={{marginBottom: 15}} />
-            <Text>{event.description}</Text>
+
+            <View style={styles.eventBody}>
+              <View style={{marginBottom: 15}}>
+                <Text style={styles.titleText}>{event.title}</Text>
+                { socialDetails.distanceFrom && socialDetails.distanceFrom.status === 'OK' &&
+                  <Text style={styles.subText}>{socialDetails.distanceFrom.distance.text}</Text>
+                }
+              </View>
+              <Text style={styles.eventText}>{event.description}</Text>
+            </View>
           </ScrollView>
         </Card>
       ); 
@@ -120,6 +134,24 @@ const styles = StyleSheet.create({
   iconWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  eventBody: {
+  },
+  titleText: {
+    fontSize: 18,
+    fontWeight: '600'
+  },
+  eventText: {
+    fontSize: 16,
+    fontWeight: '200'
+  },
+  subText: {
+    fontWeight: '200',
+    color: 'grey',
+    fontSize: 12
+  },
+  headerContainer: {
+    marginBottom: 15
   }
 });
 

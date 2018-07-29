@@ -6,7 +6,7 @@ export const eventsService = {
   getEvents,
   getEventDetails,
   createEvent,
-  likeEvent
+  likeEvent,
 }
 
 console.log('HELLO FROM OUTSIDE FUNCTIONS');
@@ -16,9 +16,15 @@ async function getEvents() {
   return axios.get(`${ENDPOINT}/events`, headers);
 }
 
-async function getEventDetails(eventId) {
+async function getEventDetails(event, userLocation) {
   const headers = await authHelper.authHeaders();
-  return axios.get(`${ENDPOINT}/events/${eventId}/details`, headers);
+  return axios.get(`${ENDPOINT}/events/${event.id}/details`, {
+    params: {
+      event,
+      userLocation
+    },
+    headers
+  });
 }
 
 async function createEvent(event) {
