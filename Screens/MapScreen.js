@@ -83,7 +83,11 @@ export default class MapScreen extends React.Component {
   }
 
   async createEvent() {
-    const { markers, title, description, image, currentLocation, eventPrivacy, selectedIndex, filterOptions } = this.state;
+    const { markers, title, description, image, currentLocation, eventPrivacy } = this.state;
+    if (title === '' || description === '') {
+      alert('You must include a Title and Description');
+      return;
+    }
     const event = {
       title,
       description,
@@ -94,7 +98,14 @@ export default class MapScreen extends React.Component {
 
     const { data } = await eventsService.createEvent(event);
     markers.push(data.event);
-    this.setState({markers, isVisible: false});
+    this.setState({
+      markers,
+      isVisible: false,
+      title: '',
+      description: '',
+      image: '',
+      eventPrivacy: 'Public'
+    });
   }
 
   createDateString() {
