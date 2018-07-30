@@ -9,6 +9,7 @@ import { RNS3 } from 'react-native-aws3';
 import { AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, BUCKET, BUCKET_REGION } from 'react-native-dotenv';
 import { eventsService } from '../Services';
 import { authHelper, LocationHelper } from '../Helpers';
+import { PRIMARY_DARK_COLOR, ACCENT_COLOR } from '../common/styles/common-styles';
 
 export default class MapScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
@@ -19,7 +20,7 @@ export default class MapScreen extends React.Component {
           containerStyle={styles.rightIcon}
           size={28}
           name="add"
-          color="#fff"
+          color={ACCENT_COLOR}
           onPress={navigation.getParam('newMarker')}
         />
       )
@@ -201,8 +202,8 @@ export default class MapScreen extends React.Component {
           visible={isVisible}
         >
           <View style={styles.modalHeader}>
-            <Button title='Cancel' clear={true} onPress={() => this.setState({isVisible: false})}/>
-            <Button title='Save' clear={true} onPress={this.createEvent}/>
+            <Button title='Cancel' titleStyle={{color: ACCENT_COLOR}} clear={true} onPress={() => this.setState({isVisible: false})}/>
+            <Button title='Save' titleStyle={{color: ACCENT_COLOR}} clear={true} onPress={this.createEvent}/>
           </View>
           <ScrollView contentContainerStyle={{flex: 1, flexDirection: 'column', padding: 15}}>
             <View style={styles.eventPrivacyContainer}>
@@ -246,7 +247,7 @@ const styles = StyleSheet.create({
   },
   modalHeader: {
     height: 60,
-    backgroundColor: '#1C7ED7',
+    backgroundColor: PRIMARY_DARK_COLOR,
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'space-between',

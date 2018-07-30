@@ -9,6 +9,7 @@ import AuthLoadingScreen from '../Screens/AuthLoadingScreen';
 import LoginScreen from '../Screens/LoginScreen';
 import CommentsScreen from '../Screens/CommentsScreen';
 import UserDetailsScreen from '../Screens/UserDetailsScreen';
+import { PRIMARY_DARK_COLOR, ACCENT_COLOR } from '../common/styles/common-styles';
 
 const AppStack = createStackNavigator(
   // ROUTES:
@@ -23,9 +24,9 @@ const AppStack = createStackNavigator(
     initialRouteName: 'Home',
     navigationOptions: {
       headerStyle: {
-        backgroundColor: '#1C7ED7',
+        backgroundColor: PRIMARY_DARK_COLOR,
       },
-      headerTintColor: '#fff',
+      headerTintColor: ACCENT_COLOR,
       headerTitleStyle: {
         fontWeight: 'bold',
       }

@@ -3,7 +3,7 @@ import { View, Image, Text, StyleSheet, ActivityIndicator, AlertIOS } from 'reac
 import { Card, Divider, Icon, Button } from 'react-native-elements';
 import { eventsService } from '../Services';
 import { authHelper, LocationHelper } from '../Helpers';
-import { WARNING_RED } from '../common/styles/common-styles';
+import { WARNING_RED, ACCENT_COLOR } from '../common/styles/common-styles';
 
 export class EventDetailsHeader extends React.Component {
   render() {

@@ -6,14 +6,34 @@ import { TabView, TabBar, SceneMap } from 'react-native-tab-view';
 import { Constants } from 'expo';
 
 const FirstRoute = () => (
-  <ScrollView style={[styles.container, { backgroundColor: PRIMARY_LIGHT_COLOR }]}>
-    <Text>First</Text>
+  <ScrollView style={styles.secondaryContainer}>
+    <View style={styles.statsWrapper}>
+      <View style={styles.stat}>
+        <Text style={styles.statNumber}>10</Text>
+        <Text style={styles.statTitle}>Total Events</Text>
+      </View>
+      <View style={styles.stat}>
+        <Text style={styles.statNumber}>128</Text>
+        <Text style={styles.statTitle}>Total Comments</Text>
+      </View>
+      <View style={styles.stat}>
+        <Text style={styles.statNumber}>64</Text>
+        <Text style={styles.statTitle}>Total Likes</Text>
+      </View>
+      <View style={styles.stat}>
+        <Text style={styles.statNumber}>8.4</Text>
+        <Text style={styles.statTitle}>Viral Score</Text>
+      </View>
+      <View style={styles.stat}>
+        <Text style={styles.statNumber}>13</Text>
+        <Text style={styles.statTitle}>Comments This Week</Text>
+      </View>
+      <View style={styles.stat}>
+        <Text style={styles.statNumber}>18</Text>
+        <Text style={styles.statTitle}>Likes This Week</Text>
+      </View>
+    </View>
   </ScrollView>
-);
-const SecondRoute = () => (
-  <View style={[styles.container, { backgroundColor: PRIMARY_LIGHT_COLOR }]}>
-    <Text>Second</Text>
-  </View>
 );
 
 export default class HomeScreen extends React.Component {
@@ -26,7 +46,6 @@ export default class HomeScreen extends React.Component {
       index: 0,
       routes: [
         { key: 'first', title: 'My Stats' },
-        { key: 'second', title: 'Trending' },
       ],
     }
   }
@@ -50,7 +69,6 @@ export default class HomeScreen extends React.Component {
 
   _renderScene = SceneMap({
     first: FirstRoute,
-    second: SecondRoute,
   })
 
   _initialLayout = {
@@ -62,7 +80,7 @@ export default class HomeScreen extends React.Component {
     return(
       <View style={styles.container}>
         <View style={styles.userInfoContainer}>
-          <View style={{flex: 1}}>
+          <View>
             <View style={styles.headerSection}>
               <Icon
                 containerStyle={styles.leftIcon}
@@ -106,13 +124,35 @@ const styles = StyleSheet.create({
     paddingLeft: 15,
     paddingRight: 15
   },
-  // rightIcon: {
-  //   marginRight: 10
-  // },
-  // leftIcon: {
-  //   marginLeft: 10
-  // },
-  userInfoContainer: {
-    height: '30%',
+  secondaryContainer: {
+    flex: 1,
+    padding: 10
+  },
+  statsWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap'
+  },
+  stat: {
+    flexBasis: '49%',
+    borderWidth: 2,
+    borderColor: PRIMARY_LIGHT_COLOR,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+    borderRadius: 5,
+    minHeight: 150
+  },
+  statNumber: {
+    fontSize: 40,
+    color: ACCENT_COLOR
+  },
+  statTitle: {
+    fontSize: 14,
+    fontWeight: '400',
+    marginBottom: 8,
+    textAlign: 'center',
+    color: ACCENT_COLOR
   },
 });
