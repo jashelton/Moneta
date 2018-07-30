@@ -2,7 +2,7 @@ import React from 'react';
 import MapView from 'react-native-maps';
 import { ImagePicker, Permissions } from 'expo';
 import { View, Text, ScrollView, TouchableHighlight, Image, StyleSheet, Modal, Switch } from 'react-native';
-import { Icon, Button, ButtonGroup } from 'react-native-elements';
+import { Icon, Button, ButtonGroup, ListItem } from 'react-native-elements';
 import { TextField } from 'react-native-material-textfield';
 
 import { RNS3 } from 'react-native-aws3';
@@ -10,6 +10,7 @@ import { AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, BUCKET, BUCKET_REGION } from 're
 import { eventsService } from '../Services';
 import { authHelper, LocationHelper } from '../Helpers';
 import { PRIMARY_DARK_COLOR, ACCENT_COLOR, SECONDARY_DARK_COLOR } from '../common/styles/common-styles';
+import FilterEventsModal from '../Components/FilterEventsModal';
 
 export default class MapScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
@@ -57,6 +58,7 @@ export default class MapScreen extends React.Component {
       markers: [],
       user_data: {},
       isVisible: false,
+      filtersVisible: false,
       selectedIndex: 0,
       eventPrivacy: 'Public',
       filterOptions: ['All', 'Friends', 'Me']
@@ -72,7 +74,8 @@ export default class MapScreen extends React.Component {
     this.getEvents(this.state.selectedIndex);
 
     this.props.navigation.setParams({
-      newMarker: () => this.newMarker()
+      newMarker: () => this.newMarker(),
+      showFilterList: () => this.setState({filtersVisible: !this.state.filtersVisible})
     });
 
     const user_data = await authHelper.getParsedUserData();
@@ -171,7 +174,7 @@ export default class MapScreen extends React.Component {
   }
 
   render() {
-    const { selectedIndex, localImage, markers, isVisible, title, description, eventPrivacy, filterOptions } = this.state;
+    const { selectedIndex, localImage, markers, isVisible, filtersVisible, title, description, eventPrivacy, filterOptions } = this.state;
 
     return (
       <View style={styles.container}>
@@ -204,6 +207,11 @@ export default class MapScreen extends React.Component {
           ))
           }
         </MapView>
+
+        <FilterEventsModal
+          filtersVisible={filtersVisible}
+          setVisibility={() => this.setState({filtersVisible: !this.state.filtersVisible})}
+        />
 
         {/* Modal for creating event... could be pulled out into its own Screen */}
         <Modal

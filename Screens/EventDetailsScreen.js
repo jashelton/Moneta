@@ -1,16 +1,21 @@
 import React from 'react';
-import { View, Image, Text, StyleSheet, ActivityIndicator, AlertIOS } from 'react-native';
+import { View, Image, Text, StyleSheet, ActivityIndicator, AlertIOS, Modal } from 'react-native';
 import { Card, Divider, Icon, Button } from 'react-native-elements';
 import { eventsService } from '../Services';
 import { authHelper, LocationHelper } from '../Helpers';
-import { WARNING_RED, ACCENT_COLOR } from '../common/styles/common-styles';
+import { WARNING_RED, ACCENT_COLOR, PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
 
 export class EventDetailsHeader extends React.Component {
   render() {
     return(
       <View style={styles.headerContainer}>
-        <Text>{this.props.name}</Text>
-        <Text style={styles.subText}>{new Date(this.props.date).toISOString().substring(0, 10)}</Text>
+        <View>
+          <Text>{this.props.name}</Text>
+          <Text style={styles.subText}>{new Date(this.props.date).toISOString().substring(0, 10)}</Text>
+        </View>
+        <View>
+          <Icon name='more-vert' onPress={this.props.setVisibility}/>
+        </View>
       </View>
     );
   }
@@ -21,13 +26,15 @@ export default class EventDetailsScreen extends React.Component {
     super(props);
     this.state = {
       event: null,
-      user: {}
+      user: {},
+      isVisible: false
     }
 
     this.favoriteEvent = this.favoriteEvent.bind(this);
     this.incrementCommentCount = this.incrementCommentCount.bind(this);
     this.verifyDeleteEvent = this.verifyDeleteEvent.bind(this);
     this.deleteEvent = this.deleteEvent.bind(this);
+    this.toggleVisibility = this.toggleVisibility.bind(this);
   }
 
   async componentDidMount() {
@@ -83,14 +90,18 @@ export default class EventDetailsScreen extends React.Component {
     }
   }
 
+  toggleVisibility() {
+    this.setState({isVisible: !this.state.isVisible});
+  }
+
   render() {
-    const { event, user } = this.state;
+    const { event, user, isVisible } = this.state;
 
     if (event) {
       return(
         <View style={styles.container}>
           <Card
-            title={<EventDetailsHeader date={event.created_at} name={event.name} />}
+            title={<EventDetailsHeader date={event.created_at} name={event.name} setVisibility={this.toggleVisibility} />}
             containerStyle={styles.container}
           >
             <View style={{height: '100%'}}>
@@ -145,10 +156,28 @@ export default class EventDetailsScreen extends React.Component {
               onPress={this.verifyDeleteEvent}
             />
           }
+
+          <Modal
+            animationType="slide"
+            transparent={false}
+            visible={isVisible}
+          >
+            <View style={styles.modalHeader}>
+              <Button title='Cancel' titleStyle={{color: ACCENT_COLOR}} clear={true} onPress={() => this.setState({isVisible: false})}/>
+              <Button title='Save' titleStyle={{color: ACCENT_COLOR}} clear={true} onPress={this.createEvent}/>
+            </View>
+            <View style={{flexDirection: 'column', padding: 15}}>
+              <Text>Hello</Text>
+            </View>
+          </Modal>
         </View>
       ); 
     } else {
-      return(<View style={styles.container}> <ActivityIndicator /> </View>)
+      return(
+        <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+          <ActivityIndicator />
+        </View>
+      );
     }
   }
 }
@@ -196,11 +225,21 @@ const styles = StyleSheet.create({
     fontSize: 12
   },
   headerContainer: {
-    marginBottom: 15
+    marginBottom: 15,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
   },
   deleteEventBtn: {
     marginRight: 15,
     marginLeft: 15,
-  }
+  },
+  modalHeader: {
+    height: 60,
+    backgroundColor: PRIMARY_DARK_COLOR,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+  },
 });
 
