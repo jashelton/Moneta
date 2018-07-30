@@ -169,6 +169,7 @@ export default class MapScreen extends React.Component {
           onPress={this.updateIndex}
           selectedIndex={selectedIndex}
           buttons={filterOptions}
+          disableSelected={true}
         />
         <MapView
           style={{ flex: 1 }}
