@@ -37,7 +37,7 @@ const FirstRoute = () => (
 );
 
 export default class HomeScreen extends React.Component {
-  static navigationOptions = { header: null };
+  // static navigationOptions = { tabBar: {visible: false} };
 
   constructor() {
     super();
@@ -79,26 +79,6 @@ export default class HomeScreen extends React.Component {
   render() {
     return(
       <View style={styles.container}>
-        <View style={styles.userInfoContainer}>
-          <View>
-            <View style={styles.headerSection}>
-              <Icon
-                containerStyle={styles.leftIcon}
-                size={28}
-                name="person"
-                color={ACCENT_COLOR}
-                onPress={() => this.props.navigation.navigate('UserProfile')}
-              />
-              <Icon
-                containerStyle={styles.rightIcon}
-                size={28}
-                name="pin-drop"
-                color={ACCENT_COLOR}
-                onPress={() => this.props.navigation.navigate('Map')}
-              />
-            </View>
-          </View>
-        </View>
         <TabView
           labelStyle={{ backgroundColor: 'red' }}
           navigationState={this.state}
@@ -115,15 +95,10 @@ export default class HomeScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: Constants.statusBarHeight,
     backgroundColor: PRIMARY_DARK_COLOR,
   },
-  headerSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingTop: Constants.statusBarHeight + 5,
-    paddingLeft: 15,
-    paddingRight: 15
-  },
+  // Other Component
   secondaryContainer: {
     flex: 1,
     padding: 10

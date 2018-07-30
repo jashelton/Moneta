@@ -15,12 +15,21 @@ export default class MapScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
     return {
       title: 'Event Map',
+      headerLeft: (
+        <Icon
+          containerStyle={styles.leftIcon}
+          size={28}
+          name="filter-list"
+          color={PRIMARY_DARK_COLOR}
+          onPress={navigation.getParam('showFilterList')}
+        />
+      ),
       headerRight: (
         <Icon
           containerStyle={styles.rightIcon}
           size={28}
           name="add"
-          color={ACCENT_COLOR}
+          color={PRIMARY_DARK_COLOR}
           onPress={navigation.getParam('newMarker')}
         />
       )
@@ -252,6 +261,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'space-between',
+  },
+  leftIcon: {
+    marginLeft: 10
   },
   rightIcon: {
     marginRight: 10

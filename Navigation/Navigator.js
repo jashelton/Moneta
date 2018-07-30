@@ -1,38 +1,65 @@
 import React, { Component } from 'react';
-import { createStackNavigator, createSwitchNavigator } from 'react-navigation';
+import { createStackNavigator, createSwitchNavigator, createBottomTabNavigator } from 'react-navigation';
+import { PRIMARY_DARK_COLOR, ACCENT_COLOR, PRIMARY_LIGHT_COLOR } from '../common/styles/common-styles';
+import { Icon } from 'react-native-elements';
 
 import HomeScreen from '../Screens/HomeScreen';
 import MapScreen from '../Screens/MapScreen';
 import EventDetailsScreen from '../Screens/EventDetailsScreen';
-
 import AuthLoadingScreen from '../Screens/AuthLoadingScreen';
 import LoginScreen from '../Screens/LoginScreen';
 import CommentsScreen from '../Screens/CommentsScreen';
 import UserDetailsScreen from '../Screens/UserDetailsScreen';
-import { PRIMARY_DARK_COLOR, ACCENT_COLOR } from '../common/styles/common-styles';
 
-const AppStack = createStackNavigator(
-  // ROUTES:
+const events = createStackNavigator(
   {
-    Home: HomeScreen,
     Map: MapScreen,
     EventDetails: EventDetailsScreen,
-    Comments: CommentsScreen,
-    UserProfile: UserDetailsScreen
+    Comments: CommentsScreen
   },
   {
-    initialRouteName: 'Home',
     navigationOptions: {
       headerStyle: {
-        backgroundColor: PRIMARY_DARK_COLOR,
+        // backgroundColor: PRIMARY_LIGHT_COLOR
       },
-      headerTintColor: ACCENT_COLOR,
+      headerTintColor: PRIMARY_DARK_COLOR,
       headerTitleStyle: {
-        fontWeight: 'bold',
+        fontWeight: '200'
       }
     }
   }
-)
+);
+
+const AppStack = createBottomTabNavigator(
+  {
+    Home: HomeScreen,
+    Events: events,
+    UserProfile: UserDetailsScreen,
+  },
+  {
+    initialRouteName: 'Home',
+    navigationOptions: ({navigation}) => ({
+      tabBarIcon: ({focused, tintColor}) => {
+        const {routeName} = navigation.state;
+        let iconName;
+        if (routeName === 'Home') {
+          iconName = 'home'
+        } else if (routeName === 'Events') {
+          iconName = 'pin-drop'
+        } else if (routeName === 'UserProfile') {
+          iconName = 'person'
+        }
+
+        return <Icon name={iconName} size={25} color={tintColor} />
+      }
+    }),
+    tabBarOptions: {
+      activeTintColor: PRIMARY_DARK_COLOR,
+      inactiveTintColor: PRIMARY_LIGHT_COLOR,
+      // tabStyle: { backgroundColor: }
+    }
+  }
+);
 
 const AuthStack = createStackNavigator({ Login: LoginScreen });
 

@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Card } from 'react-native-elements';
+import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
+import { Constants } from 'expo';
 
 export default class UserDetailsScreen extends React.Component {
   constructor(props) {
@@ -14,7 +16,7 @@ export default class UserDetailsScreen extends React.Component {
   render() {
     return(
       <View style={styles.container}>
-        <View style={styles.userInfoContainer}>
+        {/* <View style={styles.userInfoContainer}>
           <Card>
             <Text>User Info Section</Text>
             <Text>Remove header... well designed header background with a custom tab navigation at the bottom.</Text>
@@ -30,7 +32,7 @@ export default class UserDetailsScreen extends React.Component {
           <Card>
             <Text>User Stats Section</Text>
           </Card>
-        </View>
+        </View> */}
       </View>
     );
   }
@@ -39,7 +41,8 @@ export default class UserDetailsScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    paddingTop: Constants.statusBarHeight,
+    backgroundColor: PRIMARY_DARK_COLOR,
   },
   userInfoContainer: {
     height: '30%',
