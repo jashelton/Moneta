@@ -9,7 +9,7 @@ import { RNS3 } from 'react-native-aws3';
 import { AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, BUCKET, BUCKET_REGION } from 'react-native-dotenv';
 import { eventsService } from '../Services';
 import { authHelper, LocationHelper } from '../Helpers';
-import { PRIMARY_DARK_COLOR, ACCENT_COLOR } from '../common/styles/common-styles';
+import { PRIMARY_DARK_COLOR, ACCENT_COLOR, SECONDARY_DARK_COLOR } from '../common/styles/common-styles';
 
 export default class MapScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
@@ -171,6 +171,7 @@ export default class MapScreen extends React.Component {
           selectedIndex={selectedIndex}
           buttons={filterOptions}
           disableSelected={true}
+          selectedButtonStyle={{ backgroundColor: SECONDARY_DARK_COLOR }}
         />
         <MapView
           style={{ flex: 1 }}

@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
   headerSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingTop: Constants.statusBarHeight,
+    paddingTop: Constants.statusBarHeight + 5,
     paddingLeft: 15,
     paddingRight: 15
   },
