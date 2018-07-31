@@ -11,11 +11,14 @@ import LoginScreen from '../Screens/LoginScreen';
 import CommentsScreen from '../Screens/CommentsScreen';
 import UserDetailsScreen from '../Screens/UserDetailsScreen';
 
+// Header shows up on Events screen because the events stack is inside the tab navigator
+
 const events = createStackNavigator(
   {
     Map: MapScreen,
     EventDetails: EventDetailsScreen,
-    Comments: CommentsScreen
+    Comments: CommentsScreen,
+    profile: UserDetailsScreen
   },
   {
     navigationOptions: {
@@ -34,7 +37,9 @@ const AppStack = createBottomTabNavigator(
   {
     Home: HomeScreen,
     Events: events,
-    UserProfile: UserDetailsScreen,
+    UserProfile: {
+      screen: props => <UserDetailsScreen {...props} currentUser={true}/>, // TODO: Create MyProfileScreen for Tab and UserProfileScreen for Stack
+    },
   },
   {
     initialRouteName: 'Home',

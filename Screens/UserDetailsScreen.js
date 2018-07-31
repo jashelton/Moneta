@@ -8,6 +8,7 @@ import { Constants } from 'expo';
 import RecentActivity from '../Components/RecentActivity';
 import UserStats from '../Components/UserStats';
 import { eventsService } from '../Services/events.service';
+import { authHelper } from '../Helpers';
 
 export default class UserDetailsScreen extends React.Component {
   constructor() {
@@ -19,12 +20,22 @@ export default class UserDetailsScreen extends React.Component {
         { key: 'first', title: 'Recent Activity' },
         { key: 'second', title: 'Stats' },
       ],
-      events: [] // What is passed to RecentActivity component
+      events: [], // What is passed to RecentActivity component
+      userId: null
     }
   }
 
+  async testing() {
+    const userId = this.props.currentUser ? await authHelper.getCurrentUserId() : this.props.navigation.getParam('userId', null);
+    this.setState({userId});
+    console.log(userId);
+    return userId;
+  }
+
   async componentDidMount() {
-    const { data } = await eventsService.getEvents('Me'); // TODO: Don't hardcode params... refactor to GET /events/:?
+    // This feels really gross
+    await this.testing();
+    const { data } = await eventsService.getRecentEventsById(this.state.userId); // TODO: Don't hardcode params... refactor to GET /events/:?
     this.setState({events: data});
   }
 

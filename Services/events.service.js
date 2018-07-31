@@ -8,6 +8,7 @@ export const eventsService = {
   createEvent,
   likeEvent,
   deleteEvent,
+  getRecentEventsById
 }
 
 async function getEventMarkers(filter) {
@@ -43,4 +44,9 @@ async function likeEvent(eventId, liked) {
 async function deleteEvent(eventId) {
   const headers = await authHelper.authHeaders();
   return axios.put(`${ENDPOINT}/events/${eventId}/delete`, null, headers)
+}
+
+async function getRecentEventsById(eventId) {
+  const headers = await authHelper.authHeaders();
+  return axios.get(`${ENDPOINT}/recent_events/${eventId}`, headers);
 }

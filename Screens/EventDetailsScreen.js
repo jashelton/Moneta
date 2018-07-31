@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Image, Text, StyleSheet, ActivityIndicator, AlertIOS, Modal } from 'react-native';
-import { Card, Divider, Icon, Button } from 'react-native-elements';
+import { Card, Divider, Icon, Button, ListItem } from 'react-native-elements';
 import { eventsService } from '../Services';
 import { authHelper, LocationHelper } from '../Helpers';
 import { WARNING_RED, ACCENT_COLOR, PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
@@ -10,7 +10,8 @@ export class EventDetailsHeader extends React.Component {
     return(
       <View style={styles.headerContainer}>
         <View>
-          <Text>{this.props.name}</Text>
+          <ListItem />
+          <Text style={{ color: 'blue', fontWeight: '400'}} onPress={() => this.props.navigation.navigate('profile', {userId: this.props.creator})}>{this.props.name}</Text>
           <Text style={styles.subText}>{new Date(this.props.date).toISOString().substring(0, 10)}</Text>
         </View>
         <View>
@@ -101,7 +102,14 @@ export default class EventDetailsScreen extends React.Component {
       return(
         <View style={styles.container}>
           <Card
-            title={<EventDetailsHeader date={event.created_at} name={event.name} setVisibility={this.toggleVisibility} />}
+            title={ <EventDetailsHeader
+                      date={event.created_at}
+                      creator={event.user_id}
+                      name={event.name}
+                      setVisibility={this.toggleVisibility}
+                      navigation={this.props.navigation}
+                    />
+                  }
             containerStyle={styles.container}
           >
             <View style={{height: '100%'}}>

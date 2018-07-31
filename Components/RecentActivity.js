@@ -21,9 +21,9 @@ export default class RecentActivity extends React.Component {
             { events.map((event, i) => (
               <ListItem
                 key={i}
-                leftAvatar={{ source: {uri: 'https://thumbs.trulia-cdn.com/pictures/thumbs_4/ps.61/9/e/c/b/picture-uh=7e6ed7adcc6b3278af31cb3d26fbc85-ps=9ecb5574965ab8257da6cfeb3581224.jpg'}}}
+                leftAvatar={{ source: {uri: event.image}}}
                 title={event.title}
-                subtitle='Get name in query'
+                subtitle={event.name}
                 containerStyle={{backgroundColor: PRIMARY_DARK_COLOR}}
                 titleStyle={{color: '#fff'}}
                 subtitleStyle={{fontSize: 12, color: 'grey'}}

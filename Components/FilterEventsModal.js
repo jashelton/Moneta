@@ -1,14 +1,11 @@
 import React from 'react';
 import { Constants } from 'expo';
 import { View, Text, Modal, StyleSheet } from 'react-native';
-import { Button, ListItem } from 'react-native-elements';
+import { Button, ButtonGroup, ListItem } from 'react-native-elements';
 
-import { PRIMARY_DARK_COLOR, ACCENT_COLOR } from '../common/styles/common-styles';
+import { PRIMARY_DARK_COLOR, ACCENT_COLOR, SECONDARY_DARK_COLOR } from '../common/styles/common-styles';
 
 export default class FilterEventsModal extends React.Component {
-  test(val) {
-
-  }
   render() {
     return(
       <Modal
@@ -17,16 +14,26 @@ export default class FilterEventsModal extends React.Component {
         visible={this.props.filtersVisible}
       >
         <View style={styles.modalHeader}>
-          <Button title='Cancel' titleStyle={{color: ACCENT_COLOR}} clear={true} onPress={this.props.setVisibility}/>
-          <Text style={styles.headerTitle}>Filter Events</Text>
-          <Button title='Save' titleStyle={{color: ACCENT_COLOR}} clear={true}/>
+          {/* TODO: Update on close rather than having a save button */}
+          <Button title='Close' titleStyle={{color: ACCENT_COLOR}} clear={true} onPress={this.props.setVisibility}/>
         </View>
-        <View style={{flexDirection: 'column', padding: 15}}>
-          {/* TODO: This needs to have default preferences originally.  Store preferences locally. */}
+        <View style={{padding: 15}}>
+          <View style={{flexDirection: 'column', alignItems: 'center', justifyContent: 'center'}}>
+            <Text style={{fontSize: 16, fontWeight: '400'}}>Who do you want to see events from?</Text>
+            <ButtonGroup
+              onPress={this.props.updateIndex}
+              selectedIndex={this.props.selectedIndex}
+              buttons={['Everyone', 'Friends', 'Me']}
+              disableSelected={true}
+              selectedButtonStyle={{ backgroundColor: SECONDARY_DARK_COLOR }}
+            />
+          </View>
+        </View>
+        {/* <View style={{flexDirection: 'column', padding: 15}}>
           <ListItem title='Social' leftIcon={{ name: 'person-pin'}} bottomDivider chevron/>
           <ListItem title='Date' leftIcon={{ name: 'date-range'}} bottomDivider chevron/>
           <ListItem title='Distance' leftIcon={{ name: 'location-searching'}} bottomDivider chevron/>
-        </View>
+        </View> */}
       </Modal>
     )
   }

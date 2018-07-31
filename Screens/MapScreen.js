@@ -11,6 +11,7 @@ import { eventsService } from '../Services';
 import { authHelper, LocationHelper } from '../Helpers';
 import { PRIMARY_DARK_COLOR, ACCENT_COLOR, SECONDARY_DARK_COLOR } from '../common/styles/common-styles';
 import FilterEventsModal from '../Components/FilterEventsModal';
+import { commonHelper } from '../Helpers';
 
 export default class MapScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
@@ -61,7 +62,8 @@ export default class MapScreen extends React.Component {
       filtersVisible: false,
       selectedIndex: 0,
       eventPrivacy: 'Public',
-      filterOptions: ['All', 'Friends', 'Me']
+      filterOptions: ['All', 'Friends', 'Me'],
+      userFilters: null
     }
 
     this.newMarker = this.newMarker.bind(this);
@@ -71,7 +73,15 @@ export default class MapScreen extends React.Component {
   }
 
   async componentDidMount() {
-    this.getEvents(this.state.selectedIndex);
+    commonHelper.getFilters()
+      .then(res => {
+        console.log(res);
+        this.setState({userFilters: res, selectedIndex: res.eventsFor});
+      })
+      .then(() => {
+        this.getEvents(this.state.selectedIndex);
+      })
+      .catch(err => console.log(err)),
 
     this.props.navigation.setParams({
       newMarker: () => this.newMarker(),
@@ -175,17 +185,17 @@ export default class MapScreen extends React.Component {
   }
 
   render() {
-    const { selectedIndex, localImage, markers, isVisible, filtersVisible, title, description, eventPrivacy, filterOptions } = this.state;
+    const { selectedIndex, localImage, markers, isVisible, filtersVisible, title, description, eventPrivacy, filterOptions, userFilters } = this.state;
 
     return (
       <View style={styles.container}>
-        <ButtonGroup
+        {/* <ButtonGroup
           onPress={this.updateIndex}
           selectedIndex={selectedIndex}
           buttons={filterOptions}
           disableSelected={true}
           selectedButtonStyle={{ backgroundColor: SECONDARY_DARK_COLOR }}
-        />
+        /> */}
         <MapView
           style={{ flex: 1 }}
           showsUserLocation={true}
@@ -212,6 +222,8 @@ export default class MapScreen extends React.Component {
         <FilterEventsModal
           filtersVisible={filtersVisible}
           setVisibility={() => this.setState({filtersVisible: !this.state.filtersVisible})}
+          selectedIndex={selectedIndex}
+          updateIndex={this.updateIndex}
         />
 
         {/* Modal for creating event... could be pulled out into its own Screen */}
