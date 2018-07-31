@@ -3,16 +3,16 @@ import { ENDPOINT } from 'react-native-dotenv';
 import { authHelper } from '../Helpers';
 
 export const eventsService = {
-  getEvents,
+  getEventMarkers,
   getEventDetails,
   createEvent,
   likeEvent,
   deleteEvent,
 }
 
-async function getEvents(filter) {
+async function getEventMarkers(filter) {
   const { headers } = await authHelper.authHeaders();
-  return axios.get(`${ENDPOINT}/events`, {
+  return axios.get(`${ENDPOINT}/event_markers`, {
     params: {
       filter
     },

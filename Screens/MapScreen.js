@@ -86,8 +86,9 @@ export default class MapScreen extends React.Component {
   async getEvents(selectedIndex) {
     const { filterOptions } = this.state;
     const selectedFilter = filterOptions[selectedIndex];
-    const { data } = await eventsService.getEvents(selectedFilter);
+    const { data } = await eventsService.getEventMarkers(selectedFilter);
     let { markers } = this.state;
+
     markers = data;
     this.setState({markers});
   }
