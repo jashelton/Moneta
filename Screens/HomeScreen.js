@@ -5,36 +5,7 @@ import { PRIMARY_DARK_COLOR, ACCENT_COLOR, PRIMARY_LIGHT_COLOR } from '../common
 import { TabView, TabBar, SceneMap } from 'react-native-tab-view';
 import { Constants } from 'expo';
 
-const FirstRoute = () => (
-  <ScrollView style={styles.secondaryContainer}>
-    <View style={styles.statsWrapper}>
-      <View style={styles.stat}>
-        <Text style={styles.statNumber}>10</Text>
-        <Text style={styles.statTitle}>Total Events</Text>
-      </View>
-      <View style={styles.stat}>
-        <Text style={styles.statNumber}>128</Text>
-        <Text style={styles.statTitle}>Total Comments</Text>
-      </View>
-      <View style={styles.stat}>
-        <Text style={styles.statNumber}>64</Text>
-        <Text style={styles.statTitle}>Total Likes</Text>
-      </View>
-      <View style={styles.stat}>
-        <Text style={styles.statNumber}>8.4</Text>
-        <Text style={styles.statTitle}>Viral Score</Text>
-      </View>
-      <View style={styles.stat}>
-        <Text style={styles.statNumber}>13</Text>
-        <Text style={styles.statTitle}>Comments This Week</Text>
-      </View>
-      <View style={styles.stat}>
-        <Text style={styles.statNumber}>18</Text>
-        <Text style={styles.statTitle}>Likes This Week</Text>
-      </View>
-    </View>
-  </ScrollView>
-);
+import RecentActivity from '../Components/RecentActivity';
 
 export default class HomeScreen extends React.Component {
   // static navigationOptions = { tabBar: {visible: false} };
@@ -45,7 +16,9 @@ export default class HomeScreen extends React.Component {
     this.state = {
       index: 0,
       routes: [
-        { key: 'first', title: 'My Stats' },
+        { key: 'first', title: 'Friends' },
+        { key: 'second', title: 'All' },
+        { key: 'third', title: 'Notifications' },
       ],
     }
   }
@@ -68,7 +41,9 @@ export default class HomeScreen extends React.Component {
   };
 
   _renderScene = SceneMap({
-    first: FirstRoute,
+    first: () => <RecentActivity events={[]} noDataMessage='There is no recent activity to display.'/>,
+    second: () => <RecentActivity events={[]} noDataMessage='There is no recent activity to display.'/>,
+    third: () => <RecentActivity events={[]} noDataMessage='You have no new notifications.'/>,
   })
 
   _initialLayout = {
@@ -97,37 +72,5 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: Constants.statusBarHeight,
     backgroundColor: PRIMARY_DARK_COLOR,
-  },
-  // Other Component
-  secondaryContainer: {
-    flex: 1,
-    padding: 10
-  },
-  statsWrapper: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap'
-  },
-  stat: {
-    flexBasis: '49%',
-    borderWidth: 2,
-    borderColor: PRIMARY_LIGHT_COLOR,
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 10,
-    borderRadius: 5,
-    minHeight: 150
-  },
-  statNumber: {
-    fontSize: 40,
-    color: ACCENT_COLOR
-  },
-  statTitle: {
-    fontSize: 14,
-    fontWeight: '400',
-    marginBottom: 8,
-    textAlign: 'center',
-    color: ACCENT_COLOR
   },
 });
