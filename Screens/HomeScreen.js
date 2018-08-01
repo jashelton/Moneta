@@ -1,15 +1,12 @@
 import React from 'react';
-import { View, ScrollView, Text, StyleSheet, Dimensions } from 'react-native';
-import { Icon, Button } from 'react-native-elements';
-import { PRIMARY_DARK_COLOR, ACCENT_COLOR, PRIMARY_LIGHT_COLOR } from '../common/styles/common-styles';
+import { View, StyleSheet, Dimensions } from 'react-native';
+import { PRIMARY_DARK_COLOR, ACCENT_COLOR } from '../common/styles/common-styles';
 import { TabView, TabBar, SceneMap } from 'react-native-tab-view';
 import { Constants } from 'expo';
 
 import RecentActivity from '../Components/RecentActivity';
 
 export default class HomeScreen extends React.Component {
-  // static navigationOptions = { tabBar: {visible: false} };
-
   constructor() {
     super();
 
@@ -18,16 +15,23 @@ export default class HomeScreen extends React.Component {
       routes: [
         { key: 'first', title: 'Friends' },
         { key: 'second', title: 'All' },
-        { key: 'third', title: 'Notifications' },
       ],
+      data: null
     }
   }
 
   componentDidMount() {
-    this.props.navigation.setParams({
-      navigateToMap: () => this.navigateTo('Map'),
-      navigateToProfile: () => this.navigateTo('UserProfile')
-    });
+    // Figure out how to fetch data on tab change
+    // If not -> Promise.resolve.all for two api calls
+    let { data } = this.state;
+    setTimeout(() => {
+      data = {
+        all: [{ name: 'Name', image: 'https://moneta-event-images.s3.amazonaws.com/user_2%2F2018-7-29_1532847192894', title: 'All', id: 1}],
+        friends: [{ name: 'Name', image: 'https://moneta-event-images.s3.amazonaws.com/user_2%2F2018-7-29_1532847192894', title: 'Friends', id: 1}],
+      }
+      this.setState({data});
+      console.log(this.state);
+    }, 100)
   }
 
   _renderTabBar = props => {
@@ -40,11 +44,6 @@ export default class HomeScreen extends React.Component {
     );
   };
 
-  _renderScene = SceneMap({
-    first: () => <RecentActivity events={[]} noDataMessage='There is no recent activity to display.'/>,
-    second: () => <RecentActivity events={[]} noDataMessage='There is no recent activity to display.'/>,
-    third: () => <RecentActivity events={[]} noDataMessage='You have no new notifications.'/>,
-  })
 
   _initialLayout = {
     width: Dimensions.get('window').width,
@@ -54,14 +53,18 @@ export default class HomeScreen extends React.Component {
   render() {
     return(
       <View style={styles.container}>
-        <TabView
-          labelStyle={{ backgroundColor: 'red' }}
-          navigationState={this.state}
-          renderScene={this._renderScene}
-          renderTabBar={this._renderTabBar}
-          onIndexChange={index => this.setState({ index })}
-          initialLayout={this.initialLayout}
-        />
+        { this.state.data &&
+          <TabView
+            navigationState={this.state}
+            renderScene={SceneMap({
+              first: () => <RecentActivity events={this.state.data.friends} noDataMessage='There is no recent activity to display.'/>,
+              second: () => <RecentActivity events={this.state.data.all} noDataMessage='There is no recent activity to display.'/>,
+            })}
+            renderTabBar={this._renderTabBar}
+            onIndexChange={index => this.setState({ index })}
+            initialLayout={this.initialLayout}
+          />
+        }
       </View>
     );
   }

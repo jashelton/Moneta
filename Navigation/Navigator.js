@@ -10,6 +10,7 @@ import AuthLoadingScreen from '../Screens/AuthLoadingScreen';
 import LoginScreen from '../Screens/LoginScreen';
 import CommentsScreen from '../Screens/CommentsScreen';
 import UserDetailsScreen from '../Screens/UserDetailsScreen';
+import NotificationsScreen from '../Screens/NotificationsScreen';
 
 // Header shows up on Events screen because the events stack is inside the tab navigator
 
@@ -37,9 +38,10 @@ const AppStack = createBottomTabNavigator(
   {
     Home: HomeScreen,
     Events: events,
-    UserProfile: {
+    Profile: {
       screen: props => <UserDetailsScreen {...props} currentUser={true}/>, // TODO: Create MyProfileScreen for Tab and UserProfileScreen for Stack
     },
+    Notifications: NotificationsScreen
   },
   {
     initialRouteName: 'Home',
@@ -51,8 +53,10 @@ const AppStack = createBottomTabNavigator(
           iconName = 'home'
         } else if (routeName === 'Events') {
           iconName = 'pin-drop'
-        } else if (routeName === 'UserProfile') {
+        } else if (routeName === 'Profile') {
           iconName = 'person'
+        } else if (routeName === 'Notifications') {
+          iconName = 'notifications'
         }
 
         return <Icon name={iconName} size={25} color={tintColor} />

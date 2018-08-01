@@ -88,6 +88,7 @@ export default class EventDetailsScreen extends React.Component {
 
     if (data.status === 200) {
       // TODO: Filter this event out of 'markers' on MapScreen
+      // Using redux -> dispatch delete with event id, filter deletedEvent from Events.
     }
   }
 
