@@ -40,6 +40,8 @@ export default class UserDetailsScreen extends React.Component {
       userDetails: null,
       isLoading: true
     }
+
+    this.toggleFollowing = this.toggleFollowing.bind(this);
   }
 
   componentDidMount() {
@@ -69,6 +71,20 @@ export default class UserDetailsScreen extends React.Component {
     );
   }
 
+  async toggleFollowing() {
+    const { userDetails } = this.state;
+
+    try {
+      const { data } = await userService.toggleFollowing(userDetails.id, !userDetails.isFollowing);
+
+      userDetails.isFollowing ? userDetails.followers -- : userDetails.followers ++;
+      userDetails.isFollowing = !userDetails.isFollowing;
+      this.setState({userDetails});
+    } catch(err) {
+      console.log(err);
+    }
+  }
+
   _renderTabBar = props => {
     return (
       <TabBar
@@ -86,7 +102,7 @@ export default class UserDetailsScreen extends React.Component {
 
   _getInitials() {
     const { name } = this.state.userDetails;
-    return name.split(" ").map((n,i,a)=> i === 0 || i+1 === a.length ? n[0] : null).join("");
+    return name.split(' ').map((n,i,a)=> i === 0 || i+1 === a.length ? n[0] : null).join('');
   }
 
   render() {
@@ -99,23 +115,24 @@ export default class UserDetailsScreen extends React.Component {
             <View style={{width: '100%'}}>
               { !isLoading && currentUser !== userDetails.id &&
                 <Button
-                  icon={
-                    <Icon
-                      name='person-add'
-                      size={20}
-                      color={ACCENT_COLOR}
-                    />
-                  }
-                  title='Follow'
-                  buttonStyle={{backgroundColor: PRIMARY_DARK_COLOR, justifyContent: 'flex-end', alignSelf: 'flex-end', marginRight: 15}}
+                  raised={true}
+                  title={userDetails.isFollowing ? 'Unfollow' : 'Follow'}
+                  buttonStyle={{
+                    backgroundColor: PRIMARY_DARK_COLOR,
+                    justifyContent: 'flex-end',
+                    alignSelf: 'flex-end',
+                    marginRight: 15,
+                    borderWidth: 1,
+                    borderColor: ACCENT_COLOR
+                  }}
+                  onPress={this.toggleFollowing}
                 />
               }
               <Avatar
                 size="xlarge"
                 rounded
-                source={userDetails.image ? {uri: "https://moneta-event-images.s3.amazonaws.com/user_2%2F2018-7-29_1532847192894"} : null}
+                source={userDetails.image ? {uri: userDetails.image} : null}
                 title={!userDetails.image ? this._getInitials() : null}
-                onPress={() => console.log("Works!")}
                 activeOpacity={0.7}
                 containerStyle={{alignSelf: 'center'}}
               />
