@@ -20,14 +20,21 @@ const events = createStackNavigator(
     Map: MapScreen,
     EventDetails: EventDetailsScreen, // TODO: include as component with event icon in props
     Comments: CommentsScreen,
-    UserDetails: UserDetailsScreen
+    UserDetails: { // TODO: UserDetails needs to be nested under EventDetails
+      screen: UserDetailsScreen,
+      navigationOptions: {
+        headerStyle: {
+          backgroundColor: PRIMARY_DARK_COLOR
+        },
+      }
+    }
   },
   {
     navigationOptions: {
       headerStyle: {
-        // backgroundColor: PRIMARY_LIGHT_COLOR
+        // backgroundColor: PRIMARY_DARK_COLOR
       },
-      headerTintColor: PRIMARY_DARK_COLOR,
+      // headerTintColor: PRIMARY_DARK_COLOR,
       headerTitleStyle: {
         fontWeight: '200'
       }
@@ -40,6 +47,13 @@ const details = createStackNavigator(
     Profile: MyProfileScreen,
     EventDetails: EventDetailsScreen, // TODO: include as component with profile icon in props
     UserDetails: UserDetailsScreen,
+  },
+  {
+    navigationOptions: {
+      headerStyle: {
+        backgroundColor: PRIMARY_DARK_COLOR
+      }
+    }
   }
 );
 
@@ -49,6 +63,7 @@ const homeStack = createStackNavigator(
       screen: HomeScreen,
       navigationOptions: { 
         title: 'Home',
+        headerTintColor: PRIMARY_LIGHT_COLOR,
         headerStyle: {
           backgroundColor: PRIMARY_DARK_COLOR
         }
@@ -56,16 +71,25 @@ const homeStack = createStackNavigator(
     },
     EventDetails: EventDetailsScreen,
     Comments: CommentsScreen,
-    UserDetails: UserDetailsScreen,
+    UserDetails: {
+      screen: UserDetailsScreen,
+      navigationOptions: {
+        headerTintColor: PRIMARY_LIGHT_COLOR,
+        headerStyle: {
+          backgroundColor: PRIMARY_DARK_COLOR
+        }
+      }
+    },
   },
   {
     navigationOptions: {
       headerStyle: {
-        backgroundColor: PRIMARY_DARK_COLOR
+        // backgroundColor: PRIMARY_DARK_COLOR
       },
-      headerTintColor: '#fff',
+      // headerTintColor: '#fff',
       headerTitleStyle: {
-        fontWeight: '200'
+        fontWeight: '200',
+        fontSize: 16
       }
     } 
   }

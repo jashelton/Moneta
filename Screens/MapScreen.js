@@ -172,8 +172,6 @@ export default class MapScreen extends React.Component {
       exif: true
     });
 
-    console.log(result);
-
     if (!result.cancelled) {
       const { imageFile, localImage } = this.state;
       imageFile = { uri: result.uri, name: this.createDateString(), type: result.type }; // Required fields for S3 upload
