@@ -23,7 +23,7 @@ export default class RecentActivity extends React.Component {
                 key={i}
                 leftAvatar={{ source: {uri: event.image}}}
                 title={event.title}
-                subtitle={event.name}
+                subtitle={event.name ? event.name : null}
                 containerStyle={{backgroundColor: PRIMARY_DARK_COLOR}}
                 titleStyle={{color: '#fff'}}
                 subtitleStyle={{fontSize: 12, color: 'grey'}}

@@ -1,8 +1,7 @@
 import React from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import { View, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
 import { PRIMARY_DARK_COLOR, ACCENT_COLOR } from '../common/styles/common-styles';
 import { TabView, TabBar, SceneMap } from 'react-native-tab-view';
-import { Constants } from 'expo';
 
 import RecentActivity from '../Components/RecentActivity';
 import { eventsService } from '../Services';
@@ -20,14 +19,19 @@ export default class HomeScreen extends React.Component {
       ],
       data: null,
       followingEvents: null,
-      allEvents: null
+      allEvents: null,
+      isLoading: true
     }
   }
 
   componentDidMount() {
     Promise.all([eventsService.getRecentEvents('following'), eventsService.getRecentEvents('all')])
       .then(following => {
-        this.setState({followingEvents: following[0].data, allEvents: following[1].data});
+        this.setState({
+          followingEvents: following[0].data,
+          allEvents: following[1].data,
+          isLoading: false
+        });
       })
       .catch(err => console.log(err));
   }
@@ -50,10 +54,10 @@ export default class HomeScreen extends React.Component {
 
   render() {
     const { navigation } = this.props;
-    const { followingEvents, allEvents } = this.state;
+    const { followingEvents, allEvents, isLoading } = this.state;
     return(
       <View style={styles.container}>
-        { this.state.allEvents && this.state.followingEvents &&
+        { !isLoading &&
           <TabView
             navigationState={this.state}
             renderScene={SceneMap({
@@ -65,6 +69,12 @@ export default class HomeScreen extends React.Component {
             initialLayout={this.initialLayout}
           />
         }
+        {
+          isLoading &&
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator />
+          </View>
+        }
       </View>
     );
   }
@@ -73,7 +83,11 @@ export default class HomeScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // paddingTop: Constants.statusBarHeight,
     backgroundColor: PRIMARY_DARK_COLOR,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  }
 });

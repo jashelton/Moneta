@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ScrollView, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, ScrollView, Text, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
 import { PRIMARY_DARK_COLOR, ACCENT_COLOR, PRIMARY_LIGHT_COLOR } from '../common/styles/common-styles';
 import { TabView, TabBar, SceneMap } from 'react-native-tab-view';
 import { Avatar, Icon, Button } from 'react-native-elements';
@@ -9,6 +9,7 @@ import RecentActivity from '../Components/RecentActivity';
 import UserStats from '../Components/UserStats';
 import { eventsService } from '../Services/events.service';
 import { authHelper } from '../Helpers';
+import { userService } from '../Services/user.service';
 
 export default class UserDetailsScreen extends React.Component {
   static navigationOptions = ({navigation}) => {
@@ -35,30 +36,37 @@ export default class UserDetailsScreen extends React.Component {
         { key: 'second', title: 'Stats' },
       ],
       events: [], // What is passed to RecentActivity component
-      userId: null
+      currentUser: null,
+      userDetails: null,
+      isLoading: true
     }
   }
 
-  async testing() {
-    const userId = this.props.currentUser ? await authHelper.getCurrentUserId() : this.props.navigation.getParam('userId', null);
-    this.setState({userId});
+  componentDidMount() {
+    const userId = this.props.navigation.getParam('userId', null);
 
-    return userId;
+    Promise.all([userService.getUserDetails(userId), eventsService.getRecentEventsById(userId), authHelper.getCurrentUserId()])
+      .then(values => {
+        this.setState({
+          userDetails: values[0].data,
+          events: values[1].data,
+          currentUser: values[2],
+          isLoading: false
+        });
+
+        this.props.navigation.setParams({
+          getUsername: () => this.getUsername(),
+        });
+      })
+      .catch( err => console.log(err));
   }
 
   getUsername() {
-    return <Text style={{color: PRIMARY_LIGHT_COLOR, fontWeight: '200', fontSize: 18}}> Justin Shelton </Text>
-  }
-
-  async componentDidMount() {
-    this.props.navigation.setParams({
-      getUsername: () => this.getUsername(),
-    });
-
-    // This feels really gross
-    await this.testing();
-    const { data } = await eventsService.getRecentEventsById(this.state.userId); // TODO: Don't hardcode params... refactor to GET /events/:?
-    this.setState({events: data});
+    return (
+      <Text style={{color: PRIMARY_LIGHT_COLOR, fontWeight: '200', fontSize: 18}}>
+        {this.state.userDetails.name}
+      </Text>
+    );
   }
 
   _renderTabBar = props => {
@@ -76,53 +84,66 @@ export default class UserDetailsScreen extends React.Component {
     height: 0
   }
 
+  _getInitials() {
+    const { name } = this.state.userDetails;
+    return name.split(" ").map((n,i,a)=> i === 0 || i+1 === a.length ? n[0] : null).join("");
+  }
+
   render() {
-    return(
-      <View style={styles.container}>
-        <View style={styles.userInfoContainer}>
-          <View>
-            <Avatar
-              size="xlarge"
-              rounded
-              source={{uri: "https://moneta-event-images.s3.amazonaws.com/user_2%2F2018-7-29_1532847192894"}}
-              onPress={() => console.log("Works!")}
-              activeOpacity={0.7}
-            />
-          </View>
-          {/* <View>
-            <Text style={styles.userContentBody}>Justin Shelton</Text>
-            <Text style={styles.userContentBody}>Durham, NC</Text>
-            <Button
-              raised={true}
-              icon={
-                <Icon
-                  name='person-add'
-                  size={20}
-                  color={PRIMARY_DARK_COLOR}
+    const { currentUser, userDetails, isLoading } = this.state;
+
+    if (!isLoading) {
+      return(
+        <View style={styles.container}>
+          <View style={styles.userInfoContainer}>
+            <View style={{width: '100%'}}>
+              { !isLoading && currentUser !== userDetails.id &&
+                <Button
+                  icon={
+                    <Icon
+                      name='person-add'
+                      size={20}
+                      color={ACCENT_COLOR}
+                    />
+                  }
+                  title='Follow'
+                  buttonStyle={{backgroundColor: PRIMARY_DARK_COLOR, justifyContent: 'flex-end', alignSelf: 'flex-end', marginRight: 15}}
                 />
               }
-              title='Follow'
-              buttonStyle={{backgroundColor: ACCENT_COLOR, width: '100%'}}
-            />
-          </View> */}
+              <Avatar
+                size="xlarge"
+                rounded
+                source={userDetails.image ? {uri: "https://moneta-event-images.s3.amazonaws.com/user_2%2F2018-7-29_1532847192894"} : null}
+                title={!userDetails.image ? this._getInitials() : null}
+                onPress={() => console.log("Works!")}
+                activeOpacity={0.7}
+                containerStyle={{alignSelf: 'center'}}
+              />
+            </View>
+          </View>
+          <View style={{flexDirection: 'row', justifyContent: 'space-evenly', marginTop: 15}}>
+            <Text style={styles.textContent}>Followers {userDetails.followers}</Text>
+            <Text style={styles.textContent}>Following {userDetails.following}</Text>
+          </View>
+          <TabView
+            navigationState={this.state}
+            renderScene={SceneMap({
+              first: () => <RecentActivity events={this.state.events} navigation={this.props.navigation}/>,
+              second: () => <UserStats />
+            })}
+            renderTabBar={this._renderTabBar}
+            onIndexChange={index => this.setState({ index })}
+            initialLayout={this.initialLayout}
+          />
         </View>
-        <View style={{flexDirection: 'row', justifyContent: 'space-evenly'}}>
-          <Text style={styles.textContent}>128 Followers</Text>
-          <Text style={styles.textContent}>32 Following</Text>
+      );
+    } else {
+      return(
+        <View style={[styles.container, {alignItems: 'center', justifyContent: 'center'}]}>
+          <ActivityIndicator />
         </View>
-        <TabView
-          labelStyle={{ backgroundColor: 'red' }}
-          navigationState={this.state}
-          renderScene={SceneMap({
-            first: () => <RecentActivity events={this.state.events} navigation={this.props.navigation}/>,
-            second: () => <UserStats />
-          })}
-          renderTabBar={this._renderTabBar}
-          onIndexChange={index => this.setState({ index })}
-          initialLayout={this.initialLayout}
-        />
-      </View>
-    );
+      );
+    }
   }
 }
 
@@ -137,9 +158,10 @@ const styles = StyleSheet.create({
   },
   userInfoContainer: {
     height: '30%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center'
+    width: '100%',
+    flexDirection: 'column',
+    // alignItems: 'center',
+    // justifyContent: 'center'
   },
   textContent: {
     color: PRIMARY_LIGHT_COLOR,
