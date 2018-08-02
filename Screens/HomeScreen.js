@@ -5,33 +5,31 @@ import { TabView, TabBar, SceneMap } from 'react-native-tab-view';
 import { Constants } from 'expo';
 
 import RecentActivity from '../Components/RecentActivity';
+import { eventsService } from '../Services';
 
 export default class HomeScreen extends React.Component {
+  static navigationOptions = { title: 'Recent Events' };
   constructor() {
     super();
 
     this.state = {
       index: 0,
       routes: [
-        { key: 'first', title: 'Friends' },
-        { key: 'second', title: 'All' },
+        { key: 'first', title: 'Following' },
+        { key: 'second', title: 'Everyone' },
       ],
-      data: null
+      data: null,
+      followingEvents: null,
+      allEvents: null
     }
   }
 
   componentDidMount() {
-    // Figure out how to fetch data on tab change
-    // If not -> Promise.resolve.all for two api calls
-    let { data } = this.state;
-    setTimeout(() => {
-      data = {
-        all: [{ name: 'Name', image: 'https://moneta-event-images.s3.amazonaws.com/user_2%2F2018-7-29_1532847192894', title: 'All', id: 1}],
-        friends: [{ name: 'Name', image: 'https://moneta-event-images.s3.amazonaws.com/user_2%2F2018-7-29_1532847192894', title: 'Friends', id: 1}],
-      }
-      this.setState({data});
-      console.log(this.state);
-    }, 100)
+    Promise.all([eventsService.getRecentEvents('following'), eventsService.getRecentEvents('all')])
+      .then(following => {
+        this.setState({followingEvents: following[0].data, allEvents: following[1].data});
+      })
+      .catch(err => console.log(err));
   }
 
   _renderTabBar = props => {
@@ -51,14 +49,16 @@ export default class HomeScreen extends React.Component {
   }
 
   render() {
+    const { navigation } = this.props;
+    const { followingEvents, allEvents } = this.state;
     return(
       <View style={styles.container}>
-        { this.state.data &&
+        { this.state.allEvents && this.state.followingEvents &&
           <TabView
             navigationState={this.state}
             renderScene={SceneMap({
-              first: () => <RecentActivity events={this.state.data.friends} noDataMessage='There is no recent activity to display.'/>,
-              second: () => <RecentActivity events={this.state.data.all} noDataMessage='There is no recent activity to display.'/>,
+              first: () => <RecentActivity navigation={navigation} events={followingEvents} noDataMessage='There is no recent activity to display.'/>,
+              second: () => <RecentActivity navigation={navigation} events={allEvents} noDataMessage='There is no recent activity to display.'/>,
             })}
             renderTabBar={this._renderTabBar}
             onIndexChange={index => this.setState({ index })}
@@ -73,7 +73,7 @@ export default class HomeScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: Constants.statusBarHeight,
+    // paddingTop: Constants.statusBarHeight,
     backgroundColor: PRIMARY_DARK_COLOR,
   },
 });

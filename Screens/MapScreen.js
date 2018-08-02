@@ -2,7 +2,7 @@ import React from 'react';
 import MapView from 'react-native-maps';
 import { ImagePicker, Permissions } from 'expo';
 import { View, Text, ScrollView, TouchableHighlight, Image, StyleSheet, Modal, Switch } from 'react-native';
-import { Icon, Button, ButtonGroup, ListItem } from 'react-native-elements';
+import { Icon, Button } from 'react-native-elements';
 import { TextField } from 'react-native-material-textfield';
 
 import { RNS3 } from 'react-native-aws3';
@@ -32,7 +32,7 @@ export default class MapScreen extends React.Component {
           size={28}
           name="add"
           color={PRIMARY_DARK_COLOR}
-          onPress={navigation.getParam('newMarker')}
+          onPress={navigation.getParam('toggleIsVisible')}
         />
       )
     }
@@ -54,7 +54,6 @@ export default class MapScreen extends React.Component {
       title: '',
       description: '',
       imageFile: null,
-      currentLocation: {},
       localImage: null,
       markers: [],
       user_data: {},
@@ -66,7 +65,7 @@ export default class MapScreen extends React.Component {
       userFilters: null
     }
 
-    this.newMarker = this.newMarker.bind(this);
+    this.toggleIsVisible = this.toggleIsVisible.bind(this);
     this.createEvent = this.createEvent.bind(this);
     this.updateIndex = this.updateIndex.bind(this);
     this.prepS3Upload = this.prepS3Upload.bind(this);
@@ -75,7 +74,6 @@ export default class MapScreen extends React.Component {
   async componentDidMount() {
     commonHelper.getFilters()
       .then(res => {
-        console.log(res);
         this.setState({userFilters: res, selectedIndex: res.eventsFor});
       })
       .then(() => {
@@ -84,7 +82,7 @@ export default class MapScreen extends React.Component {
       .catch(err => console.log(err)),
 
     this.props.navigation.setParams({
-      newMarker: () => this.newMarker(),
+      toggleIsVisible: () => this.toggleIsVisible(),
       showFilterList: () => this.setState({filtersVisible: !this.state.filtersVisible})
     });
 
@@ -103,22 +101,28 @@ export default class MapScreen extends React.Component {
     this.setState({markers});
   }
 
-  async newMarker() {
-    const currentLocation = await LocationHelper.getCurrentLocation();
-    this.setState({currentLocation, isVisible: true});
+  async toggleIsVisible() {
+    this.setState({isVisible: true});
   }
 
   async createEvent() {
-    const { markers, title, description, currentLocation, eventPrivacy, imageFile } = this.state;
+    const { markers, title, description, eventPrivacy, imageFile, localImage } = this.state;
+    const imgMetadata = localImage.exit;
     if (title === '' || description === '') {
       alert('You must include a Title and Description');
       return;
     }
+
+    const latitude = imgMetadata.GPSLatitudeRef === 'N' ? imgMetadata.GPSLatitude : parseFloat(`-${imgMetadata.GPSLatitude}`);
+    const longitude = imgMetadata.GPSLongitudeRef === 'N' ? imgMetadata.GPSLongitude : parseFloat(`-${imgMetadata.GPSLongitude}`);
     const event = {
       title,
       description,
       privacy: eventPrivacy,
-      coordinate: currentLocation.coords
+      coordinate: {
+        longitude,
+        latitude
+      }
     };
 
     try {
@@ -163,13 +167,14 @@ export default class MapScreen extends React.Component {
 
     const result = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: true,
-      aspect: [4, 3]
+      aspect: [4, 3],
+      exif: true
     });
 
     if (!result.cancelled) {
       const { imageFile, localImage } = this.state;
       imageFile = { uri: result.uri, name: this.createDateString(), type: result.type }; // Required fields for S3 upload
-      localImage = result.uri; // Path to image to display to user before S3 upload
+      localImage = result; // Path to image to display to user before S3 upload
       this.setState({localImage, imageFile});
     }
   }
@@ -262,7 +267,7 @@ export default class MapScreen extends React.Component {
               { !localImage ?
                 <Icon style={styles.iconBtn} color="#d0d0d0" name="add-a-photo" />
                 :
-                <Image style={styles.uploadedImage} source={{uri: localImage}} />
+                <Image style={styles.uploadedImage} source={{uri: localImage.uri}} />
               }
             </TouchableHighlight>
           </ScrollView>

@@ -10,7 +10,8 @@ import UserStats from '../Components/UserStats';
 import { eventsService } from '../Services/events.service';
 import { authHelper } from '../Helpers';
 
-export default class UserDetailsScreen extends React.Component {
+export default class MyProfileScreen extends React.Component {
+  static navigationOptions = { header: null };
   constructor() {
     super();
 
@@ -26,7 +27,7 @@ export default class UserDetailsScreen extends React.Component {
   }
 
   async testing() {
-    const userId = this.props.currentUser ? await authHelper.getCurrentUserId() : this.props.navigation.getParam('userId', null);
+    const userId = await authHelper.getCurrentUserId();
     this.setState({userId});
 
     return userId;

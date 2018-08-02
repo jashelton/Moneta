@@ -11,15 +11,16 @@ import LoginScreen from '../Screens/LoginScreen';
 import CommentsScreen from '../Screens/CommentsScreen';
 import UserDetailsScreen from '../Screens/UserDetailsScreen';
 import NotificationsScreen from '../Screens/NotificationsScreen';
+import MyProfileScreen from '../Screens/MyProfileScreen';
 
 // Header shows up on Events screen because the events stack is inside the tab navigator
 
 const events = createStackNavigator(
   {
     Map: MapScreen,
-    EventDetails: EventDetailsScreen,
+    EventDetails: EventDetailsScreen, // TODO: include as component with event icon in props
     Comments: CommentsScreen,
-    profile: UserDetailsScreen
+    UserDetails: UserDetailsScreen
   },
   {
     navigationOptions: {
@@ -34,14 +35,48 @@ const events = createStackNavigator(
   }
 );
 
+const details = createStackNavigator(
+  {
+    Profile: MyProfileScreen,
+    EventDetails: EventDetailsScreen, // TODO: include as component with profile icon in props
+    UserDetails: UserDetailsScreen,
+  }
+);
+
+const homeStack = createStackNavigator(
+  {
+    Home: {
+      screen: HomeScreen,
+      navigationOptions: { 
+        title: 'Home',
+        headerStyle: {
+          backgroundColor: PRIMARY_DARK_COLOR
+        }
+      }
+    },
+    EventDetails: EventDetailsScreen,
+    Comments: CommentsScreen,
+    UserDetails: UserDetailsScreen,
+  },
+  {
+    navigationOptions: {
+      headerStyle: {
+        backgroundColor: PRIMARY_DARK_COLOR
+      },
+      headerTintColor: '#fff',
+      headerTitleStyle: {
+        fontWeight: '200'
+      }
+    } 
+  }
+);
+
 const AppStack = createBottomTabNavigator(
   {
-    Home: HomeScreen,
+    Home: homeStack,
     Events: events,
-    Profile: {
-      screen: props => <UserDetailsScreen {...props} currentUser={true}/>, // TODO: Create MyProfileScreen for Tab and UserProfileScreen for Stack
-    },
-    Notifications: NotificationsScreen
+    Notifications: NotificationsScreen,
+    Profile: details,
   },
   {
     initialRouteName: 'Home',

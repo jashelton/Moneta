@@ -11,7 +11,7 @@ export class EventDetailsHeader extends React.Component {
       <View style={styles.headerContainer}>
         <View>
           <ListItem />
-          <Text style={{ color: 'blue', fontWeight: '400'}} onPress={() => this.props.navigation.navigate('profile', {userId: this.props.creator})}>{this.props.name}</Text>
+          <Text style={{ color: 'blue', fontWeight: '400'}} onPress={() => this.props.navigation.navigate('UserDetails', {userId: this.props.creator})}>{this.props.name}</Text>
           <Text style={styles.subText}>{new Date(this.props.date).toISOString().substring(0, 10)}</Text>
         </View>
         <View>

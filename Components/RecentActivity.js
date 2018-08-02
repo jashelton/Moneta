@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 
 export default class RecentActivity extends React.Component {
   render() {
-    console.log('hello');
     const { events, navigation } = this.props;
 
     return(
@@ -52,6 +51,6 @@ const styles = StyleSheet.create({
   }
 });
 
-// RecentActivity.propTypes = {
-//   events: PropTypes.array.isRequired
-// }
+RecentActivity.propTypes = {
+  events: PropTypes.array.isRequired
+}

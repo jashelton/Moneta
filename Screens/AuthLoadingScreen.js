@@ -26,10 +26,8 @@ export default class AuthLoadingScreen extends React.Component {
     const user = await authHelper.getParsedUserData();
     if (user.jwt) {
       const filters = await commonHelper.getFilters();
-      console.log(filters);
       if (!filters) {
         const newFilters = JSON.stringify(defaultFilters);
-        console.log(newFilters);
         AsyncStorage.setItem('user_filters', newFilters);
       }
 
