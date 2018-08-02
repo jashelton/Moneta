@@ -107,9 +107,10 @@ export default class MapScreen extends React.Component {
 
   async createEvent() {
     const { markers, title, description, eventPrivacy, imageFile, localImage } = this.state;
-    const imgMetadata = localImage.exit;
-    if (title === '' || description === '') {
-      alert('You must include a Title and Description');
+    const imgMetadata = localImage.exif;
+    if (title === '' || description === '' || !imgMetadata.GPSLatitude) {
+      // TODO: Handle images that don't have gps coords metadata
+      alert('You must include a Title and Description.  Also need a valid image.');
       return;
     }
 
@@ -170,6 +171,8 @@ export default class MapScreen extends React.Component {
       aspect: [4, 3],
       exif: true
     });
+
+    console.log(result);
 
     if (!result.cancelled) {
       const { imageFile, localImage } = this.state;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Image, Text, StyleSheet, ActivityIndicator, AlertIOS, Modal } from 'react-native';
+import { ScrollView, View, Image, Text, StyleSheet, ActivityIndicator, AlertIOS, Modal } from 'react-native';
 import { Card, Divider, Icon, Button, ListItem } from 'react-native-elements';
 import { eventsService } from '../Services';
 import { authHelper, LocationHelper } from '../Helpers';
@@ -113,7 +113,7 @@ export default class EventDetailsScreen extends React.Component {
                   }
             containerStyle={styles.container}
           >
-            <View style={{height: '100%'}}>
+            <ScrollView contentContainerStyle={{height: '100%'}}>
               <Image style={styles.uploadedImage} source={{uri: event.image}} />
               <View style={styles.iconGroup}>
                 <View style={styles.iconWrapper}>
@@ -147,7 +147,7 @@ export default class EventDetailsScreen extends React.Component {
                 </View>
                 <Text style={styles.eventText}>{event.description}</Text>
               </View>
-            </View>
+            </ScrollView>
           </Card>
           { event.user_id && event.user_id === user.id &&
             <Button
@@ -194,7 +194,8 @@ export default class EventDetailsScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginBottom: 15
+    marginBottom: 15,
+    overflow: 'hidden'
   },
   rightIcon: {
     marginRight: 10
