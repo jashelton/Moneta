@@ -5,6 +5,7 @@ import { TabView, TabBar, SceneMap } from 'react-native-tab-view';
 
 import RecentActivity from '../Components/RecentActivity';
 import { eventsService } from '../Services';
+import { LocationHelper } from '../Helpers';
 
 export default class HomeScreen extends React.Component {
   static navigationOptions = { title: 'Recent Events' };
@@ -15,25 +16,34 @@ export default class HomeScreen extends React.Component {
       index: 0,
       routes: [
         { key: 'first', title: 'Following' },
-        { key: 'second', title: 'Everyone' },
+        { key: 'second', title: 'Nearby' },
+        { key: 'third', title: 'Everyone' },
       ],
-      data: null,
+      currentLocation: null,
       followingEvents: null,
       allEvents: null,
+      nearbyEvents: null,
       isLoading: true
     }
   }
 
-  componentDidMount() {
-    Promise.all([eventsService.getRecentEvents('following'), eventsService.getRecentEvents('all')])
-      .then(following => {
-        this.setState({
-          followingEvents: following[0].data,
-          allEvents: following[1].data,
-          isLoading: false
-        });
-      })
-      .catch(err => console.log(err));
+  async componentDidMount() {
+    const { coords } = await LocationHelper.getCurrentLocation();
+
+    Promise.all([
+      eventsService.getRecentEvents('following', null),
+      eventsService.getRecentEvents('nearby', coords),
+      eventsService.getRecentEvents('all', null)
+    ])
+    .then(following => {
+      this.setState({
+        followingEvents: following[0].data,
+        nearbyEvents: following[1].data,
+        allEvents: following[2].data,
+        isLoading: false
+      });
+    })
+    .catch(err => console.log(err));
   }
 
   _renderTabBar = props => {
@@ -54,7 +64,7 @@ export default class HomeScreen extends React.Component {
 
   render() {
     const { navigation } = this.props;
-    const { followingEvents, allEvents, isLoading } = this.state;
+    const { followingEvents, nearbyEvents, allEvents, isLoading } = this.state;
     return(
       <View style={styles.container}>
         { !isLoading &&
@@ -62,7 +72,8 @@ export default class HomeScreen extends React.Component {
             navigationState={this.state}
             renderScene={SceneMap({
               first: () => <RecentActivity navigation={navigation} events={followingEvents} noDataMessage='There is no recent activity to display.'/>,
-              second: () => <RecentActivity navigation={navigation} events={allEvents} noDataMessage='There is no recent activity to display.'/>,
+              second: () => <RecentActivity navigation={navigation} events={nearbyEvents} noDataMessage='There is no recent activity to display.'/>,
+              third: () => <RecentActivity navigation={navigation} events={allEvents} noDataMessage='There is no recent activity to display.'/>,
             })}
             renderTabBar={this._renderTabBar}
             onIndexChange={index => this.setState({ index })}

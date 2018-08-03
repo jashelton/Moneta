@@ -59,10 +59,10 @@ const details = createStackNavigator(
 
 const homeStack = createStackNavigator(
   {
-    Home: {
+    Recent: {
       screen: HomeScreen,
       navigationOptions: { 
-        title: 'Home',
+        title: 'Recent Events',
         headerTintColor: PRIMARY_LIGHT_COLOR,
         headerStyle: {
           backgroundColor: PRIMARY_DARK_COLOR
@@ -97,19 +97,19 @@ const homeStack = createStackNavigator(
 
 const AppStack = createBottomTabNavigator(
   {
-    Home: homeStack,
+    Recent: homeStack,
     Events: events,
     Notifications: NotificationsScreen,
     Profile: details,
   },
   {
-    initialRouteName: 'Home',
+    initialRouteName: 'Recent',
     navigationOptions: ({navigation}) => ({
       tabBarIcon: ({focused, tintColor}) => {
         const {routeName} = navigation.state;
         let iconName;
-        if (routeName === 'Home') {
-          iconName = 'home'
+        if (routeName === 'Recent') {
+          iconName = 'access-time'
         } else if (routeName === 'Events') {
           iconName = 'pin-drop'
         } else if (routeName === 'Profile') {

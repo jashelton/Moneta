@@ -52,11 +52,12 @@ async function getRecentEventsById(eventId) {
   return axios.get(`${ENDPOINT}/recent_events/${eventId}`, headers);
 }
 
-async function getRecentEvents(users) {
+async function getRecentEvents(users, coords) {
   const { headers } = await authHelper.authHeaders();
   return axios.get(`${ENDPOINT}/recent_events`, {
     params: {
-      users
+      users,
+      coords
     },
     headers
   })  
