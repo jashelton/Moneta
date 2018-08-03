@@ -23,7 +23,7 @@ export default class FilterEventsModal extends React.Component {
             <ButtonGroup
               onPress={this.props.updateIndex}
               selectedIndex={this.props.selectedIndex}
-              buttons={['Everyone', 'Friends', 'Me']}
+              buttons={['Everyone', 'Following', 'Me']}
               disableSelected={true}
               selectedButtonStyle={{ backgroundColor: SECONDARY_DARK_COLOR }}
             />

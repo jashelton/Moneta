@@ -61,7 +61,7 @@ export default class MapScreen extends React.Component {
       filtersVisible: false,
       selectedIndex: 0,
       eventPrivacy: 'Public',
-      filterOptions: ['All', 'Friends', 'Me'],
+      filterOptions: ['All', 'Following', 'Me'],
       userFilters: null
     }
 
