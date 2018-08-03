@@ -29,11 +29,25 @@ export default class FilterEventsModal extends React.Component {
             />
           </View>
         </View>
-        {/* <View style={{flexDirection: 'column', padding: 15}}>
-          <ListItem title='Social' leftIcon={{ name: 'person-pin'}} bottomDivider chevron/>
-          <ListItem title='Date' leftIcon={{ name: 'date-range'}} bottomDivider chevron/>
-          <ListItem title='Distance' leftIcon={{ name: 'location-searching'}} bottomDivider chevron/>
-        </View> */}
+        <View style={{flexDirection: 'column', padding: 15}}>
+          <ListItem
+            title='Social'
+            leftIcon={{ name: 'person-pin'}}
+            bottomDivider chevron/>
+          <ListItem
+            title='Date'
+            leftIcon={{ name: 'date-range'}}
+            bottomDivider
+            chevron
+            onPress={() => this.setState({dateRangeModalVisible: true})}
+          />
+          <ListItem
+            title='Distance'
+            leftIcon={{ name: 'location-searching'}}
+            bottomDivider
+            chevron
+          />
+        </View>
       </Modal>
     )
   }
