@@ -59,25 +59,25 @@ export default class MapScreen extends React.Component {
       user_data: {},
       isVisible: false,
       filtersVisible: false,
-      selectedIndex: 0,
       eventPrivacy: 'Public',
-      filterOptions: ['All', 'Following', 'Me'],
+      socialOptions: ['All', 'Following', 'Me'],
+      socialSelected: 'All',
       userFilters: null
     }
 
     this.toggleIsVisible = this.toggleIsVisible.bind(this);
     this.createEvent = this.createEvent.bind(this);
-    this.updateIndex = this.updateIndex.bind(this);
     this.prepS3Upload = this.prepS3Upload.bind(this);
+    this.updateSocialSelected = this.updateSocialSelected.bind(this);
   }
 
   async componentDidMount() {
     commonHelper.getFilters()
       .then(res => {
-        this.setState({userFilters: res, selectedIndex: res.eventsFor});
+        this.setState({userFilters: res, socialSelected: res.eventsFor});
       })
       .then(() => {
-        this.getEvents(this.state.selectedIndex);
+        this.getEvents(this.state.socialSelected);
       })
       .catch(err => console.log(err)),
 
@@ -91,10 +91,13 @@ export default class MapScreen extends React.Component {
     this.setState({user_data});
   }
 
-  async getEvents(selectedIndex) {
-    const { filterOptions } = this.state;
-    const selectedFilter = filterOptions[selectedIndex];
-    const { data } = await eventsService.getEventMarkers(selectedFilter);
+  updateSocialSelected(option) {
+    this.setState({socialSelected: option});
+    this.getEvents(option);
+  }
+
+  async getEvents(selectedOption) {
+    const { data } = await eventsService.getEventMarkers(selectedOption);
     let { markers } = this.state;
 
     markers = data;
@@ -180,28 +183,16 @@ export default class MapScreen extends React.Component {
     }
   }
 
-  updateIndex (selectedIndex) {
-    this.setState({selectedIndex});
-    this.getEvents(selectedIndex);
-  }
-
   updatePrivacySettings(val) {
     const eventPrivacy = val ? 'Public' : 'Private' ;
     this.setState({eventPrivacy});
   }
 
   render() {
-    const { selectedIndex, localImage, markers, isVisible, filtersVisible, title, description, eventPrivacy, filterOptions, userFilters } = this.state;
+    const { localImage, markers, isVisible, filtersVisible, title, description, eventPrivacy, socialOptions, socialSelected } = this.state;
 
     return (
       <View style={styles.container}>
-        {/* <ButtonGroup
-          onPress={this.updateIndex}
-          selectedIndex={selectedIndex}
-          buttons={filterOptions}
-          disableSelected={true}
-          selectedButtonStyle={{ backgroundColor: SECONDARY_DARK_COLOR }}
-        /> */}
         <MapView
           style={{ flex: 1 }}
           showsUserLocation={true}
@@ -228,8 +219,10 @@ export default class MapScreen extends React.Component {
         <FilterEventsModal
           filtersVisible={filtersVisible}
           setVisibility={() => this.setState({filtersVisible: !this.state.filtersVisible})}
-          selectedIndex={selectedIndex}
           updateIndex={this.updateIndex}
+          socialOptions={socialOptions}
+          socialSelected={socialSelected}
+          updateSocialSelected={(option) => this.updateSocialSelected(option)}
         />
 
         {/* Modal for creating event... could be pulled out into its own Screen */}
