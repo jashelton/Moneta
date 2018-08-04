@@ -1,3 +1,3 @@
 export const defaultFilters = {
-  eventsFor: 2
+  eventsFor: 'All'
 };

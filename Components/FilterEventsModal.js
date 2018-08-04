@@ -1,52 +1,77 @@
 import React from 'react';
 import { Constants } from 'expo';
-import { View, Text, Modal, StyleSheet } from 'react-native';
-import { Button, ButtonGroup, ListItem } from 'react-native-elements';
+import { View, Modal, StyleSheet } from 'react-native';
+import { Button, ListItem } from 'react-native-elements';
+import ViewToggle from '../Components/ViewToggle';
 
 import { PRIMARY_DARK_COLOR, ACCENT_COLOR, SECONDARY_DARK_COLOR } from '../common/styles/common-styles';
 
 export default class FilterEventsModal extends React.Component {
+
+  socialOptions = ['All', 'Following', 'Me'];
+
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      hideSocialFilter: true,
+    };
+
+    this.toggleSocialFilter = this.toggleSocialFilter.bind(this);
+  }
+
+  toggleSocialFilter() {
+    const { hideSocialFilter } = this.state;
+    this.setState({hideSocialFilter: !hideSocialFilter});
+  }
+
+  updateSocialFilter() {
+
+  }
+
   render() {
+    const { hideSocialFilter } = this.state;
+    const { socialSelected,
+            setVisibility,
+            filtersVisible,
+            updateSocialSelected } = this.props;
+
     return(
       <Modal
         animationType="slide"
         transparent={false}
-        visible={this.props.filtersVisible}
+        visible={filtersVisible}
       >
         <View style={styles.modalHeader}>
-          {/* TODO: Update on close rather than having a save button */}
-          <Button title='Close' titleStyle={{color: ACCENT_COLOR}} clear={true} onPress={this.props.setVisibility}/>
-        </View>
-        <View style={{padding: 15}}>
-          <View style={{flexDirection: 'column', alignItems: 'center', justifyContent: 'center'}}>
-            <Text style={{fontSize: 16, fontWeight: '400'}}>Who do you want to see events from?</Text>
-            <ButtonGroup
-              onPress={this.props.updateIndex}
-              selectedIndex={this.props.selectedIndex}
-              buttons={['Everyone', 'Following', 'Me']}
-              disableSelected={true}
-              selectedButtonStyle={{ backgroundColor: SECONDARY_DARK_COLOR }}
-            />
-          </View>
+          <View style={{flex: 1}}></View>
+          <Button
+            clear
+            title='Done'
+            titleStyle={{color: ACCENT_COLOR}}
+            buttonStyle={{marginRight: 15}}
+            onPress={setVisibility}
+          />
         </View>
         <View style={{flexDirection: 'column', padding: 15}}>
           <ListItem
             title='Social'
             leftIcon={{ name: 'person-pin'}}
-            bottomDivider chevron/>
-          <ListItem
-            title='Date'
-            leftIcon={{ name: 'date-range'}}
-            bottomDivider
-            chevron
-            onPress={() => this.setState({dateRangeModalVisible: true})}
+            bottomDivider chevron
+            onPress={this.toggleSocialFilter}
           />
-          <ListItem
-            title='Distance'
-            leftIcon={{ name: 'location-searching'}}
-            bottomDivider
-            chevron
-          />
+          <ViewToggle hide={hideSocialFilter}>
+            <View style={styles.innerAccordion}>
+              {this.socialOptions.map((option, i) => (
+                <ListItem
+                  key={i}
+                  title={option}
+                  bottomDivider
+                  onPress={() => updateSocialSelected(option)}
+                  rightIcon={socialSelected === option ? {name: 'check'} : null}
+                />
+              ))}
+            </View>
+          </ViewToggle>
         </View>
       </Modal>
     )
@@ -55,7 +80,6 @@ export default class FilterEventsModal extends React.Component {
 
 const styles = StyleSheet.create({
   modalHeader: {
-    // height: 60,
     backgroundColor: PRIMARY_DARK_COLOR,
     flexDirection: 'row',
     alignItems: 'center',
@@ -65,5 +89,9 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     color: '#fff',
+  },
+  innerAccordion: {
+    marginLeft: 25,
+    marginBottom: 25
   }
 });
