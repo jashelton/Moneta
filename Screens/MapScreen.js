@@ -8,10 +8,9 @@ import { TextField } from 'react-native-material-textfield';
 import { RNS3 } from 'react-native-aws3';
 import { AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, BUCKET, BUCKET_REGION } from 'react-native-dotenv';
 import { eventsService } from '../Services';
-import { authHelper, LocationHelper } from '../Helpers';
+import { authHelper, commonHelper } from '../Helpers';
 import { PRIMARY_DARK_COLOR, ACCENT_COLOR, SECONDARY_DARK_COLOR } from '../common/styles/common-styles';
 import FilterEventsModal from '../Components/FilterEventsModal';
-import { commonHelper } from '../Helpers';
 
 export default class MapScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
@@ -60,9 +59,7 @@ export default class MapScreen extends React.Component {
       isVisible: false,
       filtersVisible: false,
       eventPrivacy: 'Public',
-      socialOptions: ['All', 'Following', 'Me'],
       socialSelected: 'All',
-      userFilters: null
     }
 
     this.toggleIsVisible = this.toggleIsVisible.bind(this);
@@ -74,7 +71,7 @@ export default class MapScreen extends React.Component {
   async componentDidMount() {
     commonHelper.getFilters()
       .then(res => {
-        this.setState({userFilters: res, socialSelected: res.eventsFor});
+        this.setState({socialSelected: res.eventsFor});
       })
       .then(() => {
         this.getEvents(this.state.socialSelected);
@@ -189,7 +186,7 @@ export default class MapScreen extends React.Component {
   }
 
   render() {
-    const { localImage, markers, isVisible, filtersVisible, title, description, eventPrivacy, socialOptions, socialSelected } = this.state;
+    const { localImage, markers, isVisible, filtersVisible, title, description, eventPrivacy, socialSelected } = this.state;
 
     return (
       <View style={styles.container}>
@@ -220,7 +217,6 @@ export default class MapScreen extends React.Component {
           filtersVisible={filtersVisible}
           setVisibility={() => this.setState({filtersVisible: !this.state.filtersVisible})}
           updateIndex={this.updateIndex}
-          socialOptions={socialOptions}
           socialSelected={socialSelected}
           updateSocialSelected={(option) => this.updateSocialSelected(option)}
         />

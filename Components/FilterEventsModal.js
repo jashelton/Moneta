@@ -1,12 +1,15 @@
 import React from 'react';
 import { Constants } from 'expo';
-import { View, Text, Modal, StyleSheet } from 'react-native';
-import { Button, ButtonGroup, ListItem } from 'react-native-elements';
+import { View, Modal, StyleSheet } from 'react-native';
+import { Button, ListItem } from 'react-native-elements';
 import ViewToggle from '../Components/ViewToggle';
 
 import { PRIMARY_DARK_COLOR, ACCENT_COLOR, SECONDARY_DARK_COLOR } from '../common/styles/common-styles';
 
 export default class FilterEventsModal extends React.Component {
+
+  socialOptions = ['All', 'Following', 'Me'];
+
   constructor(props) {
     super(props);
 
@@ -28,8 +31,7 @@ export default class FilterEventsModal extends React.Component {
 
   render() {
     const { hideSocialFilter } = this.state;
-    const { socialOptions,
-            socialSelected,
+    const { socialSelected,
             setVisibility,
             filtersVisible,
             updateSocialSelected } = this.props;
@@ -41,8 +43,14 @@ export default class FilterEventsModal extends React.Component {
         visible={filtersVisible}
       >
         <View style={styles.modalHeader}>
-          {/* TODO: Update on close rather than having a save button */}
-          <Button title='Done' titleStyle={{color: ACCENT_COLOR}} clear={true} onPress={setVisibility}/>
+          <View style={{flex: 1}}></View>
+          <Button
+            clear
+            title='Done'
+            titleStyle={{color: ACCENT_COLOR}}
+            buttonStyle={{marginRight: 15}}
+            onPress={setVisibility}
+          />
         </View>
         <View style={{flexDirection: 'column', padding: 15}}>
           <ListItem
@@ -53,7 +61,7 @@ export default class FilterEventsModal extends React.Component {
           />
           <ViewToggle hide={hideSocialFilter}>
             <View style={styles.innerAccordion}>
-              {socialOptions.map((option, i) => (
+              {this.socialOptions.map((option, i) => (
                 <ListItem
                   key={i}
                   title={option}
@@ -64,19 +72,6 @@ export default class FilterEventsModal extends React.Component {
               ))}
             </View>
           </ViewToggle>
-          <ListItem
-            title='Date'
-            leftIcon={{ name: 'date-range'}}
-            bottomDivider
-            chevron
-            onPress={() => this.setState({dateRangeModalVisible: true})}
-          />
-          <ListItem
-            title='Distance'
-            leftIcon={{ name: 'location-searching'}}
-            bottomDivider
-            chevron
-          />
         </View>
       </Modal>
     )
