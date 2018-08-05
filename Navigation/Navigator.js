@@ -20,10 +20,19 @@ import CreateEventScreen from '../Screens/CreateEventScreen';
 // Create proper stacks
 // New CreateEventScreen
 
-const events = createStackNavigator(
+const recentActivityStack = createStackNavigator(
   {
-    Map: MapScreen,
-    EventDetails: EventDetailsScreen, // TODO: include as component with event icon in props
+    Recent: {
+      screen: HomeScreen,
+      navigationOptions: { 
+        title: 'Recent Events',
+        headerTintColor: PRIMARY_LIGHT_COLOR,
+        headerStyle: {
+          backgroundColor: PRIMARY_DARK_COLOR
+        }
+      },
+    },
+    EventDetails: EventDetailsScreen,
     Comments: CommentsScreen,
     UserDetails: { // TODO: UserDetails needs to be nested under EventDetails
       screen: UserDetailsScreen,
@@ -39,58 +48,6 @@ const events = createStackNavigator(
       headerStyle: {
         // backgroundColor: PRIMARY_DARK_COLOR
       },
-      // headerTintColor: PRIMARY_DARK_COLOR,
-      headerTitleStyle: {
-        fontWeight: '200'
-      }
-    }
-  }
-);
-
-const details = createStackNavigator(
-  {
-    Profile: MyProfileScreen,
-    EventDetails: EventDetailsScreen, // TODO: include as component with profile icon in props
-    UserDetails: UserDetailsScreen,
-  },
-  {
-    navigationOptions: {
-      headerStyle: {
-        backgroundColor: PRIMARY_DARK_COLOR
-      }
-    }
-  }
-);
-
-const homeStack = createStackNavigator(
-  {
-    Recent: {
-      screen: HomeScreen,
-      navigationOptions: { 
-        title: 'Recent Events',
-        headerTintColor: PRIMARY_LIGHT_COLOR,
-        headerStyle: {
-          backgroundColor: PRIMARY_DARK_COLOR
-        }
-      }
-    },
-    EventDetails: EventDetailsScreen,
-    Comments: CommentsScreen,
-    UserDetails: {
-      screen: UserDetailsScreen,
-      navigationOptions: {
-        headerTintColor: PRIMARY_LIGHT_COLOR,
-        headerStyle: {
-          backgroundColor: PRIMARY_DARK_COLOR
-        }
-      }
-    },
-  },
-  {
-    navigationOptions: {
-      headerStyle: {
-        // backgroundColor: PRIMARY_DARK_COLOR
-      },
       // headerTintColor: '#fff',
       headerTitleStyle: {
         fontWeight: '200',
@@ -99,7 +56,28 @@ const homeStack = createStackNavigator(
     } 
   }
 );
-
+const eventsStack = createStackNavigator(
+  {
+    Map: MapScreen,
+    EventDetails: EventDetailsScreen, // TODO: include as component with event icon in props
+    Comments: CommentsScreen,
+    UserDetails: { // TODO: UserDetails needs to be nested under EventDetails
+      screen: UserDetailsScreen,
+      navigationOptions: {
+        headerStyle: {
+          backgroundColor: PRIMARY_DARK_COLOR
+        },
+      }
+    }
+  },
+  {
+    navigationOptions: {
+      headerTitleStyle: {
+        fontWeight: '200'
+      }
+    }
+  }
+);
 const newEventStack = createStackNavigator(
   {
     NewEvent: {
@@ -114,14 +92,43 @@ const newEventStack = createStackNavigator(
     }
   }
 );
+const notificationsStack = createStackNavigator(
+  {
+    Notifications: NotificationsScreen
+  }
+);
+const profileStack = createStackNavigator(
+  {
+    Profile: MyProfileScreen,
+    EventDetails: EventDetailsScreen, // TODO: include as component with profile icon in props
+    UserDetails: UserDetailsScreen,
+  },
+  {
+    navigationOptions: {
+      headerStyle: {
+        backgroundColor: PRIMARY_DARK_COLOR
+      }
+    }
+  }
+);
+
+const eventDetailsStack = createStackNavigator(
+  {
+    EventDetails: EventDetailsScreen,
+    Comments: CommentsScreen,
+    UserDetails: UserDetailsScreen
+  }
+);
+
+console.log(eventDetailsStack)
 
 const AppStack = createBottomTabNavigator(
   {
-    Recent: homeStack,
-    Events: events,
+    Recent: recentActivityStack,
+    Events: eventsStack,
     'New Event': newEventStack,
-    Notifications: NotificationsScreen,
-    Profile: details,
+    Notifications: notificationsStack,
+    Profile: profileStack,
   },
   {
     initialRouteName: 'Recent',
