@@ -12,8 +12,13 @@ import CommentsScreen from '../Screens/CommentsScreen';
 import UserDetailsScreen from '../Screens/UserDetailsScreen';
 import NotificationsScreen from '../Screens/NotificationsScreen';
 import MyProfileScreen from '../Screens/MyProfileScreen';
+import CreateEventScreen from '../Screens/CreateEventScreen';
 
 // Header shows up on Events screen because the events stack is inside the tab navigator
+
+// TODO:
+// Create proper stacks
+// New CreateEventScreen
 
 const events = createStackNavigator(
   {
@@ -95,10 +100,26 @@ const homeStack = createStackNavigator(
   }
 );
 
+const newEventStack = createStackNavigator(
+  {
+    NewEvent: {
+      screen: CreateEventScreen,
+      navigationOptions: {
+        title: 'Create Event',
+        headerTitleStyle: {
+          fontWeight: '200',
+          fontSize: 16
+        }
+      }
+    }
+  }
+);
+
 const AppStack = createBottomTabNavigator(
   {
     Recent: homeStack,
     Events: events,
+    'New Event': newEventStack,
     Notifications: NotificationsScreen,
     Profile: details,
   },
@@ -112,6 +133,8 @@ const AppStack = createBottomTabNavigator(
           iconName = 'access-time'
         } else if (routeName === 'Events') {
           iconName = 'pin-drop'
+        } else if (routeName === 'New Event') {
+          iconName = 'add'
         } else if (routeName === 'Profile') {
           iconName = 'person'
         } else if (routeName === 'Notifications') {
