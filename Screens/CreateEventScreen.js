@@ -1,20 +1,23 @@
 import React from 'react';
 import { ImagePicker, Permissions } from 'expo';
-import { View, Text, ScrollView, TouchableHighlight, Image, StyleSheet, Switch } from 'react-native';
+import { View, Text, ScrollView, TouchableHighlight, Image, StyleSheet, Switch, Modal } from 'react-native';
 import { Icon, Button } from 'react-native-elements';
 import { TextField } from 'react-native-material-textfield';
 import { RNS3 } from 'react-native-aws3';
 
 import { eventsService } from '../Services';
-import { authHelper } from '../Helpers';
+import { authHelper, LocationHelper } from '../Helpers';
 import { AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, BUCKET, BUCKET_REGION } from 'react-native-dotenv';
-import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
+import ViewToggle from '../Components/ViewToggle';
+import GooglePlacesInput from '../Components/LocationAutocomplete';
 
 const initialEvent = {
   title: '',
   description: '',
   localImage: null,
-  eventPrivacy: 'Public'
+  eventPrivacy: 'Public',
+  imageLocation: null,
+  imageCoords: null
 };
 
 export default class CreateEventScreen extends React.Component {
@@ -22,20 +25,20 @@ export default class CreateEventScreen extends React.Component {
     return {
       title: 'Event Map',
       headerLeft: (
-        <Icon
+        <Button
           containerStyle={styles.leftIcon}
-          size={28}
-          name="clear"
-          color={PRIMARY_DARK_COLOR}
+          clear
+          title='Clear'
+          titleStyle={{color: 'blue'}}
           onPress={navigation.getParam('clearEvent')}
         />
       ),
       headerRight: (
-        <Icon
+        <Button
           containerStyle={styles.rightIcon}
-          size={28}
-          name="check"
-          color={PRIMARY_DARK_COLOR}
+          clear
+          title='Done'
+          titleStyle={{color: 'blue'}}
           onPress={navigation.getParam('createEvent')}
         />
       )
@@ -57,11 +60,13 @@ export default class CreateEventScreen extends React.Component {
     this.state = {
       eventForm: initialEvent,
       imageFile: null,
+      visiblePlacesSearch: false
     };
 
     this.clearEvent = this.clearEvent.bind(this);
     this.createEvent = this.createEvent.bind(this);
     this.prepS3Upload = this.prepS3Upload.bind(this);
+    this.customImageLocation = this.customImageLocation.bind(this);
   }
 
   async componentDidMount() {
@@ -117,29 +122,33 @@ export default class CreateEventScreen extends React.Component {
       eventForm.localImage = result; // Path to image to display to user before S3 upload
 
       this.setState({ imageFile, eventForm });
+
+      // For images that have location data associated with them via exif.
+      if (result.exif.GPSLatitude && result.exif.GPSLongitude) {
+        const imageCoords = LocationHelper.formatExifCoords(result.exif);
+        const address = await LocationHelper.coordsToAddress(imageCoords);
+        const imageLocation = `${address[0].name}, ${address[0].city}, ${address[0].region}, ${address[0].isoCountryCode}`
+
+        this.setState({ imageLocation, imageCoords });
+      }
     }
   }
 
   async createEvent() {
-    const { imageFile } = this.state;
-    const { title, description, eventPrivacy, localImage } = this.state.eventForm;
-    const imgMetadata = localImage.exif;
-    if (title === '' || description === '' || !imgMetadata.GPSLatitude) {
-      // TODO: Handle images that don't have gps coords metadata
+    const { imageFile, imageLocation, imageCoords } = this.state;
+    const { title, description, eventPrivacy } = this.state.eventForm;
+
+    if (title === '' || description === '' || !imageLocation || !imageCoords) {
       alert('You must include a Title and Description.  Also need a valid image.');
       return;
     }
 
-    const latitude = imgMetadata.GPSLatitudeRef === 'N' ? imgMetadata.GPSLatitude : parseFloat(`-${imgMetadata.GPSLatitude}`);
-    const longitude = imgMetadata.GPSLongitudeRef === 'N' ? imgMetadata.GPSLongitude : parseFloat(`-${imgMetadata.GPSLongitude}`);
+    // TODO: This won't work with manually entered locations
     const event = {
       title,
       description,
       privacy: eventPrivacy,
-      coordinate: {
-        longitude,
-        latitude
-      }
+      coordinate: imageCoords
     };
 
     try {
@@ -156,11 +165,23 @@ export default class CreateEventScreen extends React.Component {
     
   }
 
+  // Custom location selection.  Get address and coords.
+  customImageLocation(data, details) {
+    const { location } = details.geometry;
+    let { imageLocation, imageCoords } = this.state;
+
+    imageLocation = data.description;
+    imageCoords = { latitude: location.lat, longitude: location.lng };
+
+    this.setState({ imageLocation, visiblePlacesSearch: false, imageCoords });
+  }
+
   render() {
     const { localImage,
             title,
             description,
             eventPrivacy } = this.state.eventForm;
+    const { visiblePlacesSearch, imageLocation, imageCoords } = this.state;
     return(
       <ScrollView contentContainerStyle={{flex: 1, flexDirection: 'column', padding: 15, backgroundColor: '#fff'}}>
         <View style={styles.eventPrivacyContainer}>
@@ -184,6 +205,14 @@ export default class CreateEventScreen extends React.Component {
           label='Description'
           characterRestriction={140}
         />
+        <ViewToggle hide={!localImage}>
+          <TextField
+            label='Event Location'
+            baseColor={!imageCoords ? 'red' : 'green'}
+            value={imageLocation}
+            onFocus={() => this.setState({visiblePlacesSearch: true})}
+          />
+        </ViewToggle>
         <TouchableHighlight underlayColor="#eee" style={styles.imageUpload} onPress={this.prepS3Upload}>
           { !localImage ?
             <Icon style={styles.iconBtn} color="#d0d0d0" name="add-a-photo" />
@@ -191,6 +220,16 @@ export default class CreateEventScreen extends React.Component {
             <Image style={styles.uploadedImage} source={{uri: localImage.uri}} />
           }
         </TouchableHighlight>
+        <Modal
+          animationType="slide"
+          transparent={false}
+          visible={visiblePlacesSearch}
+        >
+          <View style={{paddingTop: 60}}>
+            <Button title="close" titleStyle={{color: 'blue'}} clear onPress={() => this.setState({ visiblePlacesSearch: false })} />
+          </View>
+          <GooglePlacesInput customImageLocation={(data, details) => this.customImageLocation(data, details)} />
+        </Modal>
       </ScrollView>
     );
   }
