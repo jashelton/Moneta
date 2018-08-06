@@ -4,7 +4,10 @@ export const GET_RECENT_ACTIVITY_FAIL = 'moneta/events/LOAD_FAIL';
 export const GET_EVENT_DETAILS = 'moneta/eventDetails/LOAD';
 export const GET_EVENT_DETAILS_SUCCESS = 'moneta/eventDetails/LOAD_SUCCESS';
 export const GET_EVENT_DETAILS_FAIL = 'moneta/eventDetails/LOAD_FAIL';
-export const UPDATE_EVENT_DETAILS = 'moneta/eventDetauls/UPDATE'
+export const UPDATE_EVENT_DETAILS = 'moneta/eventDetails/UPDATE';
+export const UPDATE_EVENT_LIKES = 'moneta/eventDetails/UPDATE'
+export const UPDATE_EVENT_LIKES_SUCCESS = 'moneta/eventDetails/UPDATE_SUCCESS'
+export const UPDATE_EVENT_LIKES_FAIL = 'moneta/eventDetails/UPDATE_FAIL'
 
 import update from 'immutability-helper';
 
@@ -31,10 +34,23 @@ export default function reducer(state = { events: [], event: {} }, action) {
         error: 'There was a problem getting the details for this event.'
       };
     case UPDATE_EVENT_DETAILS:
-      const newEvent = {...state.event}; // TODO: Unsure about this.
+      const newEvent = {...state.event}; // TODO: Unsure about this. Mutating state?
       return { ...state, loading: false, event: newEvent };
     default:
       return state;
+    case UPDATE_EVENT_LIKES:
+      return { ...state, loading: true };
+    case UPDATE_EVENT_LIKES_SUCCESS:
+      const { liked, likes_count } = action.payload.data;
+      const updatedEvent = update(state.event, { $set: {...state.event, liked, likes_count } });
+      
+      return { ...state, loading: false, event: updatedEvent };
+    case UPDATE_EVENT_LIKES_FAIL:
+      return {
+        ...state,
+        loading: false,
+        error: 'An error occured'
+      }
   }
 }
 
@@ -67,6 +83,19 @@ export function updateEventDetails(event) {
     type: UPDATE_EVENT_DETAILS,
     payload: {
       data: event
+    }
+  }
+}
+
+export function updateEventDetailsLikes(eventId, eventLiked) {
+  return {
+    type: UPDATE_EVENT_LIKES,
+    payload: {
+      request: {
+        url:  `/events/${eventId}/like`,
+        method: 'POST',
+        data: { liked: !eventLiked ? 1 : 0 }
+      }
     }
   }
 }

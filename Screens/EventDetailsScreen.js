@@ -5,7 +5,7 @@ import { eventsService } from '../Services';
 import { authHelper, LocationHelper } from '../Helpers';
 import { WARNING_RED, ACCENT_COLOR, PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
 import { connect } from 'react-redux';
-import { updateEventDetails } from '../reducer';
+import { updateEventDetails, updateEventDetailsLikes } from '../reducer';
 
 export class EventDetailsHeader extends React.Component {
   render() {
@@ -46,18 +46,7 @@ class EventDetailsScreen extends React.Component {
 
   async favoriteEvent() {
     const { event } = this.props;
-
-    try {
-      const { data } = await eventsService.likeEvent(event.id, !event.liked);
-
-      const newEvent = event;
-      newEvent.liked = !newEvent.liked;
-      newEvent.liked ? newEvent.likes_count ++ : newEvent.likes_count --;
-
-      this.props.updateEventDetails(newEvent);
-    } catch (err) {
-      console.log(err);
-    }
+    this.props.updateEventDetailsLikes(event.id, event.liked);
   }
 
   incrementCommentCount() {
@@ -264,7 +253,8 @@ const mapStateToProps = state => {
 };
 
 const mapDispatchToProps = {
-  updateEventDetails
+  updateEventDetails,
+  updateEventDetailsLikes
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(EventDetailsScreen);

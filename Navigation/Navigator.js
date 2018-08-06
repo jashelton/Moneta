@@ -120,8 +120,6 @@ const eventDetailsStack = createStackNavigator(
   }
 );
 
-console.log(eventDetailsStack)
-
 const AppStack = createBottomTabNavigator(
   {
     Recent: recentActivityStack,

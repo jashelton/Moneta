@@ -7,7 +7,6 @@ const homePlace = { description: 'Home', geometry: { location: { lat: 48.8152937
 const workPlace = { description: 'Work', geometry: { location: { lat: 48.8496818, lng: 2.2940881 } }};
 
 const GooglePlacesInput = (props) => {
-  console.log(props);
   return (
     <GooglePlacesAutocomplete
       placeholder='Search'
@@ -18,7 +17,6 @@ const GooglePlacesInput = (props) => {
       fetchDetails={true}
       renderDescription={row => row.description} // custom description render
       onPress={(data, details = null) => { // 'details' is provided when fetchDetails = true
-        // console.log(data, details);
         props.customImageLocation(data, details)
       }}
       
