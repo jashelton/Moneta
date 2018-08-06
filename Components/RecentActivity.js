@@ -19,7 +19,7 @@ class RecentActivity extends React.Component {
   }
 
   render() {
-    const { events, navigation } = this.props;
+    const { events } = this.props;
 
     return(
       <ScrollView contentContainerStyle={styles.container}>

@@ -6,7 +6,7 @@ export const eventsService = {
   getEventMarkers,
   getEventDetails,
   createEvent,
-  likeEvent,
+  // likeEvent,
   deleteEvent,
   getRecentEventsById,
   getRecentEvents
@@ -37,10 +37,10 @@ async function createEvent(event) {
   return axios.post(`${ENDPOINT}/events/create`, event, headers);
 }
 
-async function likeEvent(eventId, liked) {
-  const headers = await authHelper.authHeaders();
-  return axios.post(`${ENDPOINT}/events/${eventId}/like`, { liked: liked ? 1 : 0 }, headers)
-}
+// async function likeEvent(eventId, liked) {
+//   const headers = await authHelper.authHeaders();
+//   return axios.post(`${ENDPOINT}/events/${eventId}/like`, { liked: liked ? 1 : 0 }, headers)
+// }
 
 async function deleteEvent(eventId) {
   const headers = await authHelper.authHeaders();

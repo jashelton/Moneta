@@ -5,7 +5,7 @@ import { eventsService } from '../Services';
 import { authHelper, LocationHelper } from '../Helpers';
 import { WARNING_RED, ACCENT_COLOR, PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
 import { connect } from 'react-redux';
-import { updateEventDetails, updateEventDetailsLikes } from '../reducer';
+import { updateEventDetailsLikes } from '../reducer';
 
 export class EventDetailsHeader extends React.Component {
   render() {
@@ -32,7 +32,6 @@ class EventDetailsScreen extends React.Component {
       isVisible: false
     }
 
-    this.favoriteEvent = this.favoriteEvent.bind(this);
     this.incrementCommentCount = this.incrementCommentCount.bind(this);
     this.verifyDeleteEvent = this.verifyDeleteEvent.bind(this);
     this.deleteEvent = this.deleteEvent.bind(this);
@@ -53,7 +52,7 @@ class EventDetailsScreen extends React.Component {
     const { event } = this.props;
     event.comment_count ++;
 
-    this.props.updateEventDetails(event);
+    this.setState({ event });
   }
 
   verifyDeleteEvent() {
@@ -79,7 +78,9 @@ class EventDetailsScreen extends React.Component {
 
     if (data.status === 200) {
       // TODO: Filter this event out of 'markers' on MapScreen
+            // Filter out from recent activity
       // Using redux -> dispatch delete with event id, filter deletedEvent from Events.
+      this.props.navigation.goBack();
     }
   }
 
@@ -115,7 +116,7 @@ class EventDetailsScreen extends React.Component {
                     name={!event.liked ? 'favorite-border' : 'favorite'}
                     onPress={() => this.favoriteEvent()}
                   />
-                  <Text style={styles.socialCount}>{event.likes_count}</Text>
+                  <Text style={styles.socialCount}>{event.likes_count || ''}</Text>
                 </View>
                 <View style={styles.iconWrapper}>
                   <Icon
@@ -253,7 +254,6 @@ const mapStateToProps = state => {
 };
 
 const mapDispatchToProps = {
-  updateEventDetails,
   updateEventDetailsLikes
 };
 

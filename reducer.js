@@ -4,10 +4,9 @@ export const GET_RECENT_ACTIVITY_FAIL = 'moneta/events/LOAD_FAIL';
 export const GET_EVENT_DETAILS = 'moneta/eventDetails/LOAD';
 export const GET_EVENT_DETAILS_SUCCESS = 'moneta/eventDetails/LOAD_SUCCESS';
 export const GET_EVENT_DETAILS_FAIL = 'moneta/eventDetails/LOAD_FAIL';
-export const UPDATE_EVENT_DETAILS = 'moneta/eventDetails/UPDATE';
-export const UPDATE_EVENT_LIKES = 'moneta/eventDetails/UPDATE'
-export const UPDATE_EVENT_LIKES_SUCCESS = 'moneta/eventDetails/UPDATE_SUCCESS'
-export const UPDATE_EVENT_LIKES_FAIL = 'moneta/eventDetails/UPDATE_FAIL'
+export const UPDATE_EVENT_LIKES = 'moneta/eventDetails/UPDATE_LIKES';
+export const UPDATE_EVENT_LIKES_SUCCESS = 'moneta/eventDetails/UPDATE_LIKES_SUCCESS';
+export const UPDATE_EVENT_LIKES_FAIL = 'moneta/eventDetails/UPDATE_LIKES_FAIL';
 
 import update from 'immutability-helper';
 
@@ -33,24 +32,21 @@ export default function reducer(state = { events: [], event: {} }, action) {
         loading: false,
         error: 'There was a problem getting the details for this event.'
       };
-    case UPDATE_EVENT_DETAILS:
-      const newEvent = {...state.event}; // TODO: Unsure about this. Mutating state?
-      return { ...state, loading: false, event: newEvent };
-    default:
-      return state;
     case UPDATE_EVENT_LIKES:
-      return { ...state, loading: true };
+      return { ...state };
     case UPDATE_EVENT_LIKES_SUCCESS:
       const { liked, likes_count } = action.payload.data;
       const updatedEvent = update(state.event, { $set: {...state.event, liked, likes_count } });
       
-      return { ...state, loading: false, event: updatedEvent };
+      return { ...state, event: updatedEvent };
     case UPDATE_EVENT_LIKES_FAIL:
       return {
         ...state,
         loading: false,
         error: 'An error occured'
       }
+    default:
+      return state;
   }
 }
 
@@ -74,15 +70,6 @@ export function getEventDetails(eventId, userLocation) {
         method: 'GET',
         params: { userLocation }
       }
-    }
-  }
-}
-
-export function updateEventDetails(event) {
-  return {
-    type: UPDATE_EVENT_DETAILS,
-    payload: {
-      data: event
     }
   }
 }
