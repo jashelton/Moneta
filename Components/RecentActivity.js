@@ -3,8 +3,21 @@ import { View, ScrollView, Text, StyleSheet, ActivityIndicator } from 'react-nat
 import { ListItem } from 'react-native-elements';
 import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 
-export default class RecentActivity extends React.Component {
+import { LocationHelper } from '../Helpers';
+import { getEventDetails } from '../reducer';
+
+class RecentActivity extends React.Component {
+
+  async setEventDetails(eventId) {
+    const { navigation } = this.props;
+    const currentLocation = await LocationHelper.getCurrentLocation();
+
+    this.props.getEventDetails(eventId, currentLocation);
+    navigation.navigate('EventDetails')
+  }
+
   render() {
     const { events, navigation } = this.props;
 
@@ -29,7 +42,7 @@ export default class RecentActivity extends React.Component {
                 subtitleStyle={{fontSize: 12, color: 'grey'}}
                 chevron
                 bottomDivider
-                onPress={() => navigation.navigate('EventDetails', { eventId: event.id })}
+                onPress={() => this.setEventDetails(event.id)}
               />
             ))}
           </View>
@@ -54,3 +67,15 @@ const styles = StyleSheet.create({
 RecentActivity.propTypes = {
   events: PropTypes.array.isRequired
 }
+
+const mapStateToProps = state => {
+  return {
+    event: state.event
+  };
+};
+
+const mapDispatchToProps = {
+  getEventDetails
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(RecentActivity);
