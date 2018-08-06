@@ -7,10 +7,13 @@ import RecentActivity from '../Components/RecentActivity';
 import { eventsService } from '../Services';
 import { LocationHelper } from '../Helpers';
 
-export default class HomeScreen extends React.Component {
+import { listRecentActivity, getEventDetails } from '../reducer'
+import { connect } from 'react-redux';
+
+class HomeScreen extends React.Component {
   static navigationOptions = { title: 'Recent Events' };
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
     this.state = {
       index: 0,
@@ -102,3 +105,16 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   }
 });
+
+const mapStateToProps = state => {
+  return {
+    events: state.events,
+    event: state.event
+  };
+};
+
+const mapDispatchToProps = {
+  listRecentActivity, getEventDetails
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(HomeScreen);

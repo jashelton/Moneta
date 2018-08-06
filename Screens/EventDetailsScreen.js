@@ -4,6 +4,8 @@ import { Card, Divider, Icon, Button, ListItem } from 'react-native-elements';
 import { eventsService } from '../Services';
 import { authHelper, LocationHelper } from '../Helpers';
 import { WARNING_RED, ACCENT_COLOR, PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
+import { connect } from 'react-redux';
+import { updateEventDetails, updateEventDetailsLikes } from '../reducer';
 
 export class EventDetailsHeader extends React.Component {
   render() {
@@ -22,11 +24,10 @@ export class EventDetailsHeader extends React.Component {
   }
 }
 
-export default class EventDetailsScreen extends React.Component {
+class EventDetailsScreen extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      event: null,
       user: {},
       isVisible: false
     }
@@ -39,36 +40,26 @@ export default class EventDetailsScreen extends React.Component {
   }
 
   async componentDidMount() {
-    const { navigation } = this.props;
-    const eventId = navigation.getParam('eventId', null);
-    navigation.setParams({ deleteEvent: () => this.deleteEvent()});
-
-    const currentLocation = await LocationHelper.getCurrentLocation();
-    const { data } = await eventsService.getEventDetails(eventId, currentLocation);
-    this.setState({ event: data });
-
     const user = await authHelper.getParsedUserData();
     this.setState({user});
   }
 
-  async favoriteEvent(eventId) {
-    const { event } = this.state;
-    event.liked = !event.liked;
-    const { data } = await eventsService.likeEvent(event.id, event.liked);
-    event.liked ? event.likes_count ++ : event.likes_count --;
-    this.setState({ event });
+  async favoriteEvent() {
+    const { event } = this.props;
+    this.props.updateEventDetailsLikes(event.id, event.liked);
   }
 
   incrementCommentCount() {
-    const { event } = this.state;
+    const { event } = this.props;
     event.comment_count ++;
-    this.setState({ event });
+
+    this.props.updateEventDetails(event);
   }
 
   verifyDeleteEvent() {
     AlertIOS.alert(
       'Delete Event',
-      `Are you sure you want to delete: ${this.state.event.title}?`,
+      `Are you sure you want to delete: ${this.props.event.title}?`,
       [
         {
           text: 'Cancel',
@@ -83,7 +74,7 @@ export default class EventDetailsScreen extends React.Component {
   }
 
   async deleteEvent() {
-    const { event } = this.state;
+    const { event } = this.props;
     const data = await eventsService.deleteEvent(event.id);
 
     if (data.status === 200) {
@@ -97,9 +88,10 @@ export default class EventDetailsScreen extends React.Component {
   }
 
   render() {
-    const { event, user, isVisible } = this.state;
+    const { user, isVisible } = this.state;
+    const { event } = this.props;
 
-    if (event) {
+    if (!this.props.loading) {
       return(
         <View style={styles.container}>
           <Card
@@ -121,7 +113,7 @@ export default class EventDetailsScreen extends React.Component {
                     style={styles.rightIcon}
                     color='#fb3958'
                     name={!event.liked ? 'favorite-border' : 'favorite'}
-                    onPress={() => this.favoriteEvent(event.id)}
+                    onPress={() => this.favoriteEvent()}
                   />
                   <Text style={styles.socialCount}>{event.likes_count}</Text>
                 </View>
@@ -253,3 +245,16 @@ const styles = StyleSheet.create({
   },
 });
 
+const mapStateToProps = state => {
+  return {
+    event: state.event,
+    loading: state.loading
+  };
+};
+
+const mapDispatchToProps = {
+  updateEventDetails,
+  updateEventDetailsLikes
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(EventDetailsScreen);
