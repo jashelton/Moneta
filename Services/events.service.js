@@ -3,23 +3,10 @@ import { ENDPOINT } from 'react-native-dotenv';
 import { authHelper } from '../Helpers';
 
 export const eventsService = {
-  getEventMarkers,
   getEventDetails,
   createEvent,
-  // likeEvent,
   deleteEvent,
   getRecentEventsById,
-  getRecentEvents
-}
-
-async function getEventMarkers(filter) {
-  const { headers } = await authHelper.authHeaders();
-  return axios.get(`${ENDPOINT}/event_markers`, {
-    params: {
-      filter
-    },
-    headers
-  });
 }
 
 async function getEventDetails(eventId, userLocation) {
@@ -45,15 +32,4 @@ async function deleteEvent(eventId) {
 async function getRecentEventsById(eventId) {
   const headers = await authHelper.authHeaders();
   return axios.get(`${ENDPOINT}/recent_events/${eventId}`, headers);
-}
-
-async function getRecentEvents(users, coords) {
-  const { headers } = await authHelper.authHeaders();
-  return axios.get(`${ENDPOINT}/recent_events`, {
-    params: {
-      users,
-      coords
-    },
-    headers
-  })  
 }

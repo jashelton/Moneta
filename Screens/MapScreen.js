@@ -1,15 +1,15 @@
 import React from 'react';
 import MapView from 'react-native-maps';
-import { Permissions } from 'expo';
 import { View, StyleSheet } from 'react-native';
 import { Icon } from 'react-native-elements';
+import { connect } from 'react-redux';
 
-import { eventsService } from '../Services';
 import { commonHelper, LocationHelper } from '../Helpers';
 import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
 import FilterEventsModal from '../Components/FilterEventsModal';
+import { getEventMarkers, getEventDetails } from '../reducer';
 
-export default class MapScreen extends React.Component {
+class MapScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
     return {
       title: 'Event Map',
@@ -29,13 +29,13 @@ export default class MapScreen extends React.Component {
     super(props);
 
     this.state = {
-      markers: [],
       filtersVisible: false,
       socialSelected: 'All',
       coords: { latitude: null, longitude: null }
     }
 
     this.updateSocialSelected = this.updateSocialSelected.bind(this);
+    this.setEventDetails = this.setEventDetails.bind(this);
   }
 
   async componentDidMount() {
@@ -62,20 +62,25 @@ export default class MapScreen extends React.Component {
     this.getEvents(option);
   }
 
-  async getEvents(selectedOption) {
-    const { data } = await eventsService.getEventMarkers(selectedOption);
-    let { markers } = this.state;
-
-    markers = data;
-    this.setState({markers});
+  getEvents(selectedOption) {
+    this.props.getEventMarkers(selectedOption);
   }
 
-  async toggleIsVisible() {
+  toggleIsVisible() {
     this.setState({isVisible: true});
   }
 
+  async setEventDetails(eventId) {
+    const { navigation } = this.props;
+    const currentLocation = await LocationHelper.getCurrentLocation();
+
+    this.props.getEventDetails(eventId, currentLocation);
+    navigation.navigate('EventDetails')
+  }
+
   render() {
-    const { markers, filtersVisible, socialSelected } = this.state;
+    const { filtersVisible, socialSelected } = this.state;
+    const { markers } = this.props;
     const { latitude, longitude } = this.state.coords;
 
     return (
@@ -96,7 +101,7 @@ export default class MapScreen extends React.Component {
             { markers.length && markers.map((m, i) => (
               <MapView.Marker
                 key={i}
-                onPress={() => this.props.navigation.navigate('EventDetails', { eventId: m.id })}
+                onPress={() => this.setEventDetails(m.id)}
                 ref={marker => { this.marker = marker }}
                 coordinate={m.coordinate}
               />
@@ -128,3 +133,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
 });
+
+const mapStateToProps = state => {
+  return {
+    markers: state.markers,
+    loading: state.loading
+  };
+};
+
+const mapDispatchToProps = {
+  getEventMarkers,
+  getEventDetails
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(MapScreen);
