@@ -83,16 +83,8 @@ export default class CreateEventScreen extends React.Component {
     let { eventForm } = this.state;
     eventForm = initialEvent;
     eventForm.localImage = null;
-    console.log(eventForm);
 
-    this.setState({
-      eventForm,
-      imageFile: null
-    });
-
-    setTimeout(() => {
-      console.log(this.state);
-    }, 500);
+    this.setState({ eventForm, imageFile: null });
   }
 
   updatePrivacySettings(val) {
