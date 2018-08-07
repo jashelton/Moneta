@@ -4,8 +4,7 @@ import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
 
 import RecentActivity from '../Components/RecentActivity';
 import { LocationHelper } from '../Helpers';
-
-import { listRecentActivity, getEventDetails } from '../reducer'
+import { listRecentActivity } from '../reducer'
 import { connect } from 'react-redux';
 
 class HomeScreen extends React.Component {
@@ -26,7 +25,7 @@ class HomeScreen extends React.Component {
         { !loading ?
           <RecentActivity
             navigation={navigation}
-            recentEvents={recentEvents}
+            events={recentEvents}
             noDataMessage='There is no recent activity to display.'
           />
         :
@@ -59,7 +58,7 @@ const mapStateToProps = state => {
 };
 
 const mapDispatchToProps = {
-  listRecentActivity, getEventDetails
+  listRecentActivity
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(HomeScreen);

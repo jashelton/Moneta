@@ -9,7 +9,7 @@ import { getEventDetails } from '../reducer';
 
 class RecentActivity extends React.Component {
 
-  async setEventDetails(eventId) {
+  async goToEventsDetails(eventId) {
     const { navigation } = this.props;
     const currentLocation = await LocationHelper.getCurrentLocation();
 
@@ -18,17 +18,17 @@ class RecentActivity extends React.Component {
   }
 
   render() {
-    const { recentEvents } = this.props;
+    const { events } = this.props;
 
     return(
       <ScrollView>
         <View style={styles.imagesContainer}>
-          { recentEvents.map((event, i) => (
+          { events.map((event, i) => (
             <TouchableHighlight
               key={i}
               underlayColor="#eee"
               style={styles.imageTouch}
-              onPress={() => this.setEventDetails(event.id)}
+              onPress={() => this.goToEventsDetails(event.id)}
             >
               <ImageBackground style={styles.image} source={{uri: event.image}}>
                 <View style={styles.imageOverlay}>
@@ -44,7 +44,7 @@ class RecentActivity extends React.Component {
 }
 
 RecentActivity.propTypes = {
-  recentEvents: PropTypes.array.isRequired
+  events: PropTypes.array.isRequired
 }
 
 const styles = StyleSheet.create({
@@ -75,7 +75,6 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = state => {
   return {
-    recentEvents: state.recentEvents,
     loading: state.loading
   };
 };
