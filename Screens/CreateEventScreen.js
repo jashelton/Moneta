@@ -139,6 +139,19 @@ export default class CreateEventScreen extends React.Component {
     }
   }
 
+  // Custom location selection.  Get address and coords.
+  async customImageLocation(data, details) {
+    const { location } = details.geometry;
+    let { eventForm } = this.state;
+
+    eventForm.imageCoords = { latitude: location.lat, longitude: location.lng };
+    const address = await LocationHelper.coordsToAddress(eventForm.imageCoords);
+    eventForm.imageLocation = `${address[0].name}, ${address[0].city}, ${address[0].region}, ${address[0].isoCountryCode}`
+    eventForm.addressInfo = address[0];
+
+    this.setState({ eventForm, visiblePlacesSearch: false });
+  }
+
   async createEvent() {
     const { imageFile } = this.state;
     const { title, description, eventPrivacy, imageLocation, imageCoords, addressInfo } = this.state.eventForm;
@@ -148,7 +161,6 @@ export default class CreateEventScreen extends React.Component {
       return;
     }
 
-    // TODO: This won't work with manually entered locations
     const event = {
       title,
       description,
@@ -171,19 +183,6 @@ export default class CreateEventScreen extends React.Component {
       return;
     }
     
-  }
-
-  // Custom location selection.  Get address and coords.
-  async customImageLocation(data, details) {
-    const { location } = details.geometry;
-    let { eventForm } = this.state;
-
-    eventForm.imageLocation = data.description;
-    eventForm.imageCoords = { latitude: location.lat, longitude: location.lng };
-    const address = await LocationHelper.coordsToAddress(eventForm.imageCoords);
-    eventForm.addressInfo = address[0];
-
-    this.setState({ eventForm, visiblePlacesSearch: false });
   }
 
   render() {
