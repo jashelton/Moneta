@@ -82,8 +82,17 @@ export default class CreateEventScreen extends React.Component {
   clearEvent() {
     let { eventForm } = this.state;
     eventForm = initialEvent;
+    eventForm.localImage = null;
+    console.log(eventForm);
 
-    this.setState({ eventForm, imageFile: null });
+    this.setState({
+      eventForm,
+      imageFile: null
+    });
+
+    setTimeout(() => {
+      console.log(this.state);
+    }, 500);
   }
 
   updatePrivacySettings(val) {
@@ -117,6 +126,7 @@ export default class CreateEventScreen extends React.Component {
     });
 
     if (!result.cancelled) {
+      console.log(result);
       const { imageFile, eventForm } = this.state;
       imageFile = { uri: result.uri, name: this.createDateString(), type: result.type }; // Required fields for S3 upload
       eventForm.localImage = result; // Path to image to display to user before S3 upload
