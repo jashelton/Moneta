@@ -16,7 +16,7 @@ const initialEvent = {
   description: '',
   localImage: null,
   eventPrivacy: 'Public',
-  imageLocation: null,
+  imageLocation: '',
   imageCoords: null
 };
 
@@ -60,7 +60,7 @@ export default class CreateEventScreen extends React.Component {
     this.state = {
       eventForm: initialEvent,
       imageFile: null,
-      visiblePlacesSearch: false
+      visiblePlacesSearch: false,
     };
 
     this.clearEvent = this.clearEvent.bind(this);
@@ -83,6 +83,8 @@ export default class CreateEventScreen extends React.Component {
     let { eventForm } = this.state;
     eventForm = initialEvent;
     eventForm.localImage = null;
+    eventForm.imageCoords = null
+    eventForm.imageLocation = '';
 
     this.setState({ eventForm, imageFile: null });
   }
@@ -118,7 +120,6 @@ export default class CreateEventScreen extends React.Component {
     });
 
     if (!result.cancelled) {
-      console.log(result);
       const { imageFile, eventForm } = this.state;
       imageFile = { uri: result.uri, name: this.createDateString(), type: result.type }; // Required fields for S3 upload
       eventForm.localImage = result; // Path to image to display to user before S3 upload
@@ -131,16 +132,19 @@ export default class CreateEventScreen extends React.Component {
         const address = await LocationHelper.coordsToAddress(imageCoords);
         const imageLocation = `${address[0].name}, ${address[0].city}, ${address[0].region}, ${address[0].isoCountryCode}`
 
-        this.setState({ imageLocation, imageCoords });
+        const { eventForm } = this.state;
+        eventForm.imageLocation = imageLocation;
+        eventForm.imageCoords = imageCoords;
+        this.setState({ eventForm });
       }
     }
   }
 
   async createEvent() {
-    const { imageFile, imageLocation, imageCoords } = this.state;
-    const { title, description, eventPrivacy } = this.state.eventForm;
+    const { imageFile } = this.state;
+    const { title, description, eventPrivacy, imageLocation, imageCoords } = this.state.eventForm;
 
-    if (title === '' || description === '' || !imageLocation || !imageCoords) {
+    if (title === '' || description === '' || imageLocation === '' || !imageCoords) {
       alert('You must include a Title and Description.  Also need a valid image.');
       return;
     }
@@ -168,22 +172,26 @@ export default class CreateEventScreen extends React.Component {
   }
 
   // Custom location selection.  Get address and coords.
-  customImageLocation(data, details) {
+  async customImageLocation(data, details) {
     const { location } = details.geometry;
-    let { imageLocation, imageCoords } = this.state;
+    let { eventForm } = this.state;
 
-    imageLocation = data.description;
-    imageCoords = { latitude: location.lat, longitude: location.lng };
+    eventForm.imageLocation = data.description;
+    eventForm.imageCoords = { latitude: location.lat, longitude: location.lng };
+    const address = await LocationHelper.coordsToAddress(eventForm.imageCoords);
+    console.log(address);
 
-    this.setState({ imageLocation, visiblePlacesSearch: false, imageCoords });
+    this.setState({ eventForm, visiblePlacesSearch: false });
   }
 
   render() {
     const { localImage,
             title,
             description,
-            eventPrivacy } = this.state.eventForm;
-    const { visiblePlacesSearch, imageLocation, imageCoords } = this.state;
+            eventPrivacy,
+            imageLocation,
+            imageCoords } = this.state.eventForm;
+    const { visiblePlacesSearch } = this.state;
     return(
       <ScrollView contentContainerStyle={{flex: 1, flexDirection: 'column', padding: 15, backgroundColor: '#fff'}}>
         <View style={styles.eventPrivacyContainer}>
