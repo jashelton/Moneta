@@ -17,7 +17,8 @@ const initialEvent = {
   localImage: null,
   eventPrivacy: 'Public',
   imageLocation: '',
-  imageCoords: null
+  imageCoords: null,
+  addressInfo: null
 };
 
 export default class CreateEventScreen extends React.Component {
@@ -132,6 +133,7 @@ export default class CreateEventScreen extends React.Component {
         const { eventForm } = this.state;
         eventForm.imageLocation = imageLocation;
         eventForm.imageCoords = imageCoords;
+        eventForm.addressInfo = address[0];
         this.setState({ eventForm });
       }
     }
@@ -139,7 +141,7 @@ export default class CreateEventScreen extends React.Component {
 
   async createEvent() {
     const { imageFile } = this.state;
-    const { title, description, eventPrivacy, imageLocation, imageCoords } = this.state.eventForm;
+    const { title, description, eventPrivacy, imageLocation, imageCoords, addressInfo } = this.state.eventForm;
 
     if (title === '' || description === '' || imageLocation === '' || !imageCoords) {
       alert('You must include a Title and Description.  Also need a valid image.');
@@ -151,6 +153,9 @@ export default class CreateEventScreen extends React.Component {
       title,
       description,
       privacy: eventPrivacy,
+      city: addressInfo.city,
+      region: addressInfo.region,
+      country_code: addressInfo.isoCountryCode,
       coordinate: imageCoords
     };
 
@@ -176,7 +181,7 @@ export default class CreateEventScreen extends React.Component {
     eventForm.imageLocation = data.description;
     eventForm.imageCoords = { latitude: location.lat, longitude: location.lng };
     const address = await LocationHelper.coordsToAddress(eventForm.imageCoords);
-    console.log(address);
+    eventForm.addressInfo = address[0];
 
     this.setState({ eventForm, visiblePlacesSearch: false });
   }
