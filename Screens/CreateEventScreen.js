@@ -82,9 +82,6 @@ export default class CreateEventScreen extends React.Component {
   clearEvent() {
     let { eventForm } = this.state;
     eventForm = initialEvent;
-    eventForm.localImage = null;
-    eventForm.imageCoords = null
-    eventForm.imageLocation = '';
 
     this.setState({ eventForm, imageFile: null });
   }
