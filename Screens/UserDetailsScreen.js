@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ScrollView, Text, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, ActivityIndicator, Modal } from 'react-native';
 import { PRIMARY_DARK_COLOR, ACCENT_COLOR, PRIMARY_LIGHT_COLOR } from '../common/styles/common-styles';
 import { TabView, TabBar, SceneMap } from 'react-native-tab-view';
 import { Avatar, Icon, Button } from 'react-native-elements';
@@ -21,7 +21,7 @@ export default class UserDetailsScreen extends React.Component {
           size={28}
           name="more-horiz"
           color={PRIMARY_LIGHT_COLOR}
-          onPress={navigation.getParam('toggleIsVisible')}
+          onPress={navigation.getParam('toggleOptionsModal')}
         />
       )
     }
@@ -38,14 +38,21 @@ export default class UserDetailsScreen extends React.Component {
       events: [], // What is passed to RecentActivity component
       currentUser: null,
       userDetails: null,
-      isLoading: true
+      isLoading: true,
+      optionsModalVisible: false,
+      editProfileModalVisible: false
     }
 
     this.toggleFollowing = this.toggleFollowing.bind(this);
+    this.toggleOptionsModal = this.toggleOptionsModal.bind(this);
+    this.toggleEditProfile = this.toggleEditProfile.bind(this);
   }
 
   componentDidMount() {
     const userId = this.props.navigation.getParam('userId', null);
+    this.props.navigation.setParams({
+      toggleOptionsModal: () => this.toggleOptionsModal(),
+    });
 
     Promise.all([userService.getUserDetails(userId), eventsService.getRecentEventsById(userId), authHelper.getCurrentUserId()])
       .then(values => {
@@ -85,6 +92,11 @@ export default class UserDetailsScreen extends React.Component {
     }
   }
 
+  toggleOptionsModal() {
+    const { optionsModalVisible } = this.state;
+    this.setState({ optionsModalVisible: !optionsModalVisible });
+  }
+
   _renderTabBar = props => {
     return (
       <TabBar
@@ -105,27 +117,31 @@ export default class UserDetailsScreen extends React.Component {
     return name.split(' ').map((n,i,a)=> i === 0 || i+1 === a.length ? n[0] : null).join('');
   }
 
+  // Edit Profile
+  toggleEditProfile() {
+    const { editProfileModalVisible } = this.state;
+    this.setState({ editProfileModalVisible: !editProfileModalVisible });
+  }
+
   render() {
-    const { currentUser, userDetails, isLoading } = this.state;
+    const { currentUser, userDetails, isLoading, optionsModalVisible, editProfileModalVisible } = this.state;
 
     if (!isLoading) {
       return(
         <View style={styles.container}>
           <View style={styles.userInfoContainer}>
             <View style={{width: '100%'}}>
-              { !isLoading && currentUser !== userDetails.id &&
+              { currentUser !== userDetails.id ?
                 <Button
-                  raised={true}
                   title={userDetails.isFollowing ? 'Unfollow' : 'Follow'}
-                  buttonStyle={{
-                    backgroundColor: PRIMARY_DARK_COLOR,
-                    justifyContent: 'flex-end',
-                    alignSelf: 'flex-end',
-                    marginRight: 15,
-                    borderWidth: 1,
-                    borderColor: ACCENT_COLOR
-                  }}
+                  buttonStyle={styles.mainBtn}
                   onPress={this.toggleFollowing}
+                />
+                :
+                <Button
+                  title='Edit Profile'
+                  buttonStyle={styles.mainBtn}
+                  onPress={this.toggleEditProfile}
                 />
               }
               <Avatar
@@ -152,6 +168,34 @@ export default class UserDetailsScreen extends React.Component {
             onIndexChange={index => this.setState({ index })}
             initialLayout={this.initialLayout}
           />
+          {/* Options Modal */}
+          <Modal
+            animationType="slide"
+            transparent={false}
+            visible={optionsModalVisible}
+          >
+            <View style={styles.modalHeader}>
+              <Button title='Cancel' titleStyle={{color: ACCENT_COLOR}} clear={true} onPress={this.toggleOptionsModal}/>
+              <Button title='Done' titleStyle={{color: ACCENT_COLOR}} clear={true}/>
+            </View>
+            <View style={{flexDirection: 'column', padding: 15}}>
+              <Text>Other options</Text>
+            </View>
+          </Modal>
+          {/* Edit Profile Modal */}
+          <Modal
+            animationType="slide"
+            transparent={false}
+            visible={editProfileModalVisible}
+          >
+            <View style={styles.modalHeader}>
+              <Button title='Cancel' titleStyle={{color: ACCENT_COLOR}} clear={true} onPress={this.toggleEditProfile}/>
+              <Button title='Done' titleStyle={{color: ACCENT_COLOR}} clear={true}/>
+            </View>
+            <View style={{flexDirection: 'column', padding: 15}}>
+              <Text>Edit Profile</Text>
+            </View>
+          </Modal>
         </View>
       );
     } else {
@@ -177,11 +221,24 @@ const styles = StyleSheet.create({
     height: '30%',
     width: '100%',
     flexDirection: 'column',
-    // alignItems: 'center',
-    // justifyContent: 'center'
   },
   textContent: {
     color: PRIMARY_LIGHT_COLOR,
     fontSize: 16
-  }
+  },
+  mainBtn: {
+    backgroundColor: PRIMARY_DARK_COLOR,
+    justifyContent: 'flex-end',
+    alignSelf: 'flex-end',
+    marginRight: 15,
+    borderWidth: 1,
+    borderColor: ACCENT_COLOR
+  },
+  modalHeader: {
+    height: 60,
+    backgroundColor: PRIMARY_DARK_COLOR,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+  },
 });
