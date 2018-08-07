@@ -1,10 +1,9 @@
 import React from 'react';
-import { View, ScrollView, Text, StyleSheet, ActivityIndicator } from 'react-native';
-import { ListItem } from 'react-native-elements';
-import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
+import { View, ScrollView, Text, StyleSheet, Dimensions, TouchableHighlight, ImageBackground } from 'react-native';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
+import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
 import { LocationHelper } from '../Helpers';
 import { getEventDetails } from '../reducer';
 
@@ -19,58 +18,65 @@ class RecentActivity extends React.Component {
   }
 
   render() {
-    const { events } = this.props;
+    const { recentEvents } = this.props;
 
     return(
-      <ScrollView contentContainerStyle={styles.container}>
-        { !events ? // Events haven't loaded
-          <View><ActivityIndicator /></View>
-        : events && !events.length ? // Event are loaded and empty
-          <View style={{padding: 25}}>
-            <Text style={styles.lightText}>{this.props.noDataMessage}</Text>
-          </View>
-        : // Events are loaded and exist
-          <View>
-            { events.map((event, i) => (
-              <ListItem
-                key={i}
-                leftAvatar={{ source: {uri: event.image}}}
-                title={event.title}
-                subtitle={event.name ? event.name : null}
-                containerStyle={{backgroundColor: PRIMARY_DARK_COLOR}}
-                titleStyle={{color: '#fff'}}
-                subtitleStyle={{fontSize: 12, color: 'grey'}}
-                chevron
-                bottomDivider
-                onPress={() => this.setEventDetails(event.id)}
-              />
-            ))}
-          </View>
-        }
+      <ScrollView>
+        <View style={styles.imagesContainer}>
+          { recentEvents.map((event, i) => (
+            <TouchableHighlight
+              key={i}
+              underlayColor="#eee"
+              style={styles.imageTouch}
+              onPress={() => this.setEventDetails(event.id)}
+            >
+              <ImageBackground style={styles.image} source={{uri: event.image}}>
+                <View style={styles.imageOverlay}>
+                  <Text style={{color:'#fff'}}>{event.name}</Text>
+                </View>
+              </ImageBackground>
+            </TouchableHighlight>
+          ))}
+        </View>
       </ScrollView>
     );
   }
 }
 
+RecentActivity.propTypes = {
+  recentEvents: PropTypes.array.isRequired
+}
+
 const styles = StyleSheet.create({
-  constainer: {
+  imagesContainer: {
     flex: 1,
-    backgroundColor: 'red',
-    alignItems: 'center',
-    justifyContent: 'center'
+    flexDirection: 'row',
+    flexWrap: 'wrap',
   },
-  lightText: {
-    color: '#fff'
+  imageTouch: {
+    width: '50%',
+    height: Dimensions.get('window').height / 4,
+    borderWidth: 2,
+    borderColor: PRIMARY_DARK_COLOR,
+  },
+  image: {
+    flex: 1,
+  },
+  imageOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    height: '25%',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center'
   }
 });
 
-RecentActivity.propTypes = {
-  events: PropTypes.array.isRequired
-}
-
 const mapStateToProps = state => {
   return {
-    event: state.event
+    recentEvents: state.recentEvents,
+    loading: state.loading
   };
 };
 

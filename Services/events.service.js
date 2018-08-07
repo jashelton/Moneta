@@ -37,11 +37,6 @@ async function createEvent(event) {
   return axios.post(`${ENDPOINT}/events/create`, event, headers);
 }
 
-// async function likeEvent(eventId, liked) {
-//   const headers = await authHelper.authHeaders();
-//   return axios.post(`${ENDPOINT}/events/${eventId}/like`, { liked: liked ? 1 : 0 }, headers)
-// }
-
 async function deleteEvent(eventId) {
   const headers = await authHelper.authHeaders();
   return axios.put(`${ENDPOINT}/events/${eventId}/delete`, null, headers)

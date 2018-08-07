@@ -25,11 +25,11 @@ const recentActivityStack = createStackNavigator(
     Recent: {
       screen: HomeScreen,
       navigationOptions: { 
-        title: 'Recent Events',
-        headerTintColor: PRIMARY_LIGHT_COLOR,
-        headerStyle: {
-          backgroundColor: PRIMARY_DARK_COLOR
-        }
+        // title: 'Recent Events',
+        // headerTintColor: PRIMARY_LIGHT_COLOR,
+        // headerStyle: {
+        //   backgroundColor: PRIMARY_DARK_COLOR
+        // }
       },
     },
     EventDetails: EventDetailsScreen,

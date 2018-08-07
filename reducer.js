@@ -10,12 +10,12 @@ export const UPDATE_EVENT_LIKES_FAIL = 'moneta/eventDetails/UPDATE_LIKES_FAIL';
 
 import update from 'immutability-helper';
 
-export default function reducer(state = { events: [], event: {} }, action) {
+export default function reducer(state = { events: [], event: {}, recentEvents: [] }, action) {
   switch (action.type) {
     case GET_RECENT_ACTIVITY:
       return { ...state, loading: true };
     case GET_RECENT_ACTIVITY_SUCCESS:
-      return { ...state, loading: false, events: action.payload.data };
+      return { ...state, loading: false, recentEvents: action.payload.data };
     case GET_RECENT_ACTIVITY_FAIL:
       return {
         ...state,
@@ -50,12 +50,14 @@ export default function reducer(state = { events: [], event: {} }, action) {
   }
 }
 
-export function listRecentActivity(data) {
+export function listRecentActivity(users, coords) {
   return {
     type: GET_RECENT_ACTIVITY,
     payload: {
       request: {
-        url: '/'
+        url: '/recent_events',
+        method: 'GET',
+        params: { users, coords }
       }
     }
   }
