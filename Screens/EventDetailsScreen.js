@@ -1,11 +1,10 @@
 import React from 'react';
 import { ScrollView, View, Image, Text, StyleSheet, ActivityIndicator, AlertIOS, Modal } from 'react-native';
 import { Card, Divider, Icon, Button, ListItem } from 'react-native-elements';
-import { eventsService } from '../Services';
 import { authHelper, LocationHelper } from '../Helpers';
 import { WARNING_RED, ACCENT_COLOR, PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
 import { connect } from 'react-redux';
-import { updateEventDetailsLikes } from '../reducer';
+import { updateEventDetailsLikes, deleteEvent } from '../reducer';
 
 export class EventDetailsHeader extends React.Component {
   render() {
@@ -34,7 +33,6 @@ class EventDetailsScreen extends React.Component {
 
     this.incrementCommentCount = this.incrementCommentCount.bind(this);
     this.verifyDeleteEvent = this.verifyDeleteEvent.bind(this);
-    this.deleteEvent = this.deleteEvent.bind(this);
     this.toggleVisibility = this.toggleVisibility.bind(this);
   }
 
@@ -73,15 +71,9 @@ class EventDetailsScreen extends React.Component {
   }
 
   async deleteEvent() {
-    const { event } = this.props;
-    const data = await eventsService.deleteEvent(event.id);
-
-    if (data.status === 200) {
-      // TODO: Filter this event out of 'markers' on MapScreen
-            // Filter out from recent activity
-      // Using redux -> dispatch delete with event id, filter deletedEvent from Events.
-      this.props.navigation.goBack();
-    }
+    const { event, navigation, deleteEvent } = this.props;
+    deleteEvent(event.id);
+    navigation.goBack();
   }
 
   toggleVisibility() {
@@ -254,7 +246,7 @@ const mapStateToProps = state => {
 };
 
 const mapDispatchToProps = {
-  updateEventDetailsLikes
+  updateEventDetailsLikes, deleteEvent
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(EventDetailsScreen);

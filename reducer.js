@@ -10,11 +10,13 @@ export const UPDATE_EVENT_LIKES_FAIL = 'moneta/eventDetails/UPDATE_LIKES_FAIL';
 export const GET_MARKERS = 'moneta/markers/GET_MARKERS';
 export const GET_MARKERS_SUCCESS = 'moneta/markers/GET_MARKERS_SUCCESS';
 export const GET_MARKERS_FAIL = 'moneta/markers/GET_MARKERS_FAIL';
+export const DELETE_EVENT = 'moneta/events/DELETE_EVENT';
+export const DELETE_EVENT_SUCCESS = 'moneta/events/DELETE_EVENT_SUCCESS';
+export const DELETE_EVENT_FAIL = 'moneta/events/DELETE_EVENT_FAIL';
 
 import update from 'immutability-helper';
 
 const initialState = {
-  events: [],
   event: {},
   recentEvents: [],
   markers: []
@@ -65,6 +67,24 @@ export default function reducer(state = initialState, action) {
         loading: false,
         error: 'There was an error retrieving the event markers.'
       };
+    case DELETE_EVENT:
+      return { ...state, loading: true }
+    case DELETE_EVENT_SUCCESS:
+      const { deleted_event } = action.payload.data;
+      deleted_event = parseInt(deleted_event);
+      
+      return {
+        ...state,
+        loading: false,
+        recentEvents: state.recentEvents.filter(re => re.id !== deleted_event),
+        markers: state.markers.filter(m => m.id !== deleted_event)
+      };
+    case DELETE_EVENT_FAIL:
+      return {
+        ...state,
+        loading: false,
+        error: 'There was a problem deleting the event.'
+      }
     default:
       return state;
   }
@@ -117,6 +137,18 @@ export function getEventMarkers(filter) {
         url: `/event_markers`,
         method: 'GET',
         params: { filter }
+      }
+    }
+  }
+}
+
+export function deleteEvent(eventId) {
+  return {
+    type: DELETE_EVENT,
+    payload: {
+      request: {
+        url: `/events/${eventId}/delete`,
+        method: 'PUT',
       }
     }
   }
