@@ -172,11 +172,12 @@ export default class UserDetailsScreen extends React.Component {
 
   async submitUpdatedUser() {
     let { imageFile, userDetails } = this.state;
-    const { id, first_name, last_name } = userDetails;
+    const { id, first_name, last_name, username } = userDetails;
     const user = {
       id,
       first_name,
       last_name,
+      username
     };
 
     try {
@@ -186,7 +187,7 @@ export default class UserDetailsScreen extends React.Component {
       }
 
       const { data } = await userService.updateUserDetails(user);
-      
+
       this.setState({ editProfileModalVisible: false });
     } catch (err) {
       console.log(err);
