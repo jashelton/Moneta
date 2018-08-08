@@ -6,7 +6,7 @@ import { TextField } from 'react-native-material-textfield';
 import { RNS3 } from 'react-native-aws3';
 
 import { eventsService } from '../Services';
-import { authHelper, LocationHelper } from '../Helpers';
+import { authHelper, LocationHelper, commonHelper } from '../Helpers';
 import { AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, BUCKET, BUCKET_REGION } from 'react-native-dotenv';
 import ViewToggle from '../Components/ViewToggle';
 import GooglePlacesInput from '../Components/LocationAutocomplete';
@@ -103,22 +103,11 @@ export default class CreateEventScreen extends React.Component {
 
   // Check permission on CAMERA_ROLL and store what is needed to upload image to S3.
   async prepS3Upload() {
-    let { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
-
-    if (status !== 'granted') {
-      this.setState({
-        errorMessage: 'Permission to access camera roll was denied',
-      });
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({ // Require type image
-      allowsEditing: true,
-      aspect: [4, 3],
-      exif: true
-    });
+    const result = await commonHelper.selectImage(true);
 
     if (!result.cancelled) {
       const { imageFile, eventForm } = this.state;
+
       imageFile = { uri: result.uri, name: this.createDateString(), type: result.type }; // Required fields for S3 upload
       eventForm.localImage = result; // Path to image to display to user before S3 upload
 
@@ -134,8 +123,12 @@ export default class CreateEventScreen extends React.Component {
         eventForm.imageLocation = imageLocation;
         eventForm.imageCoords = imageCoords;
         eventForm.addressInfo = address[0];
-        this.setState({ eventForm });
+      } else {
+        eventForm.imageLocation = '';
+        eventForm.imageCoords = null;
       }
+
+      this.setState({ eventForm });
     }
   }
 
@@ -153,7 +146,7 @@ export default class CreateEventScreen extends React.Component {
   }
 
   async createEvent() {
-    const { imageFile } = this.state;
+    let { imageFile, eventForm } = this.state;
     const { title, description, eventPrivacy, imageLocation, imageCoords, addressInfo } = this.state.eventForm;
 
     if (title === '' || description === '' || imageLocation === '' || !imageCoords) {
@@ -177,7 +170,10 @@ export default class CreateEventScreen extends React.Component {
       const { data } = await eventsService.createEvent(event);
       // TODO: dispatch action to add data.event to event markers
 
-      this.setState({ eventForm: initialEvent });
+      eventForm = initialEvent;
+      eventForm.imageLocation = '';
+      eventForm.imageCoords = null;
+      this.setState({ eventForm });
     } catch (err) {
       console.log(err);
       return;

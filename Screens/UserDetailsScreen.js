@@ -11,7 +11,7 @@ import { RNS3 } from 'react-native-aws3';
 import RecentActivity from '../Components/RecentActivity';
 import UserStats from '../Components/UserStats';
 import { eventsService, userService } from '../Services';
-import { authHelper } from '../Helpers';
+import { authHelper, commonHelper } from '../Helpers';
 
 export default class UserDetailsScreen extends React.Component {
   static navigationOptions = ({navigation}) => {
@@ -150,18 +150,7 @@ export default class UserDetailsScreen extends React.Component {
 
   // Check permission on CAMERA_ROLL and store what is needed to upload image to S3.
   async prepS3Upload() {
-    let { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
-
-    if (status !== 'granted') {
-      this.setState({
-        errorMessage: 'Permission to access camera roll was denied',
-      });
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({ // Require type image
-      allowsEditing: true,
-      aspect: [4, 3],
-    });
+    const result = await commonHelper.selectImage(false);
 
     if (!result.cancelled) {
       const { imageFile } = this.state;
