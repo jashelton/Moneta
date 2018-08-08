@@ -4,7 +4,8 @@ import { authHelper } from '../Helpers';
 
 export const userService = {
   getUserDetails,
-  toggleFollowing
+  toggleFollowing,
+  updateUserDetails
 }
 
 async function getUserDetails(userId) {
@@ -24,4 +25,9 @@ async function followUser(userId) {
 async function unfollowUser(userId) {
   const headers = await authHelper.authHeaders();
   return axios.delete(`${ENDPOINT}/follows/${userId}/unfollow`, headers);
+}
+
+async function updateUserDetails(user) {
+  const headers = await authHelper.authHeaders();
+  return axios.put(`${ENDPOINT}/users/${user.id}/update`, { user }, headers)
 }
