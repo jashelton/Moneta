@@ -14,12 +14,20 @@ export const DELETE_EVENT = 'moneta/events/DELETE_EVENT';
 export const DELETE_EVENT_SUCCESS = 'moneta/events/DELETE_EVENT_SUCCESS';
 export const DELETE_EVENT_FAIL = 'moneta/events/DELETE_EVENT_FAIL';
 
+export const GET_USER_DETAILS = 'moneta/users/LOAD_USER_DETAILS';
+export const GET_USER_DETAILS_SUCCESS = 'moneta/users/LOAD_USER_DETAILS_SUCCESS';
+export const GET_USER_DETAILS_FAIL = 'moneta/users/LOAD_USER_DETAILS_FAIL';
+export const UPDATE_USER_FOLLOWS = 'moneta/users/UPDATE_USER_FOLLOWS';
+export const UPDATE_USER_FOLLOWS_SUCCESS = 'moneta/users/UPDATE_USER_FOLLOWS_SUCCESS';
+export const UPDATE_USER_FOLLOWS_FAIL = 'moneta/users/UPDATE_USER_FOLLOWS_FAIL';
+
 import update from 'immutability-helper';
 
 const initialState = {
   event: {},
   recentEvents: [],
-  markers: []
+  markers: [],
+  userDetails: {}
 };
 
 export default function reducer(state = initialState, action) {
@@ -85,11 +93,35 @@ export default function reducer(state = initialState, action) {
         loading: false,
         error: 'There was a problem deleting the event.'
       }
+
+    // Users
+    case GET_USER_DETAILS:
+      return { ...state, loading: true };
+    case GET_USER_DETAILS_SUCCESS:
+      return { ...state, loading: false, userDetails: action.payload.data };
+    case GET_USER_DETAILS_FAIL:
+      return {
+        ...state,
+        loading: false,
+        error: 'There was an issue getting the info for this user'
+      }
+    case UPDATE_USER_FOLLOWS:
+      return { ...state, loading: false };
+    case UPDATE_USER_FOLLOWS_SUCCESS:
+      const updatedDetails = update(state.userDetails, { $set: { ...state.userDetails, ...action.payload.data } });
+      return { ...state, loading: false, userDetails: updatedDetails }
+    case UPDATE_USER_FOLLOWS_FAIL:
+      return {
+        ...state,
+        loading: false,
+        error: 'There was a problem handling your request.'
+      }
     default:
       return state;
   }
 }
 
+// Events
 export function listRecentActivity(users, coords) {
   return {
     type: GET_RECENT_ACTIVITY,
@@ -149,6 +181,34 @@ export function deleteEvent(eventId) {
       request: {
         url: `/events/${eventId}/delete`,
         method: 'PUT',
+      }
+    }
+  }
+}
+
+// Users
+export function getUserDetails(userId) {
+  return {
+    type: GET_USER_DETAILS,
+    payload: {
+      request: {
+        url: `/user-details/${userId}`,
+        method: 'GET'
+      }
+    }
+  }
+}
+
+export function updateUserDetailsFollows(userId, isFollowing) {
+  const url = `/follows/${userId}/${isFollowing ? 'follow' : 'unfollow'}`;
+  const method = `${isFollowing ? 'POST' : 'DELETE'}`;
+
+  return {
+    type: UPDATE_USER_FOLLOWS,
+    payload: {
+      request: {
+        url,
+        method
       }
     }
   }

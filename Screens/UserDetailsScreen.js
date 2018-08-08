@@ -3,17 +3,19 @@ import { View, Text, StyleSheet, Dimensions, ActivityIndicator, Modal } from 're
 import { PRIMARY_DARK_COLOR, ACCENT_COLOR, PRIMARY_LIGHT_COLOR } from '../common/styles/common-styles';
 import { TabView, TabBar, SceneMap } from 'react-native-tab-view';
 import { Avatar, Icon, Button, Divider } from 'react-native-elements';
-import { Constants, ImagePicker, Permissions } from 'expo';
+import { Constants } from 'expo';
 import { TextField } from 'react-native-material-textfield';
 import { AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, BUCKET, BUCKET_REGION } from 'react-native-dotenv';
 import { RNS3 } from 'react-native-aws3';
+import { connect } from 'react-redux';
 
 import RecentActivity from '../Components/RecentActivity';
 import UserStats from '../Components/UserStats';
 import { eventsService, userService } from '../Services';
 import { authHelper, commonHelper } from '../Helpers';
+import { getUserDetails, updateUserDetailsFollows } from '../reducer';
 
-export default class UserDetailsScreen extends React.Component {
+class UserDetailsScreen extends React.Component {
   static navigationOptions = ({navigation}) => {
     return {
       headerTitle: ( navigation.getParam('getUsername') ),
@@ -49,14 +51,11 @@ export default class UserDetailsScreen extends React.Component {
       ],
       events: [], // What is passed to RecentActivity component
       currentUser: null,
-      userDetails: null,
-      isLoading: true,
       optionsModalVisible: false,
       editProfileModalVisible: false,
       imageFile: null,
     }
 
-    this.toggleFollowing = this.toggleFollowing.bind(this);
     this.toggleOptionsModal = this.toggleOptionsModal.bind(this);
     this.toggleEditProfile = this.toggleEditProfile.bind(this);
     this.prepS3Upload = this.prepS3Upload.bind(this);
@@ -64,22 +63,20 @@ export default class UserDetailsScreen extends React.Component {
   }
 
   async componentDidMount() {
-    const user_data = await authHelper.getParsedUserData();
-    this.options.keyPrefix = `user_${user_data.id}/`;
-
     const userId = this.props.navigation.getParam('userId', null);
+    this.props.getUserDetails(userId);
+
     this.props.navigation.setParams({
       toggleOptionsModal: () => this.toggleOptionsModal(),
     });
 
-    Promise.all([userService.getUserDetails(userId), eventsService.getRecentEventsById(userId), authHelper.getCurrentUserId()])
+    Promise.all([eventsService.getRecentEventsById(userId), authHelper.getCurrentUserId()])
       .then(values => {
         this.setState({
-          userDetails: values[0].data,
-          events: values[1].data,
-          currentUser: values[2],
-          isLoading: false
+          events: values[0].data,
+          currentUser: values[1],
         });
+        this.options.keyPrefix = `user_${values[1]}/`;
 
         this.props.navigation.setParams({
           getUsername: () => this.getUsername(),
@@ -91,23 +88,14 @@ export default class UserDetailsScreen extends React.Component {
   getUsername() {
     return (
       <Text style={{color: PRIMARY_LIGHT_COLOR, fontWeight: '200', fontSize: 18}}>
-        {this.state.userDetails.name}
+        {this.props.userDetails.name}
       </Text>
     );
   }
 
-  async toggleFollowing() {
-    const { userDetails } = this.state;
-
-    try {
-      const { data } = await userService.toggleFollowing(userDetails.id, !userDetails.isFollowing);
-
-      userDetails.isFollowing ? userDetails.followers -- : userDetails.followers ++;
-      userDetails.isFollowing = !userDetails.isFollowing;
-      this.setState({userDetails});
-    } catch(err) {
-      console.log(err);
-    }
+  toggleFollowing() {
+    const { userDetails, updateUserDetailsFollows } = this.props;
+    updateUserDetailsFollows(userDetails.id, !userDetails.isFollowing);
   }
 
   toggleOptionsModal() {
@@ -131,8 +119,10 @@ export default class UserDetailsScreen extends React.Component {
   }
 
   _getInitials() {
-    const { name } = this.state.userDetails;
-    return name.split(' ').map((n,i,a)=> i === 0 || i+1 === a.length ? n[0] : null).join('');
+    const { userDetails } = this.props;
+    if (userDetails.name) {
+      return userDetails.name.split(' ').map((n,i,a)=> i === 0 || i+1 === a.length ? n[0] : null).join('');
+    }
   }
 
   // Edit Profile
@@ -160,7 +150,8 @@ export default class UserDetailsScreen extends React.Component {
   }
 
   async submitUpdatedUser() {
-    let { imageFile, userDetails } = this.state;
+    let { imageFile } = this.state;
+    const { userDetails } = this.props;
     const { id, first_name, last_name, username } = userDetails;
     const user = {
       id,
@@ -185,9 +176,10 @@ export default class UserDetailsScreen extends React.Component {
   }
 
   render() {
-    const { currentUser, userDetails, isLoading, optionsModalVisible, editProfileModalVisible, imageFile } = this.state;
+    const { currentUser, optionsModalVisible, editProfileModalVisible, imageFile } = this.state;
+    const { userDetails, loading } = this.props;
 
-    if (!isLoading) {
+    if (!loading) {
       return(
         <View style={styles.container}>
           <View style={styles.userInfoContainer}>
@@ -196,7 +188,7 @@ export default class UserDetailsScreen extends React.Component {
                 <Button
                   title={userDetails.isFollowing ? 'Unfollow' : 'Follow'}
                   buttonStyle={styles.mainBtn}
-                  onPress={this.toggleFollowing}
+                  onPress={() => this.toggleFollowing()}
                 />
                 :
                 <Button
@@ -343,3 +335,17 @@ const styles = StyleSheet.create({
     padding: 15
   }
 });
+
+const mapStateToProps = state => {
+  return {
+    loading: state.loading,
+    userDetails: state.userDetails
+  };
+};
+
+const mapDispatchToProps = {
+  getUserDetails,
+  updateUserDetailsFollows
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(UserDetailsScreen);
