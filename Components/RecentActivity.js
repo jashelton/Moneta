@@ -3,7 +3,7 @@ import { View, ScrollView, Text, StyleSheet, Dimensions, TouchableHighlight, Ima
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { PRIMARY_DARK_COLOR, PRIMARY_LIGHT_COLOR } from '../common/styles/common-styles';
+import { PRIMARY_COLOR, PRIMARY_LIGHT_COLOR } from '../common/styles/common-styles';
 import { LocationHelper } from '../Helpers';
 import { getEventDetails } from '../reducer';
 
@@ -62,8 +62,7 @@ const styles = StyleSheet.create({
   imageTouch: {
     width: '50%',
     height: Dimensions.get('window').height / 4,
-    borderWidth: 2,
-    borderColor: PRIMARY_DARK_COLOR,
+    padding: 2
   },
   image: {
     flex: 1,

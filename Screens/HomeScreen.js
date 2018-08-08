@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, ActivityIndicator } from 'react-native';
-import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
+import { PRIMARY_COLOR, LIGHT_PRIMARY_COLOR } from '../common/styles/common-styles';
 
 import RecentActivity from '../Components/RecentActivity';
 import { LocationHelper } from '../Helpers';
@@ -41,7 +41,6 @@ class HomeScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: PRIMARY_DARK_COLOR,
   },
   loadingContainer: {
     flex: 1,

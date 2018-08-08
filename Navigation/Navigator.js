@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { createStackNavigator, createSwitchNavigator, createBottomTabNavigator } from 'react-navigation';
-import { PRIMARY_DARK_COLOR, ACCENT_COLOR, PRIMARY_LIGHT_COLOR } from '../common/styles/common-styles';
+import { PRIMARY_DARK_COLOR, ACCENT_COLOR, PRIMARY_LIGHT_COLOR, TEXT_ICONS_COLOR } from '../common/styles/common-styles';
 import { Icon } from 'react-native-elements';
 
 import HomeScreen from '../Screens/HomeScreen';
@@ -26,7 +26,7 @@ const recentActivityStack = createStackNavigator(
       screen: HomeScreen,
       navigationOptions: { 
         // title: 'Recent Events',
-        // headerTintColor: PRIMARY_LIGHT_COLOR,
+        // headerTintColor: TEXT_ICONS_COLOR,
         // headerStyle: {
         //   backgroundColor: PRIMARY_DARK_COLOR
         // }
@@ -37,9 +37,9 @@ const recentActivityStack = createStackNavigator(
     UserDetails: { // TODO: UserDetails needs to be nested under EventDetails
       screen: UserDetailsScreen,
       navigationOptions: {
-        headerStyle: {
-          backgroundColor: PRIMARY_DARK_COLOR
-        },
+        // headerStyle: {
+        //   backgroundColor: PRIMARY_DARK_COLOR
+        // },
       }
     }
   },

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions, ActivityIndicator, Modal } from 'react-native';
-import { PRIMARY_DARK_COLOR, ACCENT_COLOR, PRIMARY_LIGHT_COLOR } from '../common/styles/common-styles';
+import { PRIMARY_DARK_COLOR, ACCENT_COLOR, PRIMARY_COLOR, PRIMARY_LIGHT_COLOR, TEXT_ICONS_COLOR } from '../common/styles/common-styles';
 import { TabView, TabBar, SceneMap } from 'react-native-tab-view';
 import { Avatar, Icon, Button, Divider } from 'react-native-elements';
 import { Constants } from 'expo';
@@ -182,12 +182,13 @@ class UserDetailsScreen extends React.Component {
     if (!loading) {
       return(
         <View style={styles.container}>
-          <View style={styles.userInfoContainer}>
+          <View style={[styles.userInfoContainer, { backgroundColor: PRIMARY_DARK_COLOR }]}>
             <View style={{width: '100%'}}>
               { currentUser !== userDetails.id ?
                 <Button
                   title={userDetails.isFollowing ? 'Unfollow' : 'Follow'}
                   buttonStyle={styles.mainBtn}
+                  titleStyle={{ color: TEXT_ICONS_COLOR }}
                   onPress={() => this.toggleFollowing()}
                 />
                 :
@@ -206,10 +207,10 @@ class UserDetailsScreen extends React.Component {
                 containerStyle={{alignSelf: 'center'}}
               />
             </View>
-          </View>
-          <View style={{flexDirection: 'row', justifyContent: 'space-evenly', marginTop: 15}}>
-            <Text style={styles.textContent}>Followers {userDetails.followers}</Text>
-            <Text style={styles.textContent}>Following {userDetails.following}</Text>
+            <View style={{flexDirection: 'row', justifyContent: 'space-evenly', marginTop: 15}}>
+              <Text style={styles.textContent}>Followers {userDetails.followers}</Text>
+              <Text style={styles.textContent}>Following {userDetails.following}</Text>
+            </View>
           </View>
           <TabView
             navigationState={this.state}
@@ -295,19 +296,22 @@ class UserDetailsScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: Constants.statusBarHeight,
-    backgroundColor: PRIMARY_DARK_COLOR,
+    // paddingTop: Constants.statusBarHeight,
+    backgroundColor: '#eee',
   },
   rightIcon: {
     marginRight: 15
   },
   userInfoContainer: {
-    height: '30%',
+    // height: '30%',
     width: '100%',
     flexDirection: 'column',
+    backgroundColor: '#eee',
+    paddingTop: 15,
+    paddingBottom: 15
   },
   textContent: {
-    color: PRIMARY_LIGHT_COLOR,
+    color: TEXT_ICONS_COLOR,
     fontSize: 16
   },
   mainBtn: {
@@ -316,7 +320,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     marginRight: 15,
     borderWidth: 1,
-    borderColor: ACCENT_COLOR
+    borderColor: ACCENT_COLOR,
   },
   modalHeader: {
     height: 60,
