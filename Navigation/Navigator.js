@@ -106,7 +106,10 @@ const profileStack = createStackNavigator(
   {
     navigationOptions: {
       headerStyle: {
-        backgroundColor: PRIMARY_DARK_COLOR
+        // backgroundColor: PRIMARY_DARK_COLOR
+      },
+      headerTitleStyle: {
+        fontWeight: '200'
       }
     }
   }
@@ -147,13 +150,13 @@ const AppStack = createBottomTabNavigator(
         }
 
         return <Icon name={iconName} size={25} color={tintColor} />
-      }
+      },
     }),
     tabBarOptions: {
       activeTintColor: PRIMARY_DARK_COLOR,
       inactiveTintColor: PRIMARY_LIGHT_COLOR,
       // tabStyle: { backgroundColor: }
-    }
+    },
   }
 );
 

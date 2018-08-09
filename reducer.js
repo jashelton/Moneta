@@ -17,6 +17,12 @@ export const DELETE_EVENT_FAIL = 'moneta/events/DELETE_EVENT_FAIL';
 export const GET_USER_DETAILS = 'moneta/users/LOAD_USER_DETAILS';
 export const GET_USER_DETAILS_SUCCESS = 'moneta/users/LOAD_USER_DETAILS_SUCCESS';
 export const GET_USER_DETAILS_FAIL = 'moneta/users/LOAD_USER_DETAILS_FAIL';
+export const GET_CURRENT_USER_DETAILS = 'moneta/users/LOAD_CURRENT_USER_DETAILS';
+export const GET_CURRENT_USER_DETAILS_SUCCESS = 'moneta/users/LOAD_CURRENT_USER_DETAILS_SUCCESS';
+export const GET_CURRENT_USER_DETAILS_FAIL = 'moneta/users/LOAD_CURRENT_USER_DETAILS_FAIL';
+export const UPDATE_CURRENT_USER = 'moneta/users/UPDATE_CURRENT_USER';
+export const UPDATE_CURRENT_USER_SUCCESS = 'moneta/users/UPDATE_CURRENT_USER_SUCCESS';
+export const UPDATE_CURRENT_USER_FAIL = 'moneta/users/UPDATE_CURRENT_USER_FAIL';
 export const UPDATE_USER_FOLLOWS = 'moneta/users/UPDATE_USER_FOLLOWS';
 export const UPDATE_USER_FOLLOWS_SUCCESS = 'moneta/users/UPDATE_USER_FOLLOWS_SUCCESS';
 export const UPDATE_USER_FOLLOWS_FAIL = 'moneta/users/UPDATE_USER_FOLLOWS_FAIL';
@@ -27,7 +33,8 @@ const initialState = {
   event: {},
   recentEvents: [],
   markers: [],
-  userDetails: {}
+  userDetails: {},
+  currentUserDetails: {}
 };
 
 export default function reducer(state = initialState, action) {
@@ -105,6 +112,27 @@ export default function reducer(state = initialState, action) {
         loading: false,
         error: 'There was an issue getting the info for this user'
       }
+    case GET_CURRENT_USER_DETAILS:
+      return { ...state, loading: true };
+    case GET_CURRENT_USER_DETAILS_SUCCESS:
+      return { ...state, loading: false, currentUserDetails: action.payload.data };
+    case GET_CURRENT_USER_DETAILS_FAIL:
+      return {
+        ...state,
+        loading: false,
+        error: 'There was an issue getting the info for this user'
+      }
+    case UPDATE_CURRENT_USER:
+      return { ...state, loading: false };
+    case UPDATE_CURRENT_USER_SUCCESS:
+      const updatedUser = update(state.currentUserDetails, { $set: { ...action.payload.data } })
+      return { ...state, loading: false, currentUserDetails: updatedUser }
+    case UPDATE_CURRENT_USER_FAIL:
+      return {
+        ...state,
+        loading: false,
+        error: 'There was a problem updating your profile information'
+      };
     case UPDATE_USER_FOLLOWS:
       return { ...state, loading: false };
     case UPDATE_USER_FOLLOWS_SUCCESS:
@@ -194,6 +222,31 @@ export function getUserDetails(userId) {
       request: {
         url: `/user-details/${userId}`,
         method: 'GET'
+      }
+    }
+  }
+}
+
+export function getCurrentUserDetails(userId) {
+  return {
+    type: GET_CURRENT_USER_DETAILS,
+    payload: {
+      request: {
+        url: `/user-details/${userId}`,
+        method: 'GET'
+      }
+    }
+  }
+}
+
+export function updateCurrentUserDetails(user) {
+  return {
+    type: UPDATE_CURRENT_USER,
+    payload: {
+      request: {
+        url: `/users/${user.id}/update`,
+        method: 'PUT',
+        data: { user }
       }
     }
   }
