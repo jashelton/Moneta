@@ -177,13 +177,15 @@ export function getEventDetails(eventId, userLocation) {
 }
 
 export function updateEventDetailsLikes(eventId, eventLiked) {
+  const isLiked = !eventLiked ? 1 : 0;
+
   return {
     type: UPDATE_EVENT_LIKES,
     payload: {
       request: {
-        url:  `/events/${eventId}/like`,
-        method: 'POST',
-        data: { liked: !eventLiked ? 1 : 0 }
+        url:  `/events/${eventId}/${isLiked ? 'like' : 'unlike'}`,
+        method: `${isLiked ? 'POST' : 'DELETE'}`,
+        data: { liked: isLiked}
       }
     }
   }
