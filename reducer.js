@@ -220,7 +220,7 @@ export function getUserDetails(userId) {
     type: GET_USER_DETAILS,
     payload: {
       request: {
-        url: `/user-details/${userId}`,
+        url: `/users/${userId}/details`,
         method: 'GET'
       }
     }
@@ -232,7 +232,7 @@ export function getCurrentUserDetails(userId) {
     type: GET_CURRENT_USER_DETAILS,
     payload: {
       request: {
-        url: `/user-details/${userId}`,
+        url: `/users/${userId}/details`,
         method: 'GET'
       }
     }
@@ -253,7 +253,7 @@ export function updateCurrentUserDetails(user) {
 }
 
 export function updateUserDetailsFollows(userId, isFollowing) {
-  const url = `/follows/${userId}/${isFollowing ? 'follow' : 'unfollow'}`;
+  const url = `/users/${userId}/${isFollowing ? 'follow' : 'unfollow'}`;
   const method = `${isFollowing ? 'POST' : 'DELETE'}`;
 
   return {

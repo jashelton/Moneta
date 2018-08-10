@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ScrollView, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, ScrollView, Text, StyleSheet } from 'react-native';
 import { ACCENT_COLOR, PRIMARY_LIGHT_COLOR } from '../common/styles/common-styles';
 
 export default class UserStats extends React.Component {
@@ -10,30 +10,6 @@ export default class UserStats extends React.Component {
           <View style={styles.stat}>
             <Text style={styles.statNumber}>10</Text>
             <Text style={styles.statTitle}>Total Events</Text>
-          </View>
-          <View style={styles.stat}>
-            <Text style={styles.statNumber}>128</Text>
-            <Text style={styles.statTitle}>Total Comments</Text>
-          </View>
-          <View style={styles.stat}>
-            <Text style={styles.statNumber}>64</Text>
-            <Text style={styles.statTitle}>Total Likes</Text>
-          </View>
-          <View style={styles.stat}>
-            <Text style={styles.statNumber}>8.4</Text>
-            <Text style={styles.statTitle}>Viral Score</Text>
-          </View>
-          <View style={styles.stat}>
-            <Text style={styles.statNumber}>13</Text>
-            <Text style={styles.statTitle}>Comments This Week</Text>
-          </View>
-          <View style={styles.stat}>
-            <Text style={styles.statNumber}>18</Text>
-            <Text style={styles.statTitle}>Likes This Week</Text>
-          </View>
-          <View style={styles.stat}>
-            <Text style={styles.statNumber}>6</Text>
-            <Text style={styles.statTitle}>Event Streak</Text>
           </View>
         </View>
       </ScrollView>

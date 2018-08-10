@@ -12,19 +12,14 @@ import { defaultFilters } from '../common/defaults/defaultEventFilters';
 export default class AuthLoadingScreen extends React.Component {
   constructor(props) {
     super(props);
-    AsyncStorage.removeItem('user_filters');
+    // AsyncStorage.removeItem('user_data');
+    // AsyncStorage.removeItem('user_filters');
     this.getUser();
-    // AsyncStorage.getItem('user_data')
-    //             .then(res => {
-    //               const user = JSON.parse(res);
-    //               this.props.navigation.navigate(user.jwt ? 'App' : 'Auth');
-    //             })
-    //             .catch(err => console.log(err));
   }
 
   async getUser() {
     const user = await authHelper.getParsedUserData();
-    if (user.jwt) {
+    if (user && user.jwt) {
       const filters = await commonHelper.getFilters();
       if (!filters) {
         const newFilters = JSON.stringify(defaultFilters);

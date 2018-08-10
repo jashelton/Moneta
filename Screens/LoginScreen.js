@@ -21,6 +21,7 @@ export default class LoginScreen extends React.Component {
     if (type === 'success') {
       const data = await authService.fbLogin(token);
       const user_data = JSON.stringify(data);
+
       await AsyncStorage.setItem('user_data', user_data); // TODO: Really only need fb_id and jwt
       this.props.navigation.navigate('App');
     }
