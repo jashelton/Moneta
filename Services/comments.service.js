@@ -9,7 +9,7 @@ export const commentsService = {
 
 async function getComments(eventId) {
   const headers = await authHelper.authHeaders();
-  return axios.get(`${ENDPOINT}/comments/${eventId}`, headers);
+  return axios.get(`${ENDPOINT}/events/${eventId}/comments`, headers);
 }
 
 async function createComment(eventId, text) {

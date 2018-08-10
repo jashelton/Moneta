@@ -14,5 +14,5 @@ async function createEvent(event) {
 
 async function getRecentEventsById(eventId) {
   const headers = await authHelper.authHeaders();
-  return axios.get(`${ENDPOINT}/recent_events/${eventId}`, headers);
+  return axios.get(`${ENDPOINT}/events/${eventId}/recent`, headers);
 }

@@ -155,9 +155,9 @@ export function listRecentActivity(users, coords) {
     type: GET_RECENT_ACTIVITY,
     payload: {
       request: {
-        url: '/recent_events',
+        url: '/events/recent',
         method: 'GET',
-        params: { users, coords }
+        params: { users , coords }
       }
     }
   }
@@ -194,7 +194,7 @@ export function getEventMarkers(filter) {
     type: GET_MARKERS,
     payload: {
       request: {
-        url: `/event_markers`,
+        url: `/events/markers`,
         method: 'GET',
         params: { filter }
       }
