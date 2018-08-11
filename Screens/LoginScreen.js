@@ -14,15 +14,26 @@ export default class LoginScreen extends React.Component {
   }
 
   async logIn() {
+    console.log('LOGIN');
     const { type, token } = await Expo.Facebook.logInWithReadPermissionsAsync(APP_ID, {
       permissions: ['public_profile', 'email', 'user_friends'],
     });
 
+    console.log(token)
+
     if (type === 'success') {
       const data = await authService.fbLogin(token);
+      console.log('response from fbLogin()')
+      console.log(data);
+      console.log('------------')
       const user_data = JSON.stringify(data);
-
+      console.log(user_data);
+      console.log('------------')
       await AsyncStorage.setItem('user_data', user_data); // TODO: Really only need fb_id and jwt
+      const test = await AsyncStorage.getItem('user_data');
+      console.log('GET THE DATA STORED')
+      console.log(test);
+      console.log('------------')
       this.props.navigation.navigate('App');
     }
   }

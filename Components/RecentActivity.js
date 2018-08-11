@@ -1,5 +1,6 @@
 import React from 'react';
 import { View,
+         ScrollView,
          Text,
          StyleSheet,
          Dimensions,
@@ -61,9 +62,17 @@ class RecentActivity extends React.Component {
       );
     } else {
       return(
-        <View>
-          <Text>{ noDataMessage }</Text>
-        </View>
+        <ScrollView
+          contentContainerStyle={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={this.props._onRefresh}
+            />
+          }
+        >
+          <Text>{ noDataMessage || 'No recent activity to display' }</Text>
+        </ScrollView>
       )
     }
   }

@@ -10,7 +10,7 @@
   },
   "main": "./node_modules/react-native-scripts/build/bin/crna-entry.js",
   "scripts": {
-    "start": "react-native-scripts start",
+    "start": "exp start",
     "eject": "react-native-scripts eject",
     "android": "react-native-scripts android",
     "ios": "react-native-scripts ios",
@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
+    "exp": "^56.0.0",
     "expo": "^27.0.1",
     "immutability-helper": "^2.7.1",
     "prop-types": "^15.6.2",

@@ -5,6 +5,7 @@ import { authHelper, LocationHelper } from '../Helpers';
 import { WARNING_RED, ACCENT_COLOR, PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
 import { connect } from 'react-redux';
 import { updateEventDetailsLikes, deleteEvent } from '../reducer';
+import { notificationService } from '../Services/notification.service';
 
 export class EventDetailsHeader extends React.Component {
   render() {
@@ -44,6 +45,11 @@ class EventDetailsScreen extends React.Component {
   async favoriteEvent() {
     const { event } = this.props;
     this.props.updateEventDetailsLikes(event.id, event.liked);
+
+    if (!event.liked) { // This actually means if the event is being liked.  Should refactor this for readability.
+      // TODO: Figure out how I want to phrase notifications
+      await notificationService.sendPushNotification(event.user_id, 'Someone liked your event!', event.title);
+    }
   }
 
   incrementCommentCount() {
@@ -70,7 +76,7 @@ class EventDetailsScreen extends React.Component {
     )
   }
 
-  async deleteEvent() {
+  deleteEvent() {
     const { event, navigation, deleteEvent } = this.props;
     deleteEvent(event.id);
     navigation.goBack();
@@ -115,7 +121,7 @@ class EventDetailsScreen extends React.Component {
                     style={styles.rightIcon}
                     color='#fb3958'
                     name='comment'
-                    onPress={() => this.props.navigation.navigate('Comments', { eventId: event.id, incrementCommentCount: this.incrementCommentCount.bind(this) })}
+                    onPress={() => this.props.navigation.navigate('Comments', { event: event, incrementCommentCount: this.incrementCommentCount.bind(this) })}
                   />
                   <Text style={styles.socialCount}>{event.comment_count}</Text>
                 </View>

@@ -64,7 +64,6 @@ export default function reducer(state = initialState, action) {
     case UPDATE_EVENT_LIKES_SUCCESS:
       const { liked, likes_count } = action.payload.data;
       const updatedEvent = update(state.event, { $set: {...state.event, liked, likes_count } });
-      
       return { ...state, event: updatedEvent };
     case UPDATE_EVENT_LIKES_FAIL:
       return {
