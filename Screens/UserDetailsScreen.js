@@ -42,17 +42,20 @@ class UserDetailsScreen extends React.Component {
       currentUser: null,
       optionsModalVisible: false,
       editProfileModalVisible: false,
+      refreshing: false,
+      userId: null
     }
 
     this.toggleOptionsModal = this.toggleOptionsModal.bind(this);
     this.toggleEditProfile = this.toggleEditProfile.bind(this);
+    this._onRefresh = this._onRefresh.bind(this);
   }
 
   async componentDidMount() {
     const userId = this.props.navigation.getParam('userId', null);
     const currentUser = await authHelper.getCurrentUserId();
 
-    this.setState({ currentUser });
+    this.setState({ currentUser, userId });
 
     this.props.getUserDetails(userId);
 
@@ -112,8 +115,14 @@ class UserDetailsScreen extends React.Component {
     this.setState({ editProfileModalVisible: !editProfileModalVisible });
   }
 
+  async _onRefresh() {
+    this.setState({ refreshing: true });
+    const { data } = await eventsService.getRecentEventsById(this.state.userId);
+    this.setState({ refreshing: false, events: data });
+  }
+
   render() {
-    const { currentUser, optionsModalVisible, editProfileModalVisible, imageFile } = this.state;
+    const { currentUser, optionsModalVisible, editProfileModalVisible, imageFile, refreshing } = this.state;
     const { userDetails, loading } = this.props;
 
     if (!loading && userDetails) {
@@ -128,7 +137,12 @@ class UserDetailsScreen extends React.Component {
           <TabView
             navigationState={this.state}
             renderScene={SceneMap({
-              first: () => <RecentActivity events={this.state.events} navigation={this.props.navigation}/>,
+              first: () =>  <RecentActivity
+                              events={this.state.events}
+                              navigation={this.props.navigation}
+                              refreshing={refreshing}
+                              _onRefresh={this._onRefresh}
+                            />,
               second: () => <UserStats />
             })}
             renderTabBar={this._renderTabBar}

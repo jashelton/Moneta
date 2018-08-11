@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ScrollView, Text, StyleSheet, Dimensions, TouchableHighlight, ImageBackground } from 'react-native';
+import { View, ScrollView, Text, StyleSheet, Dimensions, TouchableHighlight, ImageBackground, RefreshControl } from 'react-native';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
@@ -18,10 +18,17 @@ class RecentActivity extends React.Component {
   }
 
   render() {
-    const { events, noDataMessage } = this.props;
+    const { events, noDataMessage, refreshing } = this.props;
 
     return(
-      <ScrollView>
+      <ScrollView
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={this.props._onRefresh}
+          />
+        }
+      >
         { events.length ?
           <View style={styles.imagesContainer}>
             { events.map((event, i) => (
@@ -56,13 +63,13 @@ RecentActivity.propTypes = {
 const styles = StyleSheet.create({
   imagesContainer: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: 'column', // wrap
     flexWrap: 'wrap',
     paddingTop: 5
   },
   imageTouch: {
-    width: '50%',
-    height: Dimensions.get('window').height / 4,
+    width: '100%', // 50%
+    height: Dimensions.get('window').height / 2, // height: Dimensions.get('window').height / 4
     padding: 2
   },
   image: {

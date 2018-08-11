@@ -10,6 +10,16 @@ import { connect } from 'react-redux';
 class HomeScreen extends React.Component {
   static navigationOptions = { title: 'Recent Events' };
 
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      refreshing: false
+    };
+
+    this._onRefresh = this._onRefresh.bind(this);
+  }
+
   async componentDidMount() {
     const { coords } = await LocationHelper.getCurrentLocation();
 
@@ -17,17 +27,27 @@ class HomeScreen extends React.Component {
     // For nearby events, pass coords as second parameter
   }
 
+  _onRefresh() {
+    this.setState({ refreshing: true });
+    this.props.listRecentActivity('all', null);
+    this.setState({ refreshing: false });
+  }
+
   render() {
     const { navigation, loading, recentEvents } = this.props;
+    const { refreshing } = this.state;
 
     return(
       <View style={styles.container}>
         { !loading ?
-          <RecentActivity
-            navigation={navigation}
-            events={recentEvents}
-            noDataMessage='There is no recent activity to display.'
-          />
+          <View>
+            <RecentActivity
+              refreshing={refreshing}
+              navigation={navigation}
+              events={recentEvents}
+              noDataMessage='There is no recent activity to display.'
+            />
+          </View>
         :
           <View style={styles.loadingContainer}>
             <ActivityIndicator />

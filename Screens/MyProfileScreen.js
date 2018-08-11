@@ -32,9 +32,11 @@ class MyProfileScreen extends React.Component {
       events: [], // What is passed to RecentActivity component
       currentUser: null,
       editProfileModalVisible: false,
+      refreshing: false
     }
 
     this.toggleEditProfile = this.toggleEditProfile.bind(this);
+    this._onRefresh = this._onRefresh.bind(this);
   }
 
   async componentDidMount() {
@@ -83,9 +85,15 @@ class MyProfileScreen extends React.Component {
     }, 250);
   }
 
+  async _onRefresh() {
+    this.setState({ refreshing: true });
+    const { data } = await eventsService.getRecentEventsById(this.state.currentUser);
+    this.setState({ refreshing: false, events: data });
+  }
+
   render() {
     const { currentUserDetails, loading } = this.props;
-    const { currentUser, editProfileModalVisible } = this.state;
+    const { currentUser, editProfileModalVisible, refreshing } = this.state;
 
     if (!loading && currentUserDetails) {
       return(
@@ -99,7 +107,12 @@ class MyProfileScreen extends React.Component {
             labelStyle={{ backgroundColor: 'red' }}
             navigationState={this.state}
             renderScene={SceneMap({
-              first: () => <RecentActivity events={this.state.events} navigation={this.props.navigation}/>,
+              first: () => <RecentActivity
+                              events={this.state.events}
+                              navigation={this.props.navigation}
+                              refreshing={refreshing}
+                              _onRefresh={this._onRefresh}
+                            />,
               second: () => <UserStats />
             })}
             renderTabBar={this._renderTabBar}

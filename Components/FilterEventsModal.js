@@ -4,7 +4,7 @@ import { View, Modal, StyleSheet } from 'react-native';
 import { Button, ListItem } from 'react-native-elements';
 import ViewToggle from '../Components/ViewToggle';
 
-import { PRIMARY_DARK_COLOR, ACCENT_COLOR, SECONDARY_DARK_COLOR } from '../common/styles/common-styles';
+import { PRIMARY_DARK_COLOR, ACCENT_COLOR, SECONDARY_DARK_COLOR, TEXT_ICONS_COLOR } from '../common/styles/common-styles';
 
 export default class FilterEventsModal extends React.Component {
 
@@ -47,7 +47,7 @@ export default class FilterEventsModal extends React.Component {
           <Button
             clear
             title='Done'
-            titleStyle={{color: ACCENT_COLOR}}
+            titleStyle={{color: TEXT_ICONS_COLOR}}
             buttonStyle={{marginRight: 15}}
             onPress={setVisibility}
           />
