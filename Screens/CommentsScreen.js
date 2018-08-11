@@ -3,7 +3,7 @@ import { View, ScrollView, Text, StyleSheet, KeyboardAvoidingView } from 'react-
 import { ListItem, Button, Divider } from 'react-native-elements';
 import { TextField } from 'react-native-material-textfield';
 
-import { commentsService } from '../Services';
+import { commentsService, notificationService } from '../Services';
 import { authHelper } from '../Helpers';
 
 export default class CommentsScreen extends React.Component {
@@ -11,7 +11,7 @@ export default class CommentsScreen extends React.Component {
     super(props);
 
     this.state = {
-      eventId: null,
+      event: null,
       comments: [],
       newComment: '',
       userData: {}
@@ -21,10 +21,10 @@ export default class CommentsScreen extends React.Component {
   }
 
   async componentDidMount() {
-    const eventId = this.props.navigation.getParam('eventId', null);
-    this.setState({eventId});
+    const event = this.props.navigation.getParam('event', null);
+    this.setState({ event });
 
-    const { data } = await commentsService.getComments(eventId);
+    const { data } = await commentsService.getComments(event.id);
     this.setState({comments: data});
 
     const userData = await authHelper.getParsedUserData();
@@ -32,10 +32,16 @@ export default class CommentsScreen extends React.Component {
   }
 
   async createComment() {
-    let { eventId, newComment, comments } = this.state;
-    const { data } = await commentsService.createComment(eventId, newComment);
-
+    let { event, newComment, comments, userData } = this.state;
+    const { data } = await commentsService.createComment(event.id, newComment);
     comments.push(data.comment);
+
+    await notificationService.sendPushNotification(
+      event.user_id, // Send to
+      `${userData.first_name} ${userData.last_name} has commented on your event.`, // Title
+      newComment // Body
+    );
+
     newComment = '';
     this.setState({comments, newComment});
     // Call back to EventDetailsScreen to increment the comment count.  This will need to be updated once delete comment is avail.

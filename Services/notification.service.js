@@ -12,17 +12,23 @@ async function insertPushToken(token) {
   return axios.put(`${ENDPOINT}/users/push-token`, { token }, headers);
 }
 
-async function sendPushNotification(title, body) {
+async function sendPushNotification(userId, title, body) {
   const headers = await authHelper.authHeaders();
-  const { data } = await axios.get(`${ENDPOINT}/users/push-token`, headers);
-  const notifyData = { to: data.push_token, title, body };
-  const options = {
-    headers: {
-      'content-type': 'application/json',
-      'accept': 'application/json',
-      'accept-encoding': 'gzip, deflate'
-    }
-  };
+  const { data } = await axios.get(`${ENDPOINT}/users/${userId}/push-token`, headers);
+  if (data.push_token) {
+    const notifyData = { to: data.push_token, title, body };
+    const options = {
+      headers: {
+        'content-type': 'application/json',
+        'accept': 'application/json',
+        'accept-encoding': 'gzip, deflate'
+      }
+    };
 
-  return await axios.post('https://exp.host/--/api/v2/push/send', notifyData, options);
+    const push = await axios.post('https://exp.host/--/api/v2/push/send', notifyData, options);
+    console.log(push);
+    return push;
+  }
+
+  return;
 }

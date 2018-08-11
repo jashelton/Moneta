@@ -48,7 +48,7 @@ class EventDetailsScreen extends React.Component {
 
     if (!event.liked) { // This actually means if the event is being liked.  Should refactor this for readability.
       // TODO: Figure out how I want to phrase notifications
-      await notificationService.sendPushNotification('Someone liked your event!', event.title);
+      await notificationService.sendPushNotification(event.user_id, 'Someone liked your event!', event.title);
     }
   }
 
@@ -121,7 +121,7 @@ class EventDetailsScreen extends React.Component {
                     style={styles.rightIcon}
                     color='#fb3958'
                     name='comment'
-                    onPress={() => this.props.navigation.navigate('Comments', { eventId: event.id, incrementCommentCount: this.incrementCommentCount.bind(this) })}
+                    onPress={() => this.props.navigation.navigate('Comments', { event: event, incrementCommentCount: this.incrementCommentCount.bind(this) })}
                   />
                   <Text style={styles.socialCount}>{event.comment_count}</Text>
                 </View>
