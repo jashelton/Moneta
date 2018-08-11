@@ -2,9 +2,10 @@ import React from 'react';
 import { View, StyleSheet, ActivityIndicator } from 'react-native';
 
 import RecentActivity from '../Components/RecentActivity';
-import { LocationHelper } from '../Helpers';
+import { LocationHelper, permissionsHelper } from '../Helpers';
 import { listRecentActivity } from '../reducer'
 import { connect } from 'react-redux';
+import { notificationService } from '../Services';
 
 class HomeScreen extends React.Component {
   static navigationOptions = { title: 'Recent Events' };
@@ -20,6 +21,10 @@ class HomeScreen extends React.Component {
   }
 
   async componentDidMount() {
+    // Get permissions from user for push notifications.
+    // If agreed, user.push_token will be updated to store push token in db.
+    await permissionsHelper.registerForPushNotificationsAsync();
+
     const { coords } = await LocationHelper.getCurrentLocation();
 
     this.props.listRecentActivity('all', null);
