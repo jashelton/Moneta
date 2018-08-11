@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions, ActivityIndicator, Modal } from 'react-native';
-import { PRIMARY_DARK_COLOR, ACCENT_COLOR, PRIMARY_COLOR, PRIMARY_LIGHT_COLOR, TEXT_ICONS_COLOR } from '../common/styles/common-styles';
+import { PRIMARY_DARK_COLOR, ACCENT_COLOR, PRIMARY_LIGHT_COLOR } from '../common/styles/common-styles';
 import { TabView, TabBar, SceneMap } from 'react-native-tab-view';
 import { Icon, Button } from 'react-native-elements';
 import { connect } from 'react-redux';

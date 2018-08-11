@@ -1,9 +1,15 @@
 import React from 'react';
-import { View, ScrollView, Text, StyleSheet, Dimensions, TouchableHighlight, ImageBackground, RefreshControl } from 'react-native';
+import { View,
+         Text,
+         StyleSheet,
+         Dimensions,
+         TouchableHighlight,
+         ImageBackground,
+         RefreshControl,
+         FlatList } from 'react-native';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { PRIMARY_LIGHT_COLOR } from '../common/styles/common-styles';
 import { LocationHelper } from '../Helpers';
 import { getEventDetails } from '../reducer';
 
@@ -17,59 +23,65 @@ class RecentActivity extends React.Component {
     navigation.navigate('EventDetails')
   }
 
+  _renderImage({item, index}) {
+    return(
+      <TouchableHighlight
+        underlayColor="#eee"
+        style={styles.imageTouch}
+        onPress={() => this.goToEventsDetails(item.id)}
+      >
+        <ImageBackground style={styles.image} source={{uri: item.image}}>
+          <View style={styles.imageOverlay}>
+            <Text style={{color:'#fff'}}>{item.name}</Text>
+          </View>
+        </ImageBackground>
+      </TouchableHighlight>
+    );
+  }
+
   render() {
     const { events, noDataMessage, refreshing } = this.props;
 
-    return(
-      <ScrollView
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={this.props._onRefresh}
+    if (events && events.length) {
+      return(
+        <View style={styles.imagesContainer}>
+          <FlatList
+            keyExtractor={item => item.id.toString()}
+            numColumns={2}
+            data={events}
+            renderItem={this._renderImage.bind(this)}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={this.props._onRefresh}
+              />
+            }
           />
-        }
-      >
-        { events.length ?
-          <View style={styles.imagesContainer}>
-            { events.map((event, i) => (
-              <TouchableHighlight
-                key={i}
-                underlayColor="#eee"
-                style={styles.imageTouch}
-                onPress={() => this.goToEventsDetails(event.id)}
-              >
-                <ImageBackground style={styles.image} source={{uri: event.image}}>
-                  <View style={styles.imageOverlay}>
-                    <Text style={{color:'#fff'}}>{event.name}</Text>
-                  </View>
-                </ImageBackground>
-              </TouchableHighlight>
-            ))}
-          </View>
-        :
-          <View style={{alignItems: 'center', padding: 25}}>
-            <Text style={{color: PRIMARY_LIGHT_COLOR}}>{noDataMessage}</Text>
-          </View>
-        }
-      </ScrollView>
-    );
+        </View>
+      );
+    } else {
+      return(
+        <View>
+          <Text>{ noDataMessage }</Text>
+        </View>
+      )
+    }
   }
 }
 
 RecentActivity.propTypes = {
-  events: PropTypes.array.isRequired
+  events: PropTypes.array.isRequired,
+  refreshing: PropTypes.bool.isRequired,
+  _onRefresh: PropTypes.func.isRequired
 }
 
 const styles = StyleSheet.create({
   imagesContainer: {
-    flex: 1,
-    flexDirection: 'column', // wrap
-    flexWrap: 'wrap',
     paddingTop: 5
   },
   imageTouch: {
-    width: '100%', // 50%
-    height: Dimensions.get('window').height / 2, // height: Dimensions.get('window').height / 4
+    width: '50%', // 50%
+    height: Dimensions.get('window').height / 4, // height: Dimensions.get('window').height / 2
     padding: 2
   },
   image: {

@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, StyleSheet, ActivityIndicator } from 'react-native';
-import { PRIMARY_COLOR, LIGHT_PRIMARY_COLOR } from '../common/styles/common-styles';
 
 import RecentActivity from '../Components/RecentActivity';
 import { LocationHelper } from '../Helpers';
@@ -46,6 +45,7 @@ class HomeScreen extends React.Component {
               navigation={navigation}
               events={recentEvents}
               noDataMessage='There is no recent activity to display.'
+              _onRefresh={this._onRefresh}
             />
           </View>
         :

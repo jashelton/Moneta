@@ -1,8 +1,7 @@
 import React from 'react';
-import { View, ScrollView, Text, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
 import { PRIMARY_DARK_COLOR, ACCENT_COLOR, PRIMARY_LIGHT_COLOR } from '../common/styles/common-styles';
 import { TabView, TabBar, SceneMap } from 'react-native-tab-view';
-import { Constants } from 'expo';
 import { connect } from 'react-redux';
 
 import RecentActivity from '../Components/RecentActivity';
