@@ -3,7 +3,6 @@ import MapView from 'react-native-maps';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { Icon } from 'react-native-elements';
 import { connect } from 'react-redux';
-
 import { commonHelper, LocationHelper } from '../Helpers';
 import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
 import FilterEventsModal from '../Components/FilterEventsModal';
