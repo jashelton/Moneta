@@ -4,7 +4,7 @@ import { Card, Divider, Icon, Button, ListItem } from 'react-native-elements';
 import { authHelper, LocationHelper } from '../Helpers';
 import { WARNING_RED, ACCENT_COLOR, PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
 import { connect } from 'react-redux';
-import { updateEventDetailsLikes, deleteEvent } from '../reducer';
+import { updateEventDetailsLikes, deleteEvent, markEventViewed, getEventDetails } from '../reducer';
 import { notificationService } from '../Services/notification.service';
 
 export class EventDetailsHeader extends React.Component {
@@ -39,7 +39,29 @@ class EventDetailsScreen extends React.Component {
 
   async componentDidMount() {
     const user = await authHelper.getParsedUserData();
-    this.setState({user});
+    const currentLocation = await LocationHelper.getCurrentLocation();
+    const eventId = this.props.navigation.getParam('eventId', null);
+
+    this.props.getEventDetails(eventId, currentLocation);
+    this.setState({ user });
+    // This doesn't need to be triggered if the event has already been viewed.
+    // Stop calling getDetails method on other screens.  Just add it here and pass event id in params.
+    
+    
+    if (!this.props.event.viewed_id) {
+      this.markEventAsViewed();
+    }
+  }
+
+  // TODO: HIGH PRIORITY - Really don't like how this is handled.
+  // Even at 500ms, event_id was occasionally undefined.
+  markEventAsViewed() {
+    setTimeout(() => {
+      const { event } = this.props;
+      if (!event.viewed_id) {
+        this.props.markEventViewed(event.id);
+      }
+    }, 1000);
   }
 
   async favoriteEvent() {
@@ -90,7 +112,7 @@ class EventDetailsScreen extends React.Component {
     const { user, isVisible } = this.state;
     const { event } = this.props;
 
-    if (!this.props.loading) {
+    if (!this.props.loading && event.id) {
       return(
         <View style={styles.container}>
           <Card
@@ -247,12 +269,12 @@ const styles = StyleSheet.create({
 const mapStateToProps = state => {
   return {
     event: state.event,
-    loading: state.loading
+    loading: state.loading,
   };
 };
 
 const mapDispatchToProps = {
-  updateEventDetailsLikes, deleteEvent
+  updateEventDetailsLikes, deleteEvent, markEventViewed, getEventDetails
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(EventDetailsScreen);

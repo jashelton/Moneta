@@ -3,10 +3,10 @@ import MapView from 'react-native-maps';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { Icon } from 'react-native-elements';
 import { connect } from 'react-redux';
-import { commonHelper, LocationHelper } from '../Helpers';
-import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
+import { commonHelper, LocationHelper, authHelper } from '../Helpers';
+import { PRIMARY_DARK_COLOR, PRIMARY_COLOR, DIVIDER_COLOR } from '../common/styles/common-styles';
 import FilterEventsModal from '../Components/FilterEventsModal';
-import { getEventMarkers, getEventDetails } from '../reducer';
+import { getEventMarkers } from '../reducer';
 
 class MapScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
@@ -40,16 +40,17 @@ class MapScreen extends React.Component {
       filtersVisible: false,
       socialSelected: 'All',
       coords: { latitude: null, longitude: null },
-      refreshing: false
+      refreshing: false,
+      currentUser: null
     }
 
     this.updateSocialSelected = this.updateSocialSelected.bind(this);
-    this.setEventDetails = this.setEventDetails.bind(this);
   }
 
   async componentDidMount() {
     const { coords } = await LocationHelper.getCurrentLocation();
-    this.setState({ coords });
+    const currentUser = await authHelper.getCurrentUserId();
+    this.setState({ coords, currentUser });
 
     commonHelper.getFilters()
       .then(res => {
@@ -86,16 +87,8 @@ class MapScreen extends React.Component {
     this.setState({isVisible: !this.state.isVisible});
   }
 
-  async setEventDetails(eventId) { // TODO: This should prob be moved to componentDidMount in EventDetails
-    const { navigation } = this.props;
-    const currentLocation = await LocationHelper.getCurrentLocation();
-
-    this.props.getEventDetails(eventId, currentLocation);
-    navigation.navigate('EventDetails')
-  }
-
   render() {
-    const { filtersVisible, socialSelected, refreshing } = this.state;
+    const { filtersVisible, socialSelected, refreshing, currentUser } = this.state;
     const { markers, loading } = this.props;
     const { latitude, longitude } = this.state.coords;
 
@@ -125,7 +118,8 @@ class MapScreen extends React.Component {
                 { markers.length && markers.map((m, i) => (
                   <MapView.Marker
                     key={i}
-                    onPress={() => this.setEventDetails(m.id)}
+                    pinColor={m.user_id === currentUser ? PRIMARY_COLOR : m.viewed_id !== null ? DIVIDER_COLOR : 'red'}
+                    onPress={() => this.props.navigation.navigate('EventDetails', { eventId: m.id })}
                     ref={marker => { this.marker = marker }}
                     coordinate={m.coordinate}
                   />
@@ -170,7 +164,6 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = {
   getEventMarkers,
-  getEventDetails
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(MapScreen);

@@ -30,7 +30,6 @@ class UserDetailsScreen extends React.Component {
     super();
 
     this.state = {
-      events: [], // What is passed to RecentActivity component
       currentUser: null,
       optionsModalVisible: false,
       editProfileModalVisible: false,

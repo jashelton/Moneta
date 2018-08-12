@@ -9,27 +9,14 @@ import { View,
          RefreshControl,
          FlatList } from 'react-native';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 
-import { LocationHelper } from '../Helpers';
-import { getEventDetails } from '../reducer';
-
-class RecentActivity extends React.Component {
-
-  async goToEventsDetails(eventId) {
-    const { navigation } = this.props;
-    const currentLocation = await LocationHelper.getCurrentLocation();
-
-    this.props.getEventDetails(eventId, currentLocation);
-    navigation.navigate('EventDetails')
-  }
-
+export default class RecentActivity extends React.Component {
   _renderImage({item, index}) {
     return(
       <TouchableHighlight
         underlayColor="#eee"
         style={styles.imageTouch}
-        onPress={() => this.goToEventsDetails(item.id)}
+        onPress={() => this.props.navigation.navigate('EventDetails', { eventId: item.id })}
       >
         <ImageBackground style={styles.image} resizeMode='cover' source={{uri: item.image}}>
           <View style={styles.imageOverlay}>
@@ -108,15 +95,3 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   }
 });
-
-const mapStateToProps = state => {
-  return {
-    loading: state.loading
-  };
-};
-
-const mapDispatchToProps = {
-  getEventDetails
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(RecentActivity);

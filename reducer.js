@@ -19,6 +19,9 @@ export const UPDATE_EVENT_LIKES_FAIL = 'moneta/eventDetails/UPDATE_LIKES_FAIL';
 export const GET_MARKERS = 'moneta/markers/GET_MARKERS';
 export const GET_MARKERS_SUCCESS = 'moneta/markers/GET_MARKERS_SUCCESS';
 export const GET_MARKERS_FAIL = 'moneta/markers/GET_MARKERS_FAIL';
+export const MARK_EVENT_VIEWED = 'monesta/markers/MARK_EVENT_VIEWED';
+export const MARK_EVENT_VIEWED_SUCCESS = 'monesta/markers/MARK_EVENT_VIEWED_SUCCESS';
+export const MARK_EVENT_VIEWED_FAIL = 'monesta/markers/MARK_EVENT_VIEWED_FAIL';
 export const DELETE_EVENT = 'moneta/events/DELETE_EVENT';
 export const DELETE_EVENT_SUCCESS = 'moneta/events/DELETE_EVENT_SUCCESS';
 export const DELETE_EVENT_FAIL = 'moneta/events/DELETE_EVENT_FAIL';
@@ -126,6 +129,25 @@ export default function reducer(state = initialState, action) {
         ...state,
         loading: false,
         error: 'There was an error retrieving the event markers.'
+      };
+    case MARK_EVENT_VIEWED:
+      return { ...state, loading: false };
+    case MARK_EVENT_VIEWED_SUCCESS:
+      const { event_id, insertId } = action.payload.data;
+
+      if (state.markers.length) {
+        const index = state.markers.findIndex(m => m.id === parseInt(event_id));
+        const updatedMarkers = update(state.markers, { [index]: { viewed_id: {$set: insertId} } });
+
+        return { ...state, loading: false, markers: updatedMarkers };
+      } else {
+        return { ...state, loading: false };
+      }
+    case MARK_EVENT_VIEWED_FAIL:
+      return {
+        ...state,
+        loading: false,
+        error: 'Something went wrong'
       };
     case DELETE_EVENT:
       return { ...state, loading: true }
@@ -283,6 +305,18 @@ export function getEventMarkers(filter) {
         url: `/events/markers`,
         method: 'GET',
         params: { filter }
+      }
+    }
+  }
+}
+
+export function markEventViewed(eventId) {
+  return {
+    type: MARK_EVENT_VIEWED,
+    payload: {
+      request: {
+        url: `/events/${eventId}/viewed`,
+        method: 'POST'
       }
     }
   }
