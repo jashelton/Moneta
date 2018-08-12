@@ -3,9 +3,8 @@ import { View, StyleSheet, ActivityIndicator } from 'react-native';
 
 import RecentActivity from '../Components/RecentActivity';
 import { LocationHelper, permissionsHelper } from '../Helpers';
-import { listRecentActivity } from '../reducer'
+import { listRecentActivity, loadMoreRows } from '../reducer'
 import { connect } from 'react-redux';
-import { notificationService } from '../Services';
 
 class HomeScreen extends React.Component {
   static navigationOptions = { title: 'Recent Events' };
@@ -18,6 +17,7 @@ class HomeScreen extends React.Component {
     };
 
     this._onRefresh = this._onRefresh.bind(this);
+    this.handleScroll = this.handleScroll.bind(this);
   }
 
   async componentDidMount() {
@@ -27,14 +27,22 @@ class HomeScreen extends React.Component {
 
     const { coords } = await LocationHelper.getCurrentLocation();
 
-    this.props.listRecentActivity('all', null);
+    this.props.listRecentActivity('all', null, 0);
     // For nearby events, pass coords as second parameter
   }
 
+  // Should be changed... if a user has already loaded more posts, its bad to clear that out.
+  // Refresh should check if there are any events newer that the most recent event.
   _onRefresh() {
     this.setState({ refreshing: true });
-    this.props.listRecentActivity('all', null);
+    this.props.listRecentActivity('all', null, 0);
     this.setState({ refreshing: false });
+  }
+
+  handleScroll(offset) {
+    if (!this.props.loading) {
+      this.props.loadMoreRows('all', null, offset);
+    }
   }
 
   render() {
@@ -43,12 +51,13 @@ class HomeScreen extends React.Component {
 
     return(
       <View style={styles.container}>
-        { !loading ?
+        { recentEvents && recentEvents.length ?
           <View>
             <RecentActivity
               refreshing={refreshing}
               navigation={navigation}
               events={recentEvents}
+              handleScroll={this.handleScroll}
               noDataMessage='There is no recent activity to display.'
               _onRefresh={this._onRefresh}
             />
@@ -82,7 +91,8 @@ const mapStateToProps = state => {
 };
 
 const mapDispatchToProps = {
-  listRecentActivity
+  listRecentActivity,
+  loadMoreRows
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(HomeScreen);

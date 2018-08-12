@@ -1,6 +1,15 @@
 export const GET_RECENT_ACTIVITY = 'moneta/events/LOAD';
 export const GET_RECENT_ACTIVITY_SUCCESS = 'moneta/events/LOAD_SUCCESS';
 export const GET_RECENT_ACTIVITY_FAIL = 'moneta/events/LOAD_FAIL';
+export const GET_RECENT_ACTIVITY_FOR_USER = 'moneta/events/GET_RECENT_ACTIVITY_FOR_USER';
+export const GET_RECENT_ACTIVITY_FOR_USER_SUCCESS = 'moneta/events/GET_RECENT_ACTIVITY_FOR_USER_SUCCESS';
+export const GET_RECENT_ACTIVITY_FOR_USER_FAIL = 'moneta/events/GET_RECENT_ACTIVITY_FOR_USER_FAIL';
+export const LOAD_MORE_ROWS_FOR_USER_ACTIVITY = 'moneta/events/LOAD_MORE_ROWS_FOR_USER_ACTIVITY';
+export const LOAD_MORE_ROWS_FOR_USER_ACTIVITY_SUCCESS = 'moneta/events/LOAD_MORE_ROWS_FOR_USER_ACTIVITY_SUCCESS';
+export const LOAD_MORE_ROWS_FOR_USER_ACTIVITY_FAIL = 'moneta/events/LOAD_MORE_ROWS_FOR_USER_ACTIVITY_FAIL';
+export const LOAD_MORE_ROWS = 'moneta/events/LOAD_MORE';
+export const LOAD_MORE_ROWS_SUCCESS = 'moneta/events/LOAD_MORE_SUCCESS';
+export const LOAD_MORE_ROWS_FAIL = 'moneta/events/LOAD_MORE_FAIL';
 export const GET_EVENT_DETAILS = 'moneta/eventDetails/LOAD';
 export const GET_EVENT_DETAILS_SUCCESS = 'moneta/eventDetails/LOAD_SUCCESS';
 export const GET_EVENT_DETAILS_FAIL = 'moneta/eventDetails/LOAD_FAIL';
@@ -34,7 +43,8 @@ const initialState = {
   recentEvents: [],
   markers: [],
   userDetails: {},
-  currentUserDetails: {}
+  currentUserDetails: {},
+  userActivity: []
 };
 
 export default function reducer(state = initialState, action) {
@@ -49,6 +59,31 @@ export default function reducer(state = initialState, action) {
         loading: false,
         error: 'Error while trying to find recent events.'
       };
+    case GET_RECENT_ACTIVITY_FOR_USER:
+      return { ...state, loading: true };
+    case GET_RECENT_ACTIVITY_FOR_USER_SUCCESS:
+      return { ...state, loading: false, userActivity: action.payload.data };
+    case GET_RECENT_ACTIVITY_FOR_USER_FAIL:
+      return {
+        ...state,
+        loading: false,
+        error: 'There was a problem fetching activity for this user.'
+      };
+    case LOAD_MORE_ROWS_FOR_USER_ACTIVITY:
+      return { ...state, loading: true };
+    case LOAD_MORE_ROWS_FOR_USER_ACTIVITY_SUCCESS:
+      if (action.payload.data.length) {
+        const updatedUserActivity = update(state.userActivity, { $push: action.payload.data });
+        return { ...state, loading: false, userActivity: updatedUserActivity};
+      } else {
+        return { ...state, loading: false };
+      }
+    case LOAD_MORE_ROWS_FOR_USER_ACTIVITY_FAIL:
+      return {
+        ...state,
+        loading: false,
+        error: 'There was a problem loading more events for this user.'
+      };
     case GET_EVENT_DETAILS:
       return { ...state, loading: true };
     case GET_EVENT_DETAILS_SUCCESS:
@@ -59,6 +94,17 @@ export default function reducer(state = initialState, action) {
         loading: false,
         error: 'There was a problem getting the details for this event.'
       };
+    case LOAD_MORE_ROWS:
+      return { ...state, loading: true };
+    case LOAD_MORE_ROWS_SUCCESS:
+      const updatedEvents = update(state.recentEvents, { $push: action.payload.data });
+      return { ...state, loading: false, recentEvents: updatedEvents };
+    case LOAD_MORE_ROWS_FAIL:
+      return {
+        ...state,
+        loading: false,
+        error: 'There was a problem trying to fetch more events.'
+      }
     case UPDATE_EVENT_LIKES:
       return { ...state };
     case UPDATE_EVENT_LIKES_SUCCESS:
@@ -149,14 +195,53 @@ export default function reducer(state = initialState, action) {
 }
 
 // Events
-export function listRecentActivity(users, coords) {
+export function listRecentActivity(users, coords, pageOffset) {
   return {
     type: GET_RECENT_ACTIVITY,
     payload: {
       request: {
         url: '/events/recent',
         method: 'GET',
-        params: { users , coords }
+        params: { users , coords, offset: pageOffset }
+      }
+    }
+  }
+}
+
+export function listRecentActivityForUser(id, pageOffset) {
+  return {
+    type: GET_RECENT_ACTIVITY_FOR_USER,
+    payload: {
+      request: {
+        url: `/events/${id}/recent`,
+        method: 'GET',
+        params: { offset: pageOffset }
+      }
+    }
+  }
+}
+
+export function loadMoreRows(users, coords, pageOffset) {
+  return {
+    type: LOAD_MORE_ROWS,
+    payload: {
+      request: {
+        url: '/events/recent',
+        method: 'GET',
+        params: { users , coords, offset: pageOffset }
+      }
+    }
+  }
+}
+
+export function loadMoreRowsForUserActivity(id, pageOffset) {
+  return {
+    type: LOAD_MORE_ROWS_FOR_USER_ACTIVITY,
+    payload: {
+      request: {
+        url: `/events/${id}/recent`,
+        method: 'GET',
+        params: { offset: pageOffset }
       }
     }
   }

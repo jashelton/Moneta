@@ -31,7 +31,7 @@ class RecentActivity extends React.Component {
         style={styles.imageTouch}
         onPress={() => this.goToEventsDetails(item.id)}
       >
-        <ImageBackground style={styles.image} source={{uri: item.image}}>
+        <ImageBackground style={styles.image} resizeMode='cover' source={{uri: item.image}}>
           <View style={styles.imageOverlay}>
             <Text style={{color:'#fff'}}>{item.name}</Text>
           </View>
@@ -47,10 +47,12 @@ class RecentActivity extends React.Component {
       return(
         <View style={styles.imagesContainer}>
           <FlatList
-            keyExtractor={item => item.id.toString()}
+            keyExtractor={(item, index) => index.toString()}
             numColumns={2}
             data={events}
             renderItem={this._renderImage.bind(this)}
+            onEndReached={ () => this.props.handleScroll(events.length)}
+            onEndReachedThreshold={0}
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}

@@ -1,15 +1,12 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
-import { PRIMARY_DARK_COLOR, ACCENT_COLOR, PRIMARY_LIGHT_COLOR } from '../common/styles/common-styles';
-import { TabView, TabBar, SceneMap } from 'react-native-tab-view';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { PRIMARY_LIGHT_COLOR } from '../common/styles/common-styles';
 import { connect } from 'react-redux';
 
 import RecentActivity from '../Components/RecentActivity';
-import UserStats from '../Components/UserStats';
-import { eventsService } from '../Services/events.service';
 import { authHelper } from '../Helpers';
 import UserInfo from '../Components/UserInfo';
-import { getCurrentUserDetails, updateCurrentUserDetails } from '../reducer';
+import { getCurrentUserDetails, updateCurrentUserDetails, listRecentActivityForUser, loadMoreRowsForUserActivity } from '../reducer';
 import EditProfileModal from '../Components/EditProfileModal';
 
 class MyProfileScreen extends React.Component {
@@ -23,12 +20,6 @@ class MyProfileScreen extends React.Component {
     super();
 
     this.state = {
-      index: 0,
-      routes: [
-        { key: 'first', title: 'Recent Activity' },
-        { key: 'second', title: 'Stats' },
-      ],
-      events: [], // What is passed to RecentActivity component
       currentUser: null,
       editProfileModalVisible: false,
       refreshing: false
@@ -36,14 +27,14 @@ class MyProfileScreen extends React.Component {
 
     this.toggleEditProfile = this.toggleEditProfile.bind(this);
     this._onRefresh = this._onRefresh.bind(this);
+    this.handleScroll = this.handleScroll.bind(this);
   }
 
   async componentDidMount() {
     const currentUser = await authHelper.getCurrentUserId();
     this.props.getCurrentUserDetails(currentUser); // TODO: This could be it's on getCurrentUserDetails()
-
-    const { data } = await eventsService.getRecentEventsById(currentUser); // TODO: Don't hardcode params... refactor to GET /events/:?
-    this.setState({ events: data, currentUser });
+    this.props.listRecentActivityForUser(currentUser, 0);
+    this.setState({ currentUser });
 
     // TODO: Find a better way to handle this.
     setTimeout(() => {
@@ -59,21 +50,6 @@ class MyProfileScreen extends React.Component {
     );
   }
 
-  _renderTabBar = props => {
-    return (
-      <TabBar
-        {...props}
-        style={{backgroundColor: PRIMARY_DARK_COLOR}}
-        indicatorStyle={{ backgroundColor: ACCENT_COLOR }}
-      />
-    );
-  };
-
-  _initialLayout = {
-    width: Dimensions.get('window').width,
-    height: 0
-  }
-
   toggleEditProfile() {
     const { editProfileModalVisible } = this.state;
     this.setState({ editProfileModalVisible: !editProfileModalVisible });
@@ -86,15 +62,21 @@ class MyProfileScreen extends React.Component {
 
   async _onRefresh() {
     this.setState({ refreshing: true });
-    const { data } = await eventsService.getRecentEventsById(this.state.currentUser);
-    this.setState({ refreshing: false, events: data });
+    this.props.listRecentActivityForUser(this.state.currentUser, 0);
+    this.setState({ refreshing: false });
+  }
+
+  handleScroll(offset) {
+    if (!this.props.loading) {
+      this.props.loadMoreRowsForUserActivity(this.state.currentUser, offset);
+    }
   }
 
   render() {
-    const { currentUserDetails, loading } = this.props;
+    const { currentUserDetails, userActivity } = this.props;
     const { currentUser, editProfileModalVisible, refreshing } = this.state;
 
-    if (!loading && currentUserDetails) {
+    if (userActivity && currentUserDetails) {
       return(
         <View style={styles.container}>
           <UserInfo
@@ -102,22 +84,15 @@ class MyProfileScreen extends React.Component {
             currentUser={currentUser}
             toggleEditProfile={this.toggleEditProfile}
           />
-          <TabView
-            labelStyle={{ backgroundColor: 'red' }}
-            navigationState={this.state}
-            renderScene={SceneMap({
-              first: () => <RecentActivity
-                              events={this.state.events}
-                              navigation={this.props.navigation}
-                              refreshing={refreshing}
-                              _onRefresh={this._onRefresh}
-                            />,
-              second: () => <UserStats />
-            })}
-            renderTabBar={this._renderTabBar}
-            onIndexChange={index => this.setState({ index })}
-            initialLayout={this.initialLayout}
-          />
+          <View style={styles.container}>
+            <RecentActivity
+              events={userActivity}
+              navigation={this.props.navigation}
+              refreshing={refreshing}
+              _onRefresh={this._onRefresh}
+              handleScroll={this.handleScroll}
+            />
+          </View>
 
           {/* Edit Profile Modal */}
           <EditProfileModal
@@ -140,7 +115,6 @@ class MyProfileScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor: PRIMARY_DARK_COLOR,
   },
   userInfoContainer: {
     height: '30%',
@@ -152,13 +126,16 @@ const styles = StyleSheet.create({
 const mapStateToProps = state => {
   return {
     loading: state.loading,
-    currentUserDetails: state.currentUserDetails
+    currentUserDetails: state.currentUserDetails,
+    userActivity: state.userActivity
   };
 };
 
 const mapDispatchToProps = {
   getCurrentUserDetails,
-  updateCurrentUserDetails
+  updateCurrentUserDetails,
+  listRecentActivityForUser,
+  loadMoreRowsForUserActivity
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(MyProfileScreen);

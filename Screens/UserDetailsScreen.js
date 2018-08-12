@@ -1,15 +1,12 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions, ActivityIndicator, Modal } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Modal } from 'react-native';
 import { PRIMARY_DARK_COLOR, ACCENT_COLOR, PRIMARY_LIGHT_COLOR } from '../common/styles/common-styles';
-import { TabView, TabBar, SceneMap } from 'react-native-tab-view';
 import { Icon, Button } from 'react-native-elements';
 import { connect } from 'react-redux';
 
 import RecentActivity from '../Components/RecentActivity';
-import UserStats from '../Components/UserStats';
-import { eventsService } from '../Services';
 import { authHelper } from '../Helpers';
-import { getUserDetails, updateUserDetailsFollows } from '../reducer';
+import { getUserDetails, updateUserDetailsFollows, listRecentActivityForUser, loadMoreRowsForUserActivity } from '../reducer';
 import UserInfo from '../Components/UserInfo';
 import EditProfileModal from '../Components/EditProfileModal';
 
@@ -33,11 +30,6 @@ class UserDetailsScreen extends React.Component {
     super();
 
     this.state = {
-      index: 0,
-      routes: [
-        { key: 'first', title: 'Recent Activity' },
-        { key: 'second', title: 'Stats' },
-      ],
       events: [], // What is passed to RecentActivity component
       currentUser: null,
       optionsModalVisible: false,
@@ -49,6 +41,7 @@ class UserDetailsScreen extends React.Component {
     this.toggleOptionsModal = this.toggleOptionsModal.bind(this);
     this.toggleEditProfile = this.toggleEditProfile.bind(this);
     this._onRefresh = this._onRefresh.bind(this);
+    this.handleScroll = this.handleScroll.bind(this);
   }
 
   async componentDidMount() {
@@ -58,22 +51,12 @@ class UserDetailsScreen extends React.Component {
     this.setState({ currentUser, userId });
 
     this.props.getUserDetails(userId);
+    this.props.listRecentActivityForUser(userId, 0);;
 
     this.props.navigation.setParams({
       toggleOptionsModal: () => this.toggleOptionsModal(),
+      getUsername: () => this.getUsername(),
     });
-
-    Promise.all([eventsService.getRecentEventsById(userId)])
-      .then(values => {
-        this.setState({
-          events: values[0].data,
-        });
-
-        this.props.navigation.setParams({
-          getUsername: () => this.getUsername(),
-        });
-      })
-      .catch( err => console.log(err));
   }
 
   getUsername() {
@@ -94,38 +77,29 @@ class UserDetailsScreen extends React.Component {
     this.setState({ optionsModalVisible: !optionsModalVisible });
   }
 
-  _renderTabBar = props => {
-    return (
-      <TabBar
-        {...props}
-        style={{backgroundColor: PRIMARY_DARK_COLOR}}
-        indicatorStyle={{ backgroundColor: ACCENT_COLOR }}
-      />
-    );
-  };
-
-  _initialLayout = {
-    width: Dimensions.get('window').width,
-    height: 0
-  }
-
   // Edit Profile
   toggleEditProfile() {
     const { editProfileModalVisible } = this.state;
     this.setState({ editProfileModalVisible: !editProfileModalVisible });
   }
 
-  async _onRefresh() {
+  _onRefresh() {
     this.setState({ refreshing: true });
-    const { data } = await eventsService.getRecentEventsById(this.state.userId);
-    this.setState({ refreshing: false, events: data });
+    this.props.listRecentActivityForUser(this.state.userId, 0);
+    this.setState({ refreshing: false });
+  }
+
+  handleScroll(offset) {
+    if (!this.props.loading) {
+      this.props.loadMoreRowsForUserActivity(this.state.userId, offset);
+    }
   }
 
   render() {
     const { currentUser, optionsModalVisible, editProfileModalVisible, imageFile, refreshing } = this.state;
-    const { userDetails, loading } = this.props;
+    const { userDetails, userActivity } = this.props;
 
-    if (!loading && userDetails) {
+    if (userActivity && userDetails) {
       return(
         <View style={styles.container}>
           <UserInfo
@@ -134,21 +108,15 @@ class UserDetailsScreen extends React.Component {
             toggleEditProfile={this.toggleEditProfile}
             toggleFollowing={() => this.toggleFollowing()}
           />
-          <TabView
-            navigationState={this.state}
-            renderScene={SceneMap({
-              first: () =>  <RecentActivity
-                              events={this.state.events}
-                              navigation={this.props.navigation}
-                              refreshing={refreshing}
-                              _onRefresh={this._onRefresh}
-                            />,
-              second: () => <UserStats />
-            })}
-            renderTabBar={this._renderTabBar}
-            onIndexChange={index => this.setState({ index })}
-            initialLayout={this.initialLayout}
-          />
+          <View style={styles.container}>
+            <RecentActivity
+              events={userActivity}
+              navigation={this.props.navigation}
+              refreshing={refreshing}
+              _onRefresh={this._onRefresh}
+              handleScroll={this.handleScroll}
+            />
+          </View>
           {/* Options Modal */}
           <Modal
             animationType="slide"
@@ -211,13 +179,16 @@ const styles = StyleSheet.create({
 const mapStateToProps = state => {
   return {
     loading: state.loading,
-    userDetails: state.userDetails
+    userDetails: state.userDetails,
+    userActivity: state.userActivity
   };
 };
 
 const mapDispatchToProps = {
   getUserDetails,
-  updateUserDetailsFollows
+  updateUserDetailsFollows,
+  listRecentActivityForUser,
+  loadMoreRowsForUserActivity
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(UserDetailsScreen);
