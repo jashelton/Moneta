@@ -9,6 +9,7 @@ import { View,
          RefreshControl,
          FlatList } from 'react-native';
 import PropTypes from 'prop-types';
+import { DIVIDER_COLOR } from '../common/styles/common-styles';
 
 export default class RecentActivity extends React.Component {
   _renderImage({item, index}) {
@@ -20,7 +21,8 @@ export default class RecentActivity extends React.Component {
       >
         <ImageBackground style={styles.image} resizeMode='cover' source={{uri: item.image}}>
           <View style={styles.imageOverlay}>
-            <Text style={{color:'#fff'}}>{item.name}</Text>
+            <Text style={{color:DIVIDER_COLOR}}>{item.username || item.name}</Text>
+            <Text style={{color:DIVIDER_COLOR, fontSize: 10}}>{item.city}, {item.region}, {item.country_code}</Text>
           </View>
         </ImageBackground>
       </TouchableHighlight>
@@ -89,9 +91,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     width: '100%',
-    height: '25%',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    padding: 5,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
-    alignItems: 'center'
   }
 });
