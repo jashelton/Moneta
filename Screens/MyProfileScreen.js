@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
-import { PRIMARY_LIGHT_COLOR } from '../common/styles/common-styles';
+import { View, Text, StyleSheet, ActivityIndicator, Dimensions } from 'react-native';
+import { PRIMARY_DARK_COLOR, ACCENT_COLOR, PRIMARY_LIGHT_COLOR } from '../common/styles/common-styles';
 import { connect } from 'react-redux';
+import Carousel, { Pagination } from 'react-native-snap-carousel';
 
 import RecentActivity from '../Components/RecentActivity';
 import { authHelper } from '../Helpers';
@@ -22,12 +23,14 @@ class MyProfileScreen extends React.Component {
     this.state = {
       currentUser: null,
       editProfileModalVisible: false,
-      refreshing: false
+      refreshing: false,
+      sliderActiveSlide: 0
     }
 
     this.toggleEditProfile = this.toggleEditProfile.bind(this);
     this._onRefresh = this._onRefresh.bind(this);
     this.handleScroll = this.handleScroll.bind(this);
+    this._renderItem = this._renderItem.bind(this);
   }
 
   async componentDidMount() {
@@ -45,7 +48,7 @@ class MyProfileScreen extends React.Component {
   getUsername() {
     return (
       <Text style={{color: PRIMARY_LIGHT_COLOR, fontWeight: '200', fontSize: 18}}>
-        { this.props.currentUserDetails.name }
+        { this.props.currentUserDetails[0].name }
       </Text>
     );
   }
@@ -72,18 +75,56 @@ class MyProfileScreen extends React.Component {
     }
   }
 
+  _renderItem ({item, index}) {
+    if (index === 0) {
+      return (
+        <UserInfo
+          userDetails={item}
+          currentUser={this.state.currentUser}
+          toggleEditProfile={this.toggleEditProfile}
+          toggleFollowing={() => this.toggleFollowing()}
+        />
+      );
+    } else if (index === 1) {
+      return (
+        <View style={{flex: 1, backgroundColor: PRIMARY_DARK_COLOR}}>
+          <Text>Countries Visited: {item.num_countries}</Text>
+        </View>
+      );
+    }
+  }
+
   render() {
     const { currentUserDetails, userActivity } = this.props;
-    const { currentUser, editProfileModalVisible, refreshing } = this.state;
+    const { editProfileModalVisible, refreshing, sliderActiveSlide } = this.state;
+    const { width } = Dimensions.get('window');
 
-    if (userActivity && currentUserDetails) {
+    if (userActivity && currentUserDetails && currentUserDetails.length) {
       return(
         <View style={styles.container}>
-          <UserInfo
-            userDetails={currentUserDetails}
-            currentUser={currentUser}
-            toggleEditProfile={this.toggleEditProfile}
-          />
+          <View style={{height: '40%'}}>
+            <Carousel
+              ref={(c) => { this._carousel = c; }}
+              data={currentUserDetails}
+              renderItem={this._renderItem}
+              sliderWidth={width}
+              itemWidth={width - 4}
+              onSnapToItem={(index) => this.setState({ sliderActiveSlide: index })}
+              layout={'default'}
+            />
+            <Pagination
+              dotsLength={currentUserDetails.length}
+              activeDotIndex={sliderActiveSlide}
+              containerStyle={styles.paginationContainer}
+              dotColor={ACCENT_COLOR}
+              dotStyle={styles.paginationDot}
+              inactiveDotColor='#1a1917'
+              inactiveDotOpacity={0.4}
+              inactiveDotScale={0.6}
+              carouselRef={this._slider1Ref}
+              tappableDots={!!this._slider1Ref}
+            />
+          </View>
           <View style={styles.container}>
             <RecentActivity
               events={userActivity}
@@ -98,7 +139,7 @@ class MyProfileScreen extends React.Component {
           <EditProfileModal
             isVisible={editProfileModalVisible}
             toggleEditProfile={this.toggleEditProfile}
-            userDetails={currentUserDetails}
+            userDetails={currentUserDetails[0]}
           />
         </View>
       );
@@ -120,7 +161,21 @@ const styles = StyleSheet.create({
     height: '30%',
     alignItems: 'center',
     justifyContent: 'center'
-  }
+  },
+  // Pagination
+  paginationDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginHorizontal: 5
+  },
+  paginationContainer: {
+    paddingVertical: 10,
+    backgroundColor: PRIMARY_DARK_COLOR,
+    marginLeft: 2,
+    marginRight: 2
+  },
+  // End Pagination
 });
 
 const mapStateToProps = state => {

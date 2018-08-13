@@ -14,12 +14,9 @@ export default class LoginScreen extends React.Component {
   }
 
   async logIn() {
-    console.log('LOGIN');
     const { type, token } = await Expo.Facebook.logInWithReadPermissionsAsync(APP_ID, {
       permissions: ['public_profile', 'email', 'user_friends'],
     });
-
-    console.log(token)
 
     if (type === 'success') {
       const data = await authService.fbLogin(token);

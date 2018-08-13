@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Modal } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Modal, Dimensions } from 'react-native';
 import { PRIMARY_DARK_COLOR, ACCENT_COLOR, PRIMARY_LIGHT_COLOR } from '../common/styles/common-styles';
-import { Icon, Button } from 'react-native-elements';
+import { Icon, Button, Divider } from 'react-native-elements';
 import { connect } from 'react-redux';
+import Carousel, { Pagination } from 'react-native-snap-carousel';
 
 import RecentActivity from '../Components/RecentActivity';
 import { authHelper } from '../Helpers';
@@ -34,13 +35,15 @@ class UserDetailsScreen extends React.Component {
       optionsModalVisible: false,
       editProfileModalVisible: false,
       refreshing: false,
-      userId: null
+      userId: null,
+      sliderActiveSlide: 0
     }
 
     this.toggleOptionsModal = this.toggleOptionsModal.bind(this);
     this.toggleEditProfile = this.toggleEditProfile.bind(this);
     this._onRefresh = this._onRefresh.bind(this);
     this.handleScroll = this.handleScroll.bind(this);
+    this._renderItem = this._renderItem.bind(this);
   }
 
   async componentDidMount() {
@@ -59,11 +62,18 @@ class UserDetailsScreen extends React.Component {
   }
 
   getUsername() {
-    return (
-      <Text style={{color: PRIMARY_LIGHT_COLOR, fontWeight: '200', fontSize: 18}}>
-        {this.props.userDetails.name}
-      </Text>
-    );
+    const { userDetails } = this.props;
+    if (userDetails[0] && userDetails[0].name) {
+      return (
+        <Text style={{color: PRIMARY_LIGHT_COLOR, fontWeight: '200', fontSize: 18}}>
+          {this.props.userDetails[0].name}
+        </Text>
+      );
+    } else {
+      return (
+        <Text></Text>
+      )
+    }
   }
 
   toggleFollowing() {
@@ -94,20 +104,58 @@ class UserDetailsScreen extends React.Component {
     }
   }
 
-  render() {
-    const { currentUser, optionsModalVisible, editProfileModalVisible, imageFile, refreshing } = this.state;
-    const { userDetails, userActivity } = this.props;
+  _renderItem ({item, index}) {
+    if (index === 0) {
+      return (
+        <UserInfo
+          userDetails={item}
+          currentUser={this.state.currentUser}
+          toggleEditProfile={this.toggleEditProfile}
+          toggleFollowing={() => this.toggleFollowing()}
+        />
+      );
+    } else if (index === 1) {
+      return (
+        <View style={{flex: 1, backgroundColor: PRIMARY_DARK_COLOR}}>
+          <Text>Countries Visited: {item.num_countries}</Text>
+        </View>
+      );
+    }
+  }
 
-    if (userActivity && userDetails) {
+  render() {
+    const { optionsModalVisible, editProfileModalVisible, imageFile, refreshing, sliderActiveSlide } = this.state;
+    const { userDetails, userActivity } = this.props;
+    const { width } = Dimensions.get('window');
+
+    if (userActivity && userDetails && userDetails.length) {
       return(
         <View style={styles.container}>
-          <UserInfo
-            userDetails={userDetails}
-            currentUser={currentUser}
-            toggleEditProfile={this.toggleEditProfile}
-            toggleFollowing={() => this.toggleFollowing()}
-          />
-          <View style={styles.container}>
+          <View style={{height: '40%'}}>
+            <Carousel
+              ref={(c) => { this._carousel = c; }}
+              data={userDetails}
+              renderItem={this._renderItem}
+              sliderWidth={width}
+              itemWidth={width - 4}
+              onSnapToItem={(index) => this.setState({ sliderActiveSlide: index })}
+              layout={'default'}
+            />
+            <Pagination
+              dotsLength={userDetails.length}
+              activeDotIndex={sliderActiveSlide}
+              containerStyle={styles.paginationContainer}
+              dotColor={ACCENT_COLOR}
+              dotStyle={styles.paginationDot}
+              inactiveDotColor='#1a1917'
+              inactiveDotOpacity={0.4}
+              inactiveDotScale={0.6}
+              carouselRef={this._slider1Ref}
+              tappableDots={!!this._slider1Ref}
+            />
+          </View>
+          <Divider />
+          <View style={{flex: 1}}>
             <RecentActivity
               events={userActivity}
               navigation={this.props.navigation}
@@ -136,7 +184,7 @@ class UserDetailsScreen extends React.Component {
             isVisible={editProfileModalVisible}
             toggleEditProfile={this.toggleEditProfile}
             imageFile={imageFile}
-            userDetails={userDetails}
+            userDetails={userDetails[0]}
           />
         </View>
       );
@@ -172,7 +220,21 @@ const styles = StyleSheet.create({
   },
   editProfileBody: {
     padding: 15
-  }
+  },
+  // Pagination
+  paginationDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginHorizontal: 5
+  },
+  paginationContainer: {
+    paddingVertical: 10,
+    backgroundColor: PRIMARY_DARK_COLOR,
+    marginLeft: 2,
+    marginRight: 2
+  },
+  // End Pagination
 });
 
 const mapStateToProps = state => {
