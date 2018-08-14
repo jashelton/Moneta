@@ -1,6 +1,6 @@
 import React from 'react';
 import { ScrollView, View, Image, Text, StyleSheet, ActivityIndicator, AlertIOS, Modal } from 'react-native';
-import { Card, Divider, Icon, Button, ListItem } from 'react-native-elements';
+import { Card, Divider, Icon, Button, ListItem, Avatar } from 'react-native-elements';
 import { authHelper, LocationHelper } from '../Helpers';
 import { WARNING_RED, ACCENT_COLOR, PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
 import { connect } from 'react-redux';
@@ -10,16 +10,23 @@ import { notificationService } from '../Services/notification.service';
 export class EventDetailsHeader extends React.Component {
   render() {
     return(
-      <View style={styles.headerContainer}>
-        <View>
-          <ListItem />
-          <Text style={{ color: 'blue', fontWeight: '400'}} onPress={() => this.props.navigation.navigate('UserDetails', {userId: this.props.creator})}>{this.props.name}</Text>
-          <Text style={styles.subText}>{new Date(this.props.date).toISOString().substring(0, 10)}</Text>
-        </View>
-        <View>
-          <Icon name='more-vert' onPress={this.props.setVisibility}/>
-        </View>
-      </View>
+      <ListItem
+        leftAvatar={
+          <Avatar
+            size="small"
+            rounded
+            source={this.props.image ? {uri: this.props.image} : null}
+            icon={{name: 'person', size: 20}}
+            activeOpacity={0.7}
+          />
+        }
+        title={this.props.username || this.props.name}
+        titleStyle={{ color: 'blue'}}
+        subtitle={new Date(this.props.date).toISOString().substring(0, 10)}
+        subtitleStyle={styles.subText}
+        chevron
+        onPress={() => this.props.navigation.navigate('UserDetails', {userId: this.props.creator})}
+      />
     );
   }
 }
@@ -120,6 +127,8 @@ class EventDetailsScreen extends React.Component {
                       date={event.created_at}
                       creator={event.user_id}
                       name={event.name}
+                      username={event.username}
+                      image={event.user_image}
                       setVisibility={this.toggleVisibility}
                       navigation={this.props.navigation}
                     />
