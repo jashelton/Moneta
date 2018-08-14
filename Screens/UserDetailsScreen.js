@@ -7,8 +7,12 @@ import Carousel, { Pagination } from 'react-native-snap-carousel';
 
 import RecentActivity from '../Components/RecentActivity';
 import { authHelper } from '../Helpers';
-import { getUserDetails, updateUserDetailsFollows, listRecentActivityForUser, loadMoreRowsForUserActivity } from '../reducer';
+import { getUserDetails,
+         updateUserDetailsFollows,
+         listRecentActivityForUser,
+         loadMoreRowsForUserActivity } from '../reducer';
 import UserInfo from '../Components/UserInfo';
+import UserStats from '../Components/UserStats';
 import EditProfileModal from '../Components/EditProfileModal';
 
 class UserDetailsScreen extends React.Component {
@@ -116,9 +120,7 @@ class UserDetailsScreen extends React.Component {
       );
     } else if (index === 1) {
       return (
-        <View style={{flex: 1, backgroundColor: PRIMARY_DARK_COLOR}}>
-          <Text>Countries Visited: {item.num_countries}</Text>
-        </View>
+        <UserStats stats={item} />
       );
     }
   }

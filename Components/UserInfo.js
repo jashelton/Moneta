@@ -21,7 +21,7 @@ export default class UserInfo extends React.Component {
             containerStyle={{ backgroundColor: PRIMARY_DARK_COLOR }}
             title={userDetails.name}
             titleStyle={{color: TEXT_ICONS_COLOR}}
-            subtitle={new Date(userDetails.created_at).toISOString().substring(0, 10)}
+            subtitle={`Joined: ${new Date(userDetails.created_at).toISOString().substring(0, 10)}`}
             subtitleStyle={{color: LIGHT_PRIMARY_COLOR, fontSize: 12, fontWeight: '200'}}
             rightElement={ currentUser !== userDetails.id ?
               <Button

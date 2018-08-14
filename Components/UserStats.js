@@ -1,16 +1,22 @@
 import React from 'react';
 import { View, ScrollView, Text, StyleSheet } from 'react-native';
-import { ACCENT_COLOR, PRIMARY_LIGHT_COLOR } from '../common/styles/common-styles';
+import { ACCENT_COLOR, PRIMARY_DARK_COLOR, DIVIDER_COLOR } from '../common/styles/common-styles';
 
 export default class UserStats extends React.Component {
   render() {
+    const { stats } = this.props;
+
     return(
-      <ScrollView style={styles.secondaryContainer}>
+      <ScrollView style={styles.container}>
         <View style={styles.statsWrapper}>
-          <View style={styles.stat}>
-            <Text style={styles.statNumber}>10</Text>
-            <Text style={styles.statTitle}>Total Events</Text>
-          </View>
+          { Object.keys(stats).map((key, i) => (
+            <View key={i} style={{padding: 2, flexBasis: '33.33%'}}>
+              <View style={styles.stat}>
+                <Text style={styles.statNumber}>{stats[key]}</Text>
+                <Text style={styles.statTitle}>{key.split('_').join(' ').toUpperCase()}</Text>
+              </View>
+            </View>  
+          ))}
         </View>
       </ScrollView>
     );
@@ -18,36 +24,31 @@ export default class UserStats extends React.Component {
 }
 
 const styles = StyleSheet.create({
-  userInfoContainer: {
-    height: '50%'
-  },
-  secondaryContainer: {
+  container: {
     flex: 1,
-    padding: 10
+    padding: 10,
+    backgroundColor: PRIMARY_DARK_COLOR
   },
   statsWrapper: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap'
+    flexWrap: 'wrap',
   },
   stat: {
-    flexBasis: '49%',
-    borderWidth: 2,
-    borderColor: PRIMARY_LIGHT_COLOR,
+    flex: 1,
+    borderWidth: 1,
+    borderColor: ACCENT_COLOR,
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
     borderRadius: 5,
-    minHeight: 150
   },
   statNumber: {
     fontSize: 40,
-    color: ACCENT_COLOR
+    color: DIVIDER_COLOR
   },
   statTitle: {
-    fontSize: 14,
-    fontWeight: '400',
+    fontSize: 10,
+    fontWeight: '200',
     marginBottom: 8,
     textAlign: 'center',
     color: ACCENT_COLOR
