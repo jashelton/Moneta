@@ -21,7 +21,7 @@ export class EventDetailsHeader extends React.Component {
           />
         }
         title={this.props.username || this.props.name}
-        titleStyle={{ color: 'blue'}}
+        titleStyle={{ color: PRIMARY_DARK_COLOR}}
         subtitle={new Date(this.props.date).toISOString().substring(0, 10)}
         subtitleStyle={styles.subText}
         chevron
