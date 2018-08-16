@@ -4,7 +4,9 @@ import { authHelper } from '../Helpers';
 
 export const notificationService = {
   insertPushToken,
-  sendPushNotification
+  sendPushNotification,
+  createNotification,
+  getNotifications
 };
 
 async function insertPushToken(token) {
@@ -31,4 +33,15 @@ async function sendPushNotification(userId, title, body) {
   }
 
   return;
+}
+
+async function createNotification(eventId, userId, type) {
+  const headers = await authHelper.authHeaders();
+  const data = { eventId, userId, type };
+  return axios.post(`${ENDPOINT}/users/:id/notifications`, data, headers);
+}
+
+async function getNotifications() {
+  const headers = await authHelper.authHeaders();
+  return axios.get(`${ENDPOINT}/users/:id/notifications`, headers);
 }

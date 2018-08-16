@@ -78,6 +78,7 @@ class EventDetailsScreen extends React.Component {
     if (!event.liked) { // This actually means if the event is being liked.  Should refactor this for readability.
       // TODO: Figure out how I want to phrase notifications
       await notificationService.sendPushNotification(event.user_id, 'Someone liked your event!', event.title);
+      notificationService.createNotification(event.id, event.user_id, 'like');
     }
   }
 
