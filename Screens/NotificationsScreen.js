@@ -28,8 +28,10 @@ export default class NotificationsScreen extends React.Component {
   }
 
   async handleScroll(offset) {
-    const { data } = await notificationService.getNotifications(offset);
-    this.setState({ notifications: this.state.notifications.concat(data) });
+    if (offset > 15) {
+      const { data } = await notificationService.getNotifications(offset);
+      this.setState({ notifications: this.state.notifications.concat(data) });
+    }
   }
 
   _renderNotification({ item }) {
