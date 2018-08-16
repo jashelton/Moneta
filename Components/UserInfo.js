@@ -58,7 +58,7 @@ export default class UserInfo extends React.Component {
             <Text style={styles.socialText}>FOLLOWING</Text>
           </View>
           <View style={styles.textWrapper}>
-            <Text style={styles.socialNumber}>1</Text>
+            <Text style={styles.socialNumber}>{userDetails.mutual}</Text>
             <Text style={styles.socialText}>MUTUAL</Text>
           </View>
         </View>
