@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ScrollView, Text, StyleSheet, KeyboardAvoidingView } from 'react-native';
+import { View, ScrollView, Text, StyleSheet, KeyboardAvoidingView, RefreshControl, ActivityIndicator } from 'react-native';
 import { ListItem, Button, Divider } from 'react-native-elements';
 import { TextField } from 'react-native-material-textfield';
 
@@ -14,10 +14,12 @@ export default class CommentsScreen extends React.Component {
       event: null,
       comments: [],
       newComment: '',
-      userData: {}
+      userData: {},
+      refreshing: false
     };
 
     this.createComment = this.createComment.bind(this);
+    this._onRefresh = this._onRefresh.bind(this);
   }
 
   async componentDidMount() {
@@ -48,17 +50,34 @@ export default class CommentsScreen extends React.Component {
     await this.props.navigation.state.params.incrementCommentCount();
   }
 
+  async _onRefresh() {
+    this.setState({ refreshing: true });
+    const { data } = await commentsService.getComments(this.state.event.id);
+    this.setState({ comments: data });
+    this.setState({ refreshing: false });
+  }
+
   render() {
-    const { comments, newComment, userData } = this.state;
+    const { comments, newComment, userData, refreshing } = this.state;
     return(
       <KeyboardAvoidingView style={styles.container} behavior='padding'>
         { comments.length ?
-          <ScrollView style={styles.commentsContainer}>
+          // TODO: Convert to FlatList
+          //   Should display from the bottom up with limited comments displayed.
+          <ScrollView
+            style={styles.commentsContainer}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={this._onRefresh}
+              />
+            }
+          >
             {comments.length && comments.map((comment, i) => (
               <ListItem
                 key={i}
                 title={comment.text}
-                subtitle={`${userData.first_name} ${userData.last_name}`}//TODO: Make this real... data is an storage... may as well use profile image as well.
+                subtitle={`${userData.first_name} ${userData.last_name}`}//TODO: Make this real... data is in storage... may as well use profile image as well.
                 subtitleStyle={{fontSize: 12, color: 'grey'}}
               />
             ))}
