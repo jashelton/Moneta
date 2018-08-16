@@ -94,7 +94,15 @@ const newEventStack = createStackNavigator(
 );
 const notificationsStack = createStackNavigator(
   {
-    Notifications: NotificationsScreen
+    Notifications: NotificationsScreen,
+    EventDetails: EventDetailsScreen
+  },
+  {
+    navigationOptions: {
+      headerTitleStyle: {
+        fontWeight: '200'
+      }
+    }
   }
 );
 const profileStack = createStackNavigator(

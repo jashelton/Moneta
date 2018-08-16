@@ -41,7 +41,12 @@ async function createNotification(eventId, userId, type) {
   return axios.post(`${ENDPOINT}/users/:id/notifications`, data, headers);
 }
 
-async function getNotifications() {
-  const headers = await authHelper.authHeaders();
-  return axios.get(`${ENDPOINT}/users/:id/notifications`, headers);
+async function getNotifications(offset) {
+  const { headers } = await authHelper.authHeaders();
+  return axios.get(`${ENDPOINT}/users/:id/notifications`, {
+    params: {
+      offset
+    },
+    headers
+  });
 }
