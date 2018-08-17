@@ -1,9 +1,10 @@
 import React from 'react';
-import { ImagePicker, Permissions } from 'expo';
 import { View, Text, ScrollView, TouchableHighlight, Image, StyleSheet, Switch, Modal } from 'react-native';
 import { Icon, Button } from 'react-native-elements';
 import { TextField } from 'react-native-material-textfield';
 import { RNS3 } from 'react-native-aws3';
+import { AdMobInterstitial } from 'expo';
+import { FULL_SCREEN_AD_UNIT } from 'react-native-dotenv';
 
 import { eventsService } from '../Services';
 import { authHelper, LocationHelper, commonHelper } from '../Helpers';
@@ -180,6 +181,15 @@ export default class CreateEventScreen extends React.Component {
       return;
     }
     
+    this.displayAd();
+  }
+
+  async displayAd() {
+    AdMobInterstitial.setAdUnitID(FULL_SCREEN_AD_UNIT);
+    // AdMobInterstitial.setAdUnitID('ca-app-pub-3940256099942544/1033173712'); // Test ad-unit-id
+    AdMobInterstitial.setTestDeviceID('EMULATOR');
+    await AdMobInterstitial.requestAdAsync();
+    await AdMobInterstitial.showAdAsync();
   }
 
   render() {
