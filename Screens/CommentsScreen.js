@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, ScrollView, Text, StyleSheet, KeyboardAvoidingView, RefreshControl, ActivityIndicator } from 'react-native';
-import { ListItem, Button, Divider } from 'react-native-elements';
+import { ListItem, Button, Divider, Avatar } from 'react-native-elements';
 import { TextField } from 'react-native-material-textfield';
 
 import { commentsService, notificationService } from '../Services';
@@ -14,7 +14,6 @@ export default class CommentsScreen extends React.Component {
       event: null,
       comments: [],
       newComment: '',
-      userData: {},
       refreshing: false
     };
 
@@ -28,21 +27,22 @@ export default class CommentsScreen extends React.Component {
 
     const { data } = await commentsService.getComments(event.id);
     this.setState({comments: data});
-
-    const userData = await authHelper.getParsedUserData();
-    this.setState({userData});
   }
 
   async createComment() {
-    let { event, newComment, comments, userData } = this.state;
+    let { event, newComment, comments } = this.state;
     const { data } = await commentsService.createComment(event.id, newComment);
-    comments.push(data.comment);
+    comments.push(data.newComment);
 
+    // Send push notification to owner of the event.
     await notificationService.sendPushNotification(
       event.user_id, // Send to
-      `${userData.first_name} ${userData.last_name} has commented on your event.`, // Title
+      `${data.name || data.username} has commented on your event.`, // Title
       newComment // Body
     );
+
+    // Create notification in notifications table of type 'comment'
+    notificationService.createNotification(event.id, event.user_id, 'comment');
 
     newComment = '';
     this.setState({comments, newComment});
@@ -58,7 +58,8 @@ export default class CommentsScreen extends React.Component {
   }
 
   render() {
-    const { comments, newComment, userData, refreshing } = this.state;
+    const { comments, newComment, refreshing } = this.state;
+
     return(
       <KeyboardAvoidingView style={styles.container} behavior='padding'>
         { comments.length ?
@@ -77,8 +78,17 @@ export default class CommentsScreen extends React.Component {
               <ListItem
                 key={i}
                 title={comment.text}
-                subtitle={`${userData.first_name} ${userData.last_name}`}//TODO: Make this real... data is in storage... may as well use profile image as well.
+                subtitle={comment.username || comment.name}
                 subtitleStyle={{fontSize: 12, color: 'grey'}}
+                leftAvatar={
+                  <Avatar
+                    size="small"
+                    rounded
+                    source={comment.profile_image ? {uri: comment.profile_image} : null}
+                    icon={{name: 'person', size: 20}}
+                    activeOpacity={0.7}
+                  />
+                }
               />
             ))}
           </ScrollView>
