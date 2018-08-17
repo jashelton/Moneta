@@ -42,7 +42,7 @@ export default class CommentsScreen extends React.Component {
     await this.props.navigation.state.params.incrementCommentCount();
 
     if (event.user_id !== currentUserId) {
-      this.notify(data);
+      this.notify(data.newComment);
     }
   }
 

@@ -7,7 +7,8 @@ export const notificationService = {
   sendPushNotification,
   createNotification,
   getNotifications,
-  deleteNotification
+  deleteNotification,
+  markNotificationsViewed
 };
 
 async function insertPushToken(token) {
@@ -56,4 +57,9 @@ async function getNotifications(offset) {
     },
     headers
   });
+}
+
+async function markNotificationsViewed(notificationIds) {
+  const headers = await authHelper.authHeaders();
+  return axios.put(`${ENDPOINT}/users/:id/notifications/viewed`, { notificationIds }, headers);
 }

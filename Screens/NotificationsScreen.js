@@ -9,6 +9,15 @@ export default class NotificationsScreen extends React.Component {
   constructor(props) {
     super(props);
 
+    this.viewabilityConfigCallbackPairs = [{
+      viewabilityConfig: {
+        waitForInteraction: false,
+        itemVisiblePercentThreshold: 95,
+        minimumViewTime: 2500
+      },
+      onViewableItemsChanged: this.markViewableItemsAsViewed
+    }]
+
     this.state = {
       notifications: null,
       refreshing: false,
@@ -68,6 +77,11 @@ export default class NotificationsScreen extends React.Component {
     );
   }
 
+  markViewableItemsAsViewed({ viewableItems }) {
+    const notificationIds = viewableItems.map(vi => vi.item.id);
+    notificationService.markNotificationsViewed(notificationIds);
+  }
+
   render() {
     const { notifications, refreshing } = this.state;
 
@@ -80,6 +94,7 @@ export default class NotificationsScreen extends React.Component {
             renderItem={this._renderNotification.bind(this)}
             onEndReached={ () => this.handleScroll(notifications.length)}
             onEndReachedThreshold={0}
+            viewabilityConfigCallbackPairs={this.viewabilityConfigCallbackPairs}
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
