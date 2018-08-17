@@ -35,7 +35,7 @@ class EventDetailsScreen extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      user: {},
+      currentUserId: null,
       isVisible: false
     }
 
@@ -45,12 +45,12 @@ class EventDetailsScreen extends React.Component {
   }
 
   async componentDidMount() {
-    const user = await authHelper.getParsedUserData();
+    const currentUserId = await authHelper.getCurrentUserId();
     const currentLocation = await LocationHelper.getCurrentLocation();
     const eventId = this.props.navigation.getParam('eventId', null);
 
     this.props.getEventDetails(eventId, currentLocation);
-    this.setState({ user });
+    this.setState({ currentUserId });
     // This doesn't need to be triggered if the event has already been viewed.
     // Stop calling getDetails method on other screens.  Just add it here and pass event id in params.
     
@@ -73,15 +73,27 @@ class EventDetailsScreen extends React.Component {
 
   async favoriteEvent() {
     const { event } = this.props;
+    const { currentUserId } = this.state;
+
     this.props.updateEventDetailsLikes(event.id, event.liked);
 
-    if (!event.liked) { // This actually means if the event is being liked.  Should refactor this for readability.
-      // TODO: Figure out how I want to phrase notifications
-      await notificationService.sendPushNotification(event.user_id, 'Someone liked your event!', event.title);
-      notificationService.createNotification(event.id, event.user_id, 'like');
-    } else if (event.liked) {
+    // If event has been disliked... needs to change for readability.
+    if (event.liked) {
       notificationService.deleteNotification(event.id, event.user_id, 'like');
-    } 
+      return;
+    }
+
+    // If event has been liked and the creator isn't the current user, send necessary notifications.
+    if (!event.liked && event.user_id !== currentUserId) {
+      this.notify();
+    }
+  }
+
+  async notify() {
+    const { event } = this.props;
+
+    await notificationService.sendPushNotification(event.user_id, 'Someone liked your event!', event.title);
+    notificationService.createNotification(event.id, event.user_id, 'like');
   }
 
   incrementCommentCount() {
@@ -119,7 +131,7 @@ class EventDetailsScreen extends React.Component {
   }
 
   render() {
-    const { user, isVisible } = this.state;
+    const { currentUserId, isVisible } = this.state;
     const { event } = this.props;
 
     if (!this.props.loading && event.id) {
@@ -174,7 +186,7 @@ class EventDetailsScreen extends React.Component {
               </View>
             </ScrollView>
           </Card>
-          { event.user_id && event.user_id === user.id &&
+          { event.user_id && event.user_id === currentUserId &&
             <Button
               style={styles.deleteEventBtn}
               buttonStyle={{backgroundColor: WARNING_RED}}

@@ -14,7 +14,8 @@ export default class CommentsScreen extends React.Component {
       event: null,
       comments: [],
       newComment: '',
-      refreshing: false
+      refreshing: false,
+      currentUserId: null
     };
 
     this.createComment = this.createComment.bind(this);
@@ -23,31 +24,39 @@ export default class CommentsScreen extends React.Component {
 
   async componentDidMount() {
     const event = this.props.navigation.getParam('event', null);
-    this.setState({ event });
+    const currentUserId = await authHelper.getCurrentUserId();
+    this.setState({ event, currentUserId });
 
     const { data } = await commentsService.getComments(event.id);
     this.setState({comments: data});
   }
 
   async createComment() {
-    let { event, newComment, comments } = this.state;
+    let { event, newComment, comments, currentUserId } = this.state;
     const { data } = await commentsService.createComment(event.id, newComment);
     comments.push(data.newComment);
-
-    // Send push notification to owner of the event.
-    await notificationService.sendPushNotification(
-      event.user_id, // Send to
-      `${data.name || data.username} has commented on your event.`, // Title
-      newComment // Body
-    );
-
-    // Create notification in notifications table of type 'comment'
-    notificationService.createNotification(event.id, event.user_id, 'comment');
 
     newComment = '';
     this.setState({comments, newComment});
     // Call back to EventDetailsScreen to increment the comment count.  This will need to be updated once delete comment is avail.
     await this.props.navigation.state.params.incrementCommentCount();
+
+    if (event.user_id !== currentUserId) {
+      this.notify(data);
+    }
+  }
+
+  async notify(comment) {
+    const { event } = this.state;
+    // Send push notification to owner of the event.
+    await notificationService.sendPushNotification(
+      event.user_id, // Send to
+      `${comment.name || comment.username} has commented on your event.`, // Title
+      comment.text // Body
+    );
+
+    // Create notification in notifications table of type 'comment'
+    notificationService.createNotification(event.id, event.user_id, 'comment');
   }
 
   async _onRefresh() {
