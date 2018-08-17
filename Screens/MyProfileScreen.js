@@ -14,11 +14,7 @@ import FollowsModal from '../Components/FollowsModal';
 import { userService } from '../Services';
 
 class MyProfileScreen extends React.Component {
-  static navigationOptions = ({navigation}) => {
-    return {
-      headerTitle: ( navigation.getParam('getUsername') ),
-    }
-  }
+  static navigationOptions = { title: 'My Profile' };
 
   constructor() {
     super();
@@ -45,29 +41,11 @@ class MyProfileScreen extends React.Component {
     this.props.getCurrentUserDetails(currentUser); // TODO: This could be it's on getCurrentUserDetails()
     this.props.listRecentActivityForUser(currentUser, 0);
     this.setState({ currentUser });
-
-    // TODO: Find a better way to handle this.
-    setTimeout(() => {
-      this.props.navigation.setParams({ getUsername: () => this.getUsername() });
-    }, 250);
-  }
-
-  getUsername() {
-    return (
-      <Text style={{color: PRIMARY_LIGHT_COLOR, fontWeight: '200', fontSize: 18}}>
-        { this.props.currentUserDetails[0].name }
-      </Text>
-    );
   }
 
   toggleEditProfile() {
     const { editProfileModalVisible } = this.state;
     this.setState({ editProfileModalVisible: !editProfileModalVisible });
-
-    // TODO: Find a better way to handle this.
-    setTimeout(() => {
-      this.props.navigation.setParams({ getUserName: () => getUsername });
-    }, 250);
   }
 
   async toggleFollowsModal(type) {

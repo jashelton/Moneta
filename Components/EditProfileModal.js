@@ -27,7 +27,7 @@ class EditProfileModal extends React.Component {
       imageFile: null,
       first_name: props.first_name,
       last_name: props.last_name,
-      username: props.username
+      // username: props.username
     }
 
     this.prepS3Upload = this.prepS3Upload.bind(this);
@@ -57,13 +57,13 @@ class EditProfileModal extends React.Component {
   }
 
   async submitUpdatedUser() {
-    let { imageFile, first_name, last_name, username } = this.state;
+    let { imageFile, first_name, last_name } = this.state;
 
     const user = {
       id: this.props.userDetails.id,
       first_name,
       last_name,
-      username
+      // username
     };
 
     try {
@@ -122,11 +122,11 @@ class EditProfileModal extends React.Component {
             value={userDetails.last_name}
             onChangeText={(last_name) => this.setState({ last_name }) }
           />
-          <TextField
+          {/* <TextField
             label='Username'
             value={userDetails.username || ''}
             onChangeText={(username) => this.setState({ username }) }
-          />
+          /> */}
         </View>
       </Modal>
     );
