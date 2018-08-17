@@ -6,7 +6,8 @@ export const notificationService = {
   insertPushToken,
   sendPushNotification,
   createNotification,
-  getNotifications
+  getNotifications,
+  deleteNotification
 };
 
 async function insertPushToken(token) {
@@ -39,6 +40,12 @@ async function createNotification(eventId, userId, type) {
   const headers = await authHelper.authHeaders();
   const data = { eventId, userId, type };
   return axios.post(`${ENDPOINT}/users/:id/notifications`, data, headers);
+}
+
+async function deleteNotification(eventId, userId, type) {
+  const headers = await authHelper.authHeaders();
+  const data = { eventId, userId, type };
+  return axios.delete(`${ENDPOINT}/users/:id/notifications`, data, headers);
 }
 
 async function getNotifications(offset) {

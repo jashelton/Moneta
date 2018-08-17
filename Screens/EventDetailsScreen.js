@@ -79,7 +79,9 @@ class EventDetailsScreen extends React.Component {
       // TODO: Figure out how I want to phrase notifications
       await notificationService.sendPushNotification(event.user_id, 'Someone liked your event!', event.title);
       notificationService.createNotification(event.id, event.user_id, 'like');
-    }
+    } else if (event.liked) {
+      notificationService.deleteNotification(event.id, event.user_id, 'like');
+    } 
   }
 
   incrementCommentCount() {
