@@ -10,6 +10,8 @@ import UserInfo from '../Components/UserInfo';
 import UserStats from '../Components/UserStats';
 import { getCurrentUserDetails, updateCurrentUserDetails, listRecentActivityForUser, loadMoreRowsForUserActivity } from '../reducer';
 import EditProfileModal from '../Components/EditProfileModal';
+import FollowsModal from '../Components/FollowsModal';
+import { userService } from '../Services';
 
 class MyProfileScreen extends React.Component {
   static navigationOptions = ({navigation}) => {
@@ -25,13 +27,17 @@ class MyProfileScreen extends React.Component {
       currentUser: null,
       editProfileModalVisible: false,
       refreshing: false,
-      sliderActiveSlide: 0
+      sliderActiveSlide: 0,
+      followsModalVisibility: false,
+      followsList: null
     }
 
     this.toggleEditProfile = this.toggleEditProfile.bind(this);
     this._onRefresh = this._onRefresh.bind(this);
     this.handleScroll = this.handleScroll.bind(this);
     this._renderItem = this._renderItem.bind(this);
+    this.toggleFollowsModal = this.toggleFollowsModal.bind(this);
+    this._navigateToUser = this._navigateToUser.bind(this);
   }
 
   async componentDidMount() {
@@ -64,6 +70,22 @@ class MyProfileScreen extends React.Component {
     }, 250);
   }
 
+  async toggleFollowsModal(type) {
+    if (type) {
+      const { data } = await userService.getFollows(this.state.currentUser, type);
+      this.setState({ followsList: data });
+    }
+    const { followsModalVisibility } = this.state;
+
+    this.setState({ followsModalVisibility: !followsModalVisibility });
+  }
+
+  _navigateToUser(userId) {
+    this.toggleFollowsModal();
+    // TODO: This causes an issue with routing.
+    this.props.navigation.navigate('UserDetails', { userId });
+  }
+
   async _onRefresh() {
     this.setState({ refreshing: true });
     this.props.listRecentActivityForUser(this.state.currentUser, 0);
@@ -84,6 +106,7 @@ class MyProfileScreen extends React.Component {
           currentUser={this.state.currentUser}
           toggleEditProfile={this.toggleEditProfile}
           toggleFollowing={() => this.toggleFollowing()}
+          toggleFollowsModal={(data) => this.toggleFollowsModal(data)}
         />
       );
     } else if (index === 1) {
@@ -95,7 +118,11 @@ class MyProfileScreen extends React.Component {
 
   render() {
     const { currentUserDetails, userActivity } = this.props;
-    const { editProfileModalVisible, refreshing, sliderActiveSlide } = this.state;
+    const { editProfileModalVisible,
+            refreshing,
+            sliderActiveSlide,
+            followsModalVisibility,
+            followsList } = this.state;
     const { width } = Dimensions.get('window');
 
     if (userActivity && currentUserDetails && currentUserDetails.length) {
@@ -139,6 +166,14 @@ class MyProfileScreen extends React.Component {
             isVisible={editProfileModalVisible}
             toggleEditProfile={this.toggleEditProfile}
             userDetails={currentUserDetails[0]}
+          />
+
+          {/* Follows Modal */}
+          <FollowsModal
+            isVisible={followsModalVisibility}
+            toggleFollowsModal={() => this.toggleFollowsModal()}
+            followsList={followsList}
+            navigateToUser={(userId) => this._navigateToUser(userId)}
           />
         </View>
       );

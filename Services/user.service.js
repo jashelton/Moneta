@@ -4,7 +4,8 @@ import { authHelper } from '../Helpers';
 
 export const userService = {
   getUserDetails,
-  updateUserDetails
+  updateUserDetails,
+  getFollows
 }
 
 async function getUserDetails(userId) {
@@ -15,4 +16,14 @@ async function getUserDetails(userId) {
 async function updateUserDetails(user) {
   const headers = await authHelper.authHeaders();
   return axios.put(`${ENDPOINT}/users/${user.id}/update`, { user }, headers)
+}
+
+async function getFollows(userId, type) {
+  const { headers } = await authHelper.authHeaders();
+  return axios.get(`${ENDPOINT}/users/${userId}/follows`, {
+    params: {
+      type
+    },
+    headers
+  });
 }

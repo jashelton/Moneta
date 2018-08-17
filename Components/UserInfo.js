@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableHighlight } from 'react-native';
 import { Avatar, Button, ListItem } from 'react-native-elements';
 
 import { PRIMARY_DARK_COLOR, TEXT_ICONS_COLOR, ACCENT_COLOR, LIGHT_PRIMARY_COLOR } from '../common/styles/common-styles';
@@ -13,7 +13,7 @@ export default class UserInfo extends React.Component {
   }
 
   render() {
-    const { userDetails, currentUser, toggleEditProfile, toggleFollowing } = this.props;
+    const { userDetails, currentUser, toggleEditProfile, toggleFollowing, toggleFollowsModal } = this.props;
     return(
       <View style={[styles.userInfoContainer, { backgroundColor: PRIMARY_DARK_COLOR }]}>
         <View style={{width: '100%', flex: 1, flexDirection: 'column'}}>
@@ -49,18 +49,24 @@ export default class UserInfo extends React.Component {
           />
         </View>
         <View style={{flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'flex-end'}}>
-          <View style={styles.textWrapper}>
-            <Text style={styles.socialNumber}>{userDetails.followers}</Text>
-            <Text style={styles.socialText}>FOLLOWERS</Text>
-          </View>
-          <View style={styles.textWrapper}>
-            <Text style={styles.socialNumber}>{userDetails.following}</Text>
-            <Text style={styles.socialText}>FOLLOWING</Text>
-          </View>
-          <View style={styles.textWrapper}>
-            <Text style={styles.socialNumber}>{userDetails.mutual}</Text>
-            <Text style={styles.socialText}>MUTUAL</Text>
-          </View>
+          <TouchableHighlight onPress={() => toggleFollowsModal('followers')}>
+            <View style={styles.textWrapper}>
+              <Text style={styles.socialNumber}>{userDetails.followers}</Text>
+              <Text style={styles.socialText}>FOLLOWERS</Text>
+            </View>
+          </TouchableHighlight>
+          <TouchableHighlight onPress={() => toggleFollowsModal('following')}>
+            <View style={styles.textWrapper}>
+              <Text style={styles.socialNumber}>{userDetails.following}</Text>
+              <Text style={styles.socialText}>FOLLOWING</Text>
+            </View>
+          </TouchableHighlight>
+          <TouchableHighlight onPress={() => toggleFollowsModal('mutual')}>
+            <View style={styles.textWrapper}>
+              <Text style={styles.socialNumber}>{userDetails.mutual}</Text>
+              <Text style={styles.socialText}>MUTUAL</Text>
+            </View>
+          </TouchableHighlight>
         </View>
       </View>
     );
