@@ -40,6 +40,7 @@ export const UPDATE_USER_FOLLOWS_SUCCESS = 'moneta/users/UPDATE_USER_FOLLOWS_SUC
 export const UPDATE_USER_FOLLOWS_FAIL = 'moneta/users/UPDATE_USER_FOLLOWS_FAIL';
 
 import update from 'immutability-helper';
+import { ENDPOINT } from 'react-native-dotenv';
 
 const initialState = {
   event: {},
@@ -222,7 +223,7 @@ export function listRecentActivity(users, coords, pageOffset) {
     type: GET_RECENT_ACTIVITY,
     payload: {
       request: {
-        url: '/events/recent',
+        url: `/events/recent`,
         method: 'GET',
         params: { users , coords, offset: pageOffset }
       }
@@ -248,7 +249,7 @@ export function loadMoreRows(users, coords, pageOffset) {
     type: LOAD_MORE_ROWS,
     payload: {
       request: {
-        url: '/events/recent',
+        url: `/events/recent`,
         method: 'GET',
         params: { users , coords, offset: pageOffset }
       }

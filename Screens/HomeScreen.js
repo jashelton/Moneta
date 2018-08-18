@@ -89,7 +89,7 @@ class HomeScreen extends React.Component {
           socialSelected={socialSelected}
           updateSocialSelected={(option) => this.updateSocialSelected(option)}
         />
-        { recentEvents && recentEvents.length ?
+        { recentEvents && recentEvents.length > 0 ?
           <View>
             <RecentActivity
               refreshing={refreshing}
