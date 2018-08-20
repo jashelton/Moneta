@@ -71,7 +71,7 @@ class MyProfileScreen extends React.Component {
   }
 
   handleScroll(offset) {
-    if (!this.props.loading) {
+    if (!this.props.loading && offset > 10) {
       this.props.loadMoreRowsForUserActivity(this.state.currentUser, offset);
     }
   }
@@ -103,7 +103,7 @@ class MyProfileScreen extends React.Component {
             followsList } = this.state;
     const { width } = Dimensions.get('window');
 
-    if (userActivity && currentUserDetails && currentUserDetails.length) {
+    if (currentUserDetails && currentUserDetails.length) {
       return(
         <View style={styles.container}>
           <View style={{height: '40%'}}>
@@ -112,7 +112,7 @@ class MyProfileScreen extends React.Component {
               data={currentUserDetails}
               renderItem={this._renderItem}
               sliderWidth={width}
-              itemWidth={width - 4}
+              itemWidth={width}
               onSnapToItem={(index) => this.setState({ sliderActiveSlide: index })}
               layout={'default'}
             />
@@ -184,8 +184,6 @@ const styles = StyleSheet.create({
   paginationContainer: {
     paddingVertical: 10,
     backgroundColor: PRIMARY_DARK_COLOR,
-    marginLeft: 2,
-    marginRight: 2
   },
   // End Pagination
 });

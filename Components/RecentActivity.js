@@ -54,7 +54,7 @@ export default class RecentActivity extends React.Component {
     } else {
       return(
         <ScrollView
-          contentContainerStyle={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+          contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}

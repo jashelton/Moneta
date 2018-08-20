@@ -56,7 +56,7 @@ export default function reducer(state = initialState, action) {
     case GET_RECENT_ACTIVITY:
       return { ...state, loading: true };
     case GET_RECENT_ACTIVITY_SUCCESS:
-      return { ...state, loading: false, recentEvents: action.payload.data };
+      return { ...state, loading: false, recentEvents: action.payload.data.events };
     case GET_RECENT_ACTIVITY_FAIL:
       return {
         ...state,
@@ -204,7 +204,7 @@ export default function reducer(state = initialState, action) {
     case UPDATE_USER_FOLLOWS:
       return { ...state, loading: false };
     case UPDATE_USER_FOLLOWS_SUCCESS:
-      const updatedDetails = update(state.userDetails, { $set: { ...state.userDetails, ...action.payload.data } });
+    const updatedDetails = update(state.userDetails, { $set: { ...state.userDetails, ...action.payload.data } });
       return { ...state, loading: false, userDetails: updatedDetails }
     case UPDATE_USER_FOLLOWS_FAIL:
       return {

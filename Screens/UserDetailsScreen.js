@@ -87,7 +87,8 @@ class UserDetailsScreen extends React.Component {
 
   toggleFollowing() {
     const { userDetails, updateUserDetailsFollows } = this.props;
-    updateUserDetailsFollows(userDetails.id, !userDetails.isFollowing);
+    // alert(JSON.stringify(userDetails));
+    updateUserDetailsFollows(userDetails[0].id, !userDetails[0].isFollowing);
   }
 
   toggleOptionsModal() {
@@ -124,7 +125,7 @@ class UserDetailsScreen extends React.Component {
   }
 
   handleScroll(offset) {
-    if (!this.props.loading) {
+    if (!this.props.loading && offset > 10) {
       this.props.loadMoreRowsForUserActivity(this.state.userId, offset);
     }
   }
@@ -136,8 +137,8 @@ class UserDetailsScreen extends React.Component {
           userDetails={item}
           currentUser={this.state.currentUser}
           toggleEditProfile={this.toggleEditProfile}
-          toggleFollowing={() => this.toggleFollowing()}
           toggleFollowsModal={(data) => this.toggleFollowsModal(data)}
+          toggleFollowing={() => this.toggleFollowing()}
         />
       );
     } else if (index === 1) {
@@ -155,10 +156,10 @@ class UserDetailsScreen extends React.Component {
             sliderActiveSlide,
             followsModalVisibility,
             followsList } = this.state;
-    const { userDetails, userActivity } = this.props;
+    const { userDetails, userActivity, loading } = this.props;
     const { width } = Dimensions.get('window');
 
-    if (userActivity && userDetails && userDetails.length) {
+    if (!loading && userDetails.length) {
       return(
         <View style={styles.container}>
           <View style={{height: '40%'}}>
@@ -167,7 +168,7 @@ class UserDetailsScreen extends React.Component {
               data={userDetails}
               renderItem={this._renderItem}
               sliderWidth={width}
-              itemWidth={width - 4}
+              itemWidth={width}
               onSnapToItem={(index) => this.setState({ sliderActiveSlide: index })}
               layout={'default'}
             />
@@ -270,8 +271,6 @@ const styles = StyleSheet.create({
   paginationContainer: {
     paddingVertical: 10,
     backgroundColor: PRIMARY_DARK_COLOR,
-    marginLeft: 2,
-    marginRight: 2
   },
   // End Pagination
 });
