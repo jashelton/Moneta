@@ -5,12 +5,13 @@ import { Provider, connect } from 'react-redux';
 import axios from 'axios';
 import axiosMiddleware from 'redux-axios-middleware';
 import { ENDPOINT } from 'react-native-dotenv';
+import { local_env } from './environment.js';
 import { authHelper } from './Helpers';
 
 import reducer from './reducer';
 
 const client = axios.create({
-  baseURL: ENDPOINT,
+  baseURL: process.env.NODE_ENV === 'production' ? local_env.production.ENDPOINT : local_env.development.ENDPOINT,
   responseType: 'json',
 });
 

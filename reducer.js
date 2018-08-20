@@ -29,6 +29,9 @@ export const DELETE_EVENT_FAIL = 'moneta/events/DELETE_EVENT_FAIL';
 export const GET_USER_DETAILS = 'moneta/users/LOAD_USER_DETAILS';
 export const GET_USER_DETAILS_SUCCESS = 'moneta/users/LOAD_USER_DETAILS_SUCCESS';
 export const GET_USER_DETAILS_FAIL = 'moneta/users/LOAD_USER_DETAILS_FAIL';
+export const GET_USER_STATS = 'moneta/users/GET_USER_STATS';
+export const GET_USER_STATS_SUCCESS = 'moneta/users/GET_USER_STATS_SUCCESS';
+export const GET_USER_STATS_FAIL = 'moneta/users/GET_USER_STATS_FAIL';
 export const GET_CURRENT_USER_DETAILS = 'moneta/users/LOAD_CURRENT_USER_DETAILS';
 export const GET_CURRENT_USER_DETAILS_SUCCESS = 'moneta/users/LOAD_CURRENT_USER_DETAILS_SUCCESS';
 export const GET_CURRENT_USER_DETAILS_FAIL = 'moneta/users/LOAD_CURRENT_USER_DETAILS_FAIL';
@@ -40,13 +43,13 @@ export const UPDATE_USER_FOLLOWS_SUCCESS = 'moneta/users/UPDATE_USER_FOLLOWS_SUC
 export const UPDATE_USER_FOLLOWS_FAIL = 'moneta/users/UPDATE_USER_FOLLOWS_FAIL';
 
 import update from 'immutability-helper';
-import { ENDPOINT } from 'react-native-dotenv';
 
 const initialState = {
   event: {},
   recentEvents: [],
   markers: [],
   userDetails: {},
+  userStats: {},
   currentUserDetails: {},
   userActivity: []
 };
@@ -190,6 +193,16 @@ export default function reducer(state = initialState, action) {
         loading: false,
         error: 'There was an issue getting the info for this user'
       }
+    case GET_USER_STATS:
+      return { ...state, loading: true };
+    case GET_USER_STATS_SUCCESS:
+      return { ...state, loading: false, userStats: action.payload.data };
+    case GET_USER_STATS_FAIL:
+      return {
+        ...state,
+        loading: false,
+        error: 'There was an error getting stats for this user'
+      };
     case UPDATE_CURRENT_USER:
       return { ...state, loading: false };
     case UPDATE_CURRENT_USER_SUCCESS:
@@ -204,8 +217,9 @@ export default function reducer(state = initialState, action) {
     case UPDATE_USER_FOLLOWS:
       return { ...state, loading: false };
     case UPDATE_USER_FOLLOWS_SUCCESS:
-    const updatedDetails = update(state.userDetails, { $set: { ...state.userDetails, ...action.payload.data } });
-      return { ...state, loading: false, userDetails: updatedDetails }
+    const { userDetails } = state;
+    const updatedInfo = update(userDetails, { $set: { ...userDetails, ...action.payload.data } });
+      return { ...state, loading: false, userDetails: updatedInfo }
     case UPDATE_USER_FOLLOWS_FAIL:
       return {
         ...state,
@@ -341,7 +355,7 @@ export function getUserDetails(userId) {
     type: GET_USER_DETAILS,
     payload: {
       request: {
-        url: `/users/${userId}/details`,
+        url: `/users/${userId}/details/info`,
         method: 'GET'
       }
     }
@@ -353,7 +367,7 @@ export function getCurrentUserDetails(userId) {
     type: GET_CURRENT_USER_DETAILS,
     payload: {
       request: {
-        url: `/users/${userId}/details`,
+        url: `/users/${userId}/details/info`,
         method: 'GET'
       }
     }
@@ -387,3 +401,16 @@ export function updateUserDetailsFollows(userId, isFollowing) {
     }
   }
 }
+
+export function getUserStats(userId) {
+  return {
+    type: GET_USER_STATS,
+    payload: {
+      request: {
+        url: `/users/${userId}/details/stats`,
+        method: 'GET'
+      }
+    }
+  }
+}
+

@@ -10,7 +10,8 @@ import { authHelper } from '../Helpers';
 import { getUserDetails,
          updateUserDetailsFollows,
          listRecentActivityForUser,
-         loadMoreRowsForUserActivity } from '../reducer';
+         loadMoreRowsForUserActivity,
+         getUserStats } from '../reducer';
 import UserInfo from '../Components/UserInfo';
 import UserStats from '../Components/UserStats';
 import EditProfileModal from '../Components/EditProfileModal';
@@ -62,6 +63,7 @@ class UserDetailsScreen extends React.Component {
     this.setState({ currentUser, userId });
 
     this.props.getUserDetails(userId);
+    this.props.getUserStats(userId);
     this.props.listRecentActivityForUser(userId, 0);;
 
     this.props.navigation.setParams({
@@ -72,10 +74,10 @@ class UserDetailsScreen extends React.Component {
 
   getUsername() {
     const { userDetails } = this.props;
-    if (userDetails[0] && userDetails[0].name) {
+    if (userDetails && userDetails.name) {
       return (
         <Text style={{color: PRIMARY_LIGHT_COLOR, fontWeight: '200', fontSize: 18}}>
-          {this.props.userDetails[0].name}
+          {this.props.userDetails.name}
         </Text>
       );
     } else {
@@ -87,8 +89,7 @@ class UserDetailsScreen extends React.Component {
 
   toggleFollowing() {
     const { userDetails, updateUserDetailsFollows } = this.props;
-    // alert(JSON.stringify(userDetails));
-    updateUserDetailsFollows(userDetails[0].id, !userDetails[0].isFollowing);
+    updateUserDetailsFollows(userDetails.id, !userDetails.isFollowing);
   }
 
   toggleOptionsModal() {
@@ -156,16 +157,16 @@ class UserDetailsScreen extends React.Component {
             sliderActiveSlide,
             followsModalVisibility,
             followsList } = this.state;
-    const { userDetails, userActivity, loading } = this.props;
+    const { userDetails, userStats, userActivity, loading } = this.props;
     const { width } = Dimensions.get('window');
 
-    if (!loading && userDetails.length) {
+    if (!loading && userDetails.id && userStats) {
       return(
         <View style={styles.container}>
           <View style={{height: '40%'}}>
             <Carousel
               ref={(c) => { this._carousel = c; }}
-              data={userDetails}
+              data={[userDetails, userStats]}
               renderItem={this._renderItem}
               sliderWidth={width}
               itemWidth={width}
@@ -173,7 +174,7 @@ class UserDetailsScreen extends React.Component {
               layout={'default'}
             />
             <Pagination
-              dotsLength={userDetails.length}
+              dotsLength={2} // TODO: don't hardcode
               activeDotIndex={sliderActiveSlide}
               containerStyle={styles.paginationContainer}
               dotColor={ACCENT_COLOR}
@@ -215,7 +216,7 @@ class UserDetailsScreen extends React.Component {
             isVisible={editProfileModalVisible}
             toggleEditProfile={this.toggleEditProfile}
             imageFile={imageFile}
-            userDetails={userDetails[0]}
+            userDetails={userDetails}
           />
 
           {/* Follows Modal */}
@@ -279,6 +280,7 @@ const mapStateToProps = state => {
   return {
     loading: state.loading,
     userDetails: state.userDetails,
+    userStats: state.userStats,
     userActivity: state.userActivity
   };
 };
@@ -287,7 +289,8 @@ const mapDispatchToProps = {
   getUserDetails,
   updateUserDetailsFollows,
   listRecentActivityForUser,
-  loadMoreRowsForUserActivity
+  loadMoreRowsForUserActivity,
+  getUserStats
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(UserDetailsScreen);

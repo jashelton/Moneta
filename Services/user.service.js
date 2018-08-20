@@ -27,3 +27,4 @@ async function getFollows(userId, type) {
     headers
   });
 }
+
