@@ -151,8 +151,8 @@ export default class CreateEventScreen extends React.Component {
     let { imageFile, eventForm } = this.state;
     const { title, description, eventPrivacy, imageLocation, imageCoords, addressInfo } = this.state.eventForm;
 
-    if (title === '' || description === '' || imageLocation === '' || !imageCoords) {
-      alert('You must include a Title and Description.  Also need a valid image.');
+    if (title === '' || description === '' || imageLocation === '' || !imageCoords || title.length > 60 || description.length > 140) {
+      alert('You must include a valid Title, Description, and Image');
       return;
     }
 
