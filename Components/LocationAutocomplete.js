@@ -1,10 +1,6 @@
 import React from 'react';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { GOOGLE_PLACES_API_KEY } from 'react-native-dotenv';
-import { Permissions } from 'expo';
-
-const homePlace = { description: 'Home', geometry: { location: { lat: 48.8152937, lng: 2.4597668 } }};
-const workPlace = { description: 'Work', geometry: { location: { lat: 48.8496818, lng: 2.2940881 } }};
 
 const GooglePlacesInput = (props) => {
   return (
@@ -40,7 +36,7 @@ const GooglePlacesInput = (props) => {
         }
       }}
       
-      currentLocation={true} // Will add a 'Current location' button at the top of the predefined places list
+      currentLocation={false} // Will add a 'Current location' button at the top of the predefined places list
       currentLocationLabel="Current location"
       nearbyPlacesAPI='GooglePlacesSearch' // Which API to use: GoogleReverseGeocoding or GooglePlacesSearch
       GoogleReverseGeocodingQuery={{
@@ -53,7 +49,7 @@ const GooglePlacesInput = (props) => {
       }}
 
       filterReverseGeocodingByTypes={['locality', 'administrative_area_level_3']} // filter the reverse geocoding results by types - ['locality', 'administrative_area_level_3'] if you want to display only cities
-      predefinedPlaces={[homePlace, workPlace]}
+      // predefinedPlaces={[homePlace, workPlace]}
 
       debounce={200} // debounce the requests in ms. Set to 0 to remove debounce. By default 0ms.
     />

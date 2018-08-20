@@ -71,7 +71,7 @@ class MyProfileScreen extends React.Component {
 
   async _onRefresh() {
     this.setState({ refreshing: true });
-    this.props.listRecentActivityForUser(this.state.currentUser, 0);
+    this.props.listRecentActivityForCurrentUser(this.state.currentUser, 0);
     this.setState({ refreshing: false });
   }
 
@@ -107,6 +107,7 @@ class MyProfileScreen extends React.Component {
             followsModalVisibility,
             followsList } = this.state;
     const { width } = Dimensions.get('window');
+    const carouselElements = [currentUserDetails, currentUserStats];
 
     if (currentUserDetails.id) {
       return(
@@ -114,7 +115,7 @@ class MyProfileScreen extends React.Component {
           <View style={{height: '40%'}}>
             <Carousel
               ref={(c) => { this._carousel = c; }}
-              data={[currentUserDetails, currentUserStats]}
+              data={carouselElements}
               renderItem={this._renderItem}
               sliderWidth={width}
               itemWidth={width}
@@ -122,7 +123,7 @@ class MyProfileScreen extends React.Component {
               layout={'default'}
             />
             <Pagination
-              dotsLength={2}
+              dotsLength={carouselElements.length}
               activeDotIndex={sliderActiveSlide}
               containerStyle={styles.paginationContainer}
               dotColor={ACCENT_COLOR}

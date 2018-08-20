@@ -12,7 +12,7 @@ export default class UserStats extends React.Component {
           { Object.keys(stats).map((key, i) => (
             <View key={i} style={{padding: 2, flexBasis: '33.33%'}}>
               <View style={styles.stat}>
-                <Text style={styles.statNumber}>{stats[key]}</Text>
+                <Text style={styles.statNumber}>{stats[key] || '-'}</Text>
                 <Text style={styles.statTitle}>{key.split('_').join(' ').toUpperCase()}</Text>
               </View>
             </View>  

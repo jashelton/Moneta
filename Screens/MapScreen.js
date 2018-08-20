@@ -52,14 +52,14 @@ class MapScreen extends React.Component {
     const currentUser = await authHelper.getCurrentUserId();
     this.setState({ coords, currentUser });
 
-    commonHelper.getFilters()
-      .then(res => {
-        this.setState({socialSelected: res.eventsFor});
-      })
-      .then(() => {
-        this.getEvents(this.state.socialSelected);
-      })
-      .catch(err => console.log(err)),
+    // commonHelper.getFilters()
+    //   .then(res => {
+    //     this.setState({socialSelected: res.eventsFor});
+    //   })
+    //   .then(() => {
+    //     this.getEvents(this.state.socialSelected);
+    //   })
+    //   .catch(err => console.log(err)),
 
     this.props.navigation.setParams({
       toggleIsVisible: () => this.toggleIsVisible(),

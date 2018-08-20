@@ -159,6 +159,7 @@ class UserDetailsScreen extends React.Component {
             followsList } = this.state;
     const { userDetails, userStats, userActivity } = this.props;
     const { width } = Dimensions.get('window');
+    const carouselElements = [userDetails, userStats];
 
     if (userDetails.id && userStats) {
       return(
@@ -166,7 +167,7 @@ class UserDetailsScreen extends React.Component {
           <View style={{height: '40%'}}>
             <Carousel
               ref={(c) => { this._carousel = c; }}
-              data={[userDetails, userStats]}
+              data={carouselElements}
               renderItem={this._renderItem}
               sliderWidth={width}
               itemWidth={width}
@@ -174,7 +175,7 @@ class UserDetailsScreen extends React.Component {
               layout={'default'}
             />
             <Pagination
-              dotsLength={2} // TODO: don't hardcode
+              dotsLength={carouselElements.length} // TODO: don't hardcode
               activeDotIndex={sliderActiveSlide}
               containerStyle={styles.paginationContainer}
               dotColor={ACCENT_COLOR}

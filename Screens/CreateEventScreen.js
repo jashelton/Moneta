@@ -213,6 +213,7 @@ export default class CreateEventScreen extends React.Component {
           label='Title'
           value={title}
           onChangeText={(title) => this.setState({ eventForm: { ...this.state.eventForm, title } }) }
+          characterRestriction={60}
         />
         <TextField
           value={description}
