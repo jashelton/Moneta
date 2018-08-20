@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { createStackNavigator, createSwitchNavigator, createBottomTabNavigator } from 'react-navigation';
+import { createStackNavigator, createSwitchNavigator, createBottomTabNavigator, NavigationActions } from 'react-navigation';
 import { PRIMARY_DARK_COLOR, ACCENT_COLOR, PRIMARY_LIGHT_COLOR, TEXT_ICONS_COLOR } from '../common/styles/common-styles';
 import { Icon } from 'react-native-elements';
 
@@ -22,33 +22,13 @@ import CreateEventScreen from '../Screens/CreateEventScreen';
 
 const recentActivityStack = createStackNavigator(
   {
-    Recent: {
-      screen: HomeScreen,
-      navigationOptions: { 
-        // title: 'Recent Events',
-        // headerTintColor: TEXT_ICONS_COLOR,
-        // headerStyle: {
-        //   backgroundColor: PRIMARY_DARK_COLOR
-        // }
-      },
-    },
+    Recent: HomeScreen,
     EventDetails: EventDetailsScreen,
     Comments: CommentsScreen,
-    UserDetails: { // TODO: UserDetails needs to be nested under EventDetails
-      screen: UserDetailsScreen,
-      navigationOptions: {
-        // headerStyle: {
-        //   backgroundColor: PRIMARY_DARK_COLOR
-        // },
-      }
-    }
+    UserDetails: UserDetailsScreen,
   },
   {
     navigationOptions: {
-      headerStyle: {
-        // backgroundColor: PRIMARY_DARK_COLOR
-      },
-      // headerTintColor: '#fff',
       headerTitleStyle: {
         fontWeight: '200',
         fontSize: 16
@@ -113,21 +93,10 @@ const profileStack = createStackNavigator(
   },
   {
     navigationOptions: {
-      headerStyle: {
-        // backgroundColor: PRIMARY_DARK_COLOR
-      },
       headerTitleStyle: {
         fontWeight: '200'
       }
     }
-  }
-);
-
-const eventDetailsStack = createStackNavigator(
-  {
-    EventDetails: EventDetailsScreen,
-    Comments: CommentsScreen,
-    UserDetails: UserDetailsScreen
   }
 );
 

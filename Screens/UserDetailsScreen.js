@@ -126,7 +126,7 @@ class UserDetailsScreen extends React.Component {
   }
 
   handleScroll(offset) {
-    if (!this.props.loading && offset > 10) {
+    if (!this.props.loading && offset > 4) {
       this.props.loadMoreRowsForUserActivity(this.state.userId, offset);
     }
   }
@@ -157,10 +157,10 @@ class UserDetailsScreen extends React.Component {
             sliderActiveSlide,
             followsModalVisibility,
             followsList } = this.state;
-    const { userDetails, userStats, userActivity, loading } = this.props;
+    const { userDetails, userStats, userActivity } = this.props;
     const { width } = Dimensions.get('window');
 
-    if (!loading && userDetails.id && userStats) {
+    if (userDetails.id && userStats) {
       return(
         <View style={styles.container}>
           <View style={{height: '40%'}}>

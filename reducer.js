@@ -41,6 +41,15 @@ export const UPDATE_CURRENT_USER_FAIL = 'moneta/users/UPDATE_CURRENT_USER_FAIL';
 export const UPDATE_USER_FOLLOWS = 'moneta/users/UPDATE_USER_FOLLOWS';
 export const UPDATE_USER_FOLLOWS_SUCCESS = 'moneta/users/UPDATE_USER_FOLLOWS_SUCCESS';
 export const UPDATE_USER_FOLLOWS_FAIL = 'moneta/users/UPDATE_USER_FOLLOWS_FAIL';
+export const GET_RECENT_ACTIVITY_FOR_CURRENT_USER = 'moneta/users/GET_RECENT_ACTIVITY_FOR_CURRENT_USER';
+export const GET_RECENT_ACTIVITY_FOR_CURRENT_USER_SUCCESS = 'moneta/users/GET_RECENT_ACTIVITY_FOR_CURRENT_USER_SUCCESS';
+export const GET_RECENT_ACTIVITY_FOR_CURRENT_USER_FAIL = 'moneta/users/GET_RECENT_ACTIVITY_FOR_CURRENT_USER_FAIL';
+export const GET_CURRENT_USER_STATS = 'moneta/users/GET_CURRENT_USER_STATS';
+export const GET_CURRENT_USER_STATS_SUCCESS = 'moneta/users/GET_CURRENT_USER_STATS_SUCCESS';
+export const GET_CURRENT_USER_STATS_FAIL = 'moneta/users/GET_CURRENT_USER_STATS_FAIL';
+export const LOAD_MORE_ROWS_FOR_CURRENT_USER_ACTIVITY = 'moneta/events/LOAD_MORE_ROWS_FOR_CURRENT_USER_ACTIVITY';
+export const LOAD_MORE_ROWS_FOR_CURRENT_USER_ACTIVITY_SUCCESS = 'moneta/events/LOAD_MORE_ROWS_FOR_CURRENT_USER_ACTIVITY_SUCCESS';
+export const LOAD_MORE_ROWS_FOR_CURRENT_USER_ACTIVITY_FAIL = 'moneta/events/LOAD_MORE_ROWS_FOR_CURRENT_USER_ACTIVITY_FAIL';
 
 import update from 'immutability-helper';
 
@@ -51,7 +60,9 @@ const initialState = {
   userDetails: {},
   userStats: {},
   currentUserDetails: {},
-  userActivity: []
+  currentUserStats: {},
+  userActivity: [],
+  currentUserActivity: []
 };
 
 export default function reducer(state = initialState, action) {
@@ -226,6 +237,41 @@ export default function reducer(state = initialState, action) {
         loading: false,
         error: 'There was a problem handling your request.'
       }
+    case GET_RECENT_ACTIVITY_FOR_CURRENT_USER:
+      return { ...state, loading: false };
+    case GET_RECENT_ACTIVITY_FOR_CURRENT_USER_SUCCESS:
+      return { ...state, loading: false, currentUserActivity: action.payload.data }
+    case GET_RECENT_ACTIVITY_FOR_CURRENT_USER_FAIL:
+      return {
+        ...state,
+        loading: false,
+        error: 'There was a problem getting your recent activity.'
+      }
+    case GET_CURRENT_USER_STATS:
+      return { ...state, loading: true };
+    case GET_CURRENT_USER_STATS_SUCCESS:
+      return { ...state, loading: false, currentUserStats: action.payload.data }
+    case GET_CURRENT_USER_STATS_FAIL:
+      return {
+        ...state,
+        loading: false,
+        error: 'There was a problem getting your account stats.'
+      }
+    case LOAD_MORE_ROWS_FOR_CURRENT_USER_ACTIVITY:
+      return { ...state, loading: true };
+    case LOAD_MORE_ROWS_FOR_CURRENT_USER_ACTIVITY_SUCCESS:
+      if (action.payload.data.length) {
+        const updatedCurrentUserActivity = update(state.currentUserActivity, { $push: action.payload.data });
+        return { ...state, loading: false, currentUserActivity: updatedCurrentUserActivity};
+      } else {
+        return { ...state, loading: false };
+      }
+    case LOAD_MORE_ROWS_FOR_CURRENT_USER_ACTIVITY_FAIL:
+      return {
+        ...state,
+        loading: false,
+        error: 'There was a problem loading more events for this user.'
+      };
     default:
       return state;
   }
@@ -258,6 +304,20 @@ export function listRecentActivityForUser(id, pageOffset) {
   }
 }
 
+// Current user specific for MyProfile -> Needs to be a part of the MyProfile/UserDetails refactor
+export function listRecentActivityForCurrentUser(id, pageOffset) {
+  return {
+    type: GET_RECENT_ACTIVITY_FOR_CURRENT_USER,
+    payload: {
+      request: {
+        url: `/events/${id}/recent`,
+        method: 'GET',
+        params: { offset: pageOffset }
+      }
+    }
+  }
+}
+
 export function loadMoreRows(users, coords, pageOffset) {
   return {
     type: LOAD_MORE_ROWS,
@@ -274,6 +334,19 @@ export function loadMoreRows(users, coords, pageOffset) {
 export function loadMoreRowsForUserActivity(id, pageOffset) {
   return {
     type: LOAD_MORE_ROWS_FOR_USER_ACTIVITY,
+    payload: {
+      request: {
+        url: `/events/${id}/recent`,
+        method: 'GET',
+        params: { offset: pageOffset }
+      }
+    }
+  }
+}
+
+export function loadMoreRowsForCurrentUserActivity(id, pageOffset) {
+  return {
+    type: LOAD_MORE_ROWS_FOR_CURRENT_USER_ACTIVITY,
     payload: {
       request: {
         url: `/events/${id}/recent`,
@@ -414,3 +487,15 @@ export function getUserStats(userId) {
   }
 }
 
+// Current user specific for MyProfile -> Needs to be a part of the MyProfile/UserDetails refactor
+export function getCurrentUserStats(userId) {
+  return {
+    type: GET_CURRENT_USER_STATS,
+    payload: {
+      request: {
+        url: `/users/${userId}/details/stats`,
+        method: 'GET'
+      }
+    }
+  }
+}

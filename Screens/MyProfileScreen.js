@@ -8,7 +8,11 @@ import RecentActivity from '../Components/RecentActivity';
 import { authHelper } from '../Helpers';
 import UserInfo from '../Components/UserInfo';
 import UserStats from '../Components/UserStats';
-import { getCurrentUserDetails, updateCurrentUserDetails, listRecentActivityForUser, loadMoreRowsForUserActivity } from '../reducer';
+import { getCurrentUserDetails,
+         getCurrentUserStats,
+         updateCurrentUserDetails,
+         listRecentActivityForCurrentUser,
+         loadMoreRowsForCurrentUserActivity } from '../reducer';
 import EditProfileModal from '../Components/EditProfileModal';
 import FollowsModal from '../Components/FollowsModal';
 import { userService } from '../Services';
@@ -39,7 +43,8 @@ class MyProfileScreen extends React.Component {
   async componentDidMount() {
     const currentUser = await authHelper.getCurrentUserId();
     this.props.getCurrentUserDetails(currentUser); // TODO: This could be it's on getCurrentUserDetails()
-    this.props.listRecentActivityForUser(currentUser, 0);
+    this.props.getCurrentUserStats(currentUser);
+    this.props.listRecentActivityForCurrentUser(currentUser, 0);
     this.setState({ currentUser });
   }
 
@@ -71,8 +76,8 @@ class MyProfileScreen extends React.Component {
   }
 
   handleScroll(offset) {
-    if (!this.props.loading && offset > 10) {
-      this.props.loadMoreRowsForUserActivity(this.state.currentUser, offset);
+    if (!this.props.loading && offset > 4) {
+      this.props.loadMoreRowsForCurrentUserActivity(this.state.currentUser, offset);
     }
   }
 
@@ -95,7 +100,7 @@ class MyProfileScreen extends React.Component {
   }
 
   render() {
-    const { currentUserDetails, userActivity } = this.props;
+    const { currentUserDetails, currentUserStats, currentUserActivity } = this.props;
     const { editProfileModalVisible,
             refreshing,
             sliderActiveSlide,
@@ -103,13 +108,13 @@ class MyProfileScreen extends React.Component {
             followsList } = this.state;
     const { width } = Dimensions.get('window');
 
-    if (currentUserDetails && currentUserDetails.length) {
+    if (currentUserDetails.id) {
       return(
         <View style={styles.container}>
           <View style={{height: '40%'}}>
             <Carousel
               ref={(c) => { this._carousel = c; }}
-              data={currentUserDetails}
+              data={[currentUserDetails, currentUserStats]}
               renderItem={this._renderItem}
               sliderWidth={width}
               itemWidth={width}
@@ -117,7 +122,7 @@ class MyProfileScreen extends React.Component {
               layout={'default'}
             />
             <Pagination
-              dotsLength={currentUserDetails.length}
+              dotsLength={2}
               activeDotIndex={sliderActiveSlide}
               containerStyle={styles.paginationContainer}
               dotColor={ACCENT_COLOR}
@@ -131,7 +136,7 @@ class MyProfileScreen extends React.Component {
           </View>
           <View style={styles.container}>
             <RecentActivity
-              events={userActivity}
+              events={currentUserActivity}
               navigation={this.props.navigation}
               refreshing={refreshing}
               _onRefresh={this._onRefresh}
@@ -143,7 +148,7 @@ class MyProfileScreen extends React.Component {
           <EditProfileModal
             isVisible={editProfileModalVisible}
             toggleEditProfile={this.toggleEditProfile}
-            userDetails={currentUserDetails[0]}
+            userDetails={currentUserDetails}
           />
 
           {/* Follows Modal */}
@@ -192,15 +197,17 @@ const mapStateToProps = state => {
   return {
     loading: state.loading,
     currentUserDetails: state.currentUserDetails,
-    userActivity: state.userActivity
+    currentUserStats: state.currentUserStats,
+    currentUserActivity: state.currentUserActivity
   };
 };
 
 const mapDispatchToProps = {
   getCurrentUserDetails,
+  getCurrentUserStats,
   updateCurrentUserDetails,
-  listRecentActivityForUser,
-  loadMoreRowsForUserActivity
+  listRecentActivityForCurrentUser,
+  loadMoreRowsForCurrentUserActivity
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(MyProfileScreen);
