@@ -11,7 +11,8 @@ import { authHelper } from './Helpers';
 import reducer from './reducer';
 
 const client = axios.create({
-  baseURL: process.env.NODE_ENV === 'production' ? local_env.production.ENDPOINT : local_env.development.ENDPOINT,
+  // baseURL: process.env.NODE_ENV === 'production' ? local_env.production.ENDPOINT : local_env.development.ENDPOINT,
+  baseURL: ENDPOINT,
   responseType: 'json',
 });
 

@@ -10,4 +10,3 @@ async function createEvent(event) {
   const headers = await authHelper.authHeaders();
   return axios.post(`${ENDPOINT}/events/create`, event, headers);
 }
-
