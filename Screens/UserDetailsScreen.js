@@ -22,15 +22,15 @@ class UserDetailsScreen extends React.Component {
   static navigationOptions = ({navigation}) => {
     return {
       headerTitle: ( navigation.getParam('getUsername') ),
-      headerRight: (
-        <Icon
-          containerStyle={styles.rightIcon}
-          size={28}
-          name="more-horiz"
-          color={PRIMARY_LIGHT_COLOR}
-          onPress={navigation.getParam('toggleOptionsModal')}
-        />
-      )
+      // headerRight: (
+      //   <Icon
+      //     containerStyle={styles.rightIcon}
+      //     size={28}
+      //     name="more-horiz"
+      //     color={PRIMARY_LIGHT_COLOR}
+      //     onPress={navigation.getParam('toggleOptionsModal')}
+      //   />
+      // )
     }
   }
 

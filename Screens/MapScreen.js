@@ -52,6 +52,8 @@ class MapScreen extends React.Component {
     const currentUser = await authHelper.getCurrentUserId();
     this.setState({ coords, currentUser });
 
+    this.getEvents(this.state.socialSelected);
+
     // commonHelper.getFilters()
     //   .then(res => {
     //     this.setState({socialSelected: res.eventsFor});
