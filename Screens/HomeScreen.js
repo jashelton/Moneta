@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { Icon } from 'react-native-elements';
 import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
-import RecentActivity from '../Components/RecentActivity';
 import { LocationHelper, permissionsHelper } from '../Helpers';
 import { listRecentActivity, loadMoreRows } from '../reducer'
 import { connect } from 'react-redux';
@@ -11,9 +10,34 @@ import gql from 'graphql-tag';
 
 import EventsComponent from '../Components/EventsQL';
 
+this.state = {
+  filter: { region: "NC"}
+}
+
 const FETCH_EVENTS = gql`
   query {
-    events {
+    events(orderBy:createdAt_DESC) {
+      owner {
+        first_name
+        last_name
+      }
+      title
+      description
+      image
+      city
+      region
+      country_code
+    }
+  }
+`;
+
+// TODO: HARDCODED VALUE
+const FETCH_MY_EVENTS = gql`
+  query {
+    events(
+      orderBy:createdAt_DESC
+      where: { owner: { id: "cjl5zqfrq000j0980eetqn9lc" } }
+    ) {
       owner {
         first_name
         last_name
@@ -109,7 +133,7 @@ class HomeScreen extends React.Component {
           updateSocialSelected={(option) => this.updateSocialSelected(option)}
         />
 
-        <EventsComponent query={FETCH_EVENTS}/>
+        <EventsComponent query={this.state.socialSelected === 'All' ? FETCH_EVENTS : FETCH_MY_EVENTS}/>
 
       </View>
     );
