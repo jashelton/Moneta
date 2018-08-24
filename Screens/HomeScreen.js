@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { Icon } from 'react-native-elements';
 import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
 import RecentActivity from '../Components/RecentActivity';
@@ -7,6 +7,26 @@ import { LocationHelper, permissionsHelper } from '../Helpers';
 import { listRecentActivity, loadMoreRows } from '../reducer'
 import { connect } from 'react-redux';
 import FilterRecentActivityModal from '../Components/FilterRecentActivityModal';
+import gql from 'graphql-tag';
+
+import EventsComponent from '../Components/EventsQL';
+
+const FETCH_EVENTS = gql`
+  query {
+    events {
+      owner {
+        first_name
+        last_name
+      }
+      title
+      description
+      image
+      city
+      region
+      country_code
+    }
+  }
+`;
 
 class HomeScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
@@ -80,7 +100,6 @@ class HomeScreen extends React.Component {
   render() {
     const { navigation, recentEvents } = this.props;
     const { filtersVisible, socialSelected, refreshing } = this.state;
-
     return(
       <View style={styles.container}>
         <FilterRecentActivityModal
@@ -89,22 +108,9 @@ class HomeScreen extends React.Component {
           socialSelected={socialSelected}
           updateSocialSelected={(option) => this.updateSocialSelected(option)}
         />
-        { !this.props.loading ?
-          <View>
-            <RecentActivity
-              refreshing={refreshing}
-              navigation={navigation}
-              events={recentEvents}
-              handleScroll={this.handleScroll}
-              noDataMessage='There is no recent activity to display.'
-              _onRefresh={this._onRefresh}
-            />
-          </View>
-        :
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator />
-          </View>
-        }
+
+        <EventsComponent query={FETCH_EVENTS}/>
+
       </View>
     );
   }
