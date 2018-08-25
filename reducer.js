@@ -25,6 +25,9 @@ export const MARK_EVENT_VIEWED_FAIL = 'monesta/markers/MARK_EVENT_VIEWED_FAIL';
 export const DELETE_EVENT = 'moneta/events/DELETE_EVENT';
 export const DELETE_EVENT_SUCCESS = 'moneta/events/DELETE_EVENT_SUCCESS';
 export const DELETE_EVENT_FAIL = 'moneta/events/DELETE_EVENT_FAIL';
+export const CREATE_EVENT = 'moneta/events/CREATE_EVENT';
+export const CREATE_EVENT_SUCCESS = 'moneta/events/CREATE_EVENT_SUCCESS';
+export const CREATE_EVENT_FAIL = 'moneta/events/CREATE_EVENT_FAIL';
 
 export const GET_USER_DETAILS = 'moneta/users/LOAD_USER_DETAILS';
 export const GET_USER_DETAILS_SUCCESS = 'moneta/users/LOAD_USER_DETAILS_SUCCESS';
@@ -181,6 +184,18 @@ export default function reducer(state = initialState, action) {
         ...state,
         loading: false,
         error: 'There was a problem deleting the event.'
+      }
+    case CREATE_EVENT:
+      return { ...state, loading: true };
+    case CREATE_EVENT_SUCCESS:
+      const updatedEventsCreate = update(state.recentEvents, { $unshift: action.payload.data.event });
+      const updatedMarkersCreate = update(state.markers, { $push: action.payload.data.marker });
+      return { ...state, loading: false, recentEvents: updatedEventsCreate, markers: updatedMarkersCreate };
+    case CREATE_EVENT_FAIL:
+      return {
+        ...state,
+        loading: false,
+        error: 'There was a problem creating the event'
       }
 
     // Users
@@ -417,6 +432,19 @@ export function deleteEvent(eventId) {
       request: {
         url: `/events/${eventId}/delete`,
         method: 'PUT',
+      }
+    }
+  }
+}
+
+export function createEvent(event) {
+  return {
+    type: CREATE_EVENT,
+    payload: {
+      request: {
+        url: `/events/create`,
+        method: 'POST',
+        data: event
       }
     }
   }

@@ -5,6 +5,8 @@ import { TextField } from 'react-native-material-textfield';
 import { RNS3 } from 'react-native-aws3';
 import { AdMobInterstitial } from 'expo';
 import { FULL_SCREEN_AD_UNIT } from 'react-native-dotenv';
+import { createEvent } from '../reducer'
+import { connect } from 'react-redux';
 
 import { eventsService } from '../Services';
 import { authHelper, LocationHelper, commonHelper } from '../Helpers';
@@ -23,7 +25,7 @@ const initialEvent = {
   addressInfo: null
 };
 
-export default class CreateEventScreen extends React.Component {
+class CreateEventScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
     return {
       title: 'Event Map',
@@ -177,7 +179,8 @@ export default class CreateEventScreen extends React.Component {
       try {
         const s3Upload = await RNS3.put(imageFile, this.options);
         event.image = s3Upload.body.postResponse;
-        const { data } = await eventsService.createEvent(event);
+        // const { data } = await eventsService.createEvent(event);
+        this.props.createEvent(event);
         // TODO: dispatch action to add data.event to event markers
 
         eventForm = initialEvent;
@@ -288,3 +291,15 @@ const styles = StyleSheet.create({
     borderRadius: 3
   }
 });
+
+const mapStateToProps = state => {
+  return {
+    loading: state.loading
+  };
+};
+
+const mapDispatchToProps = {
+  createEvent
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(CreateEventScreen);
