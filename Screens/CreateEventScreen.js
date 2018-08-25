@@ -8,7 +8,6 @@ import { FULL_SCREEN_AD_UNIT } from 'react-native-dotenv';
 import { createEvent } from '../reducer'
 import { connect } from 'react-redux';
 
-import { eventsService } from '../Services';
 import { authHelper, LocationHelper, commonHelper } from '../Helpers';
 import { AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, BUCKET, BUCKET_REGION } from 'react-native-dotenv';
 import ViewToggle from '../Components/ViewToggle';

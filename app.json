@@ -2,11 +2,15 @@
   "expo": {
     "name": "My Atlas",
     "icon": "./assets/images/atlas-icon.png",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "slug": "moneta",
     "sdkVersion": "27.0.0",
     "ios": {
       "bundleIdentifier": "com.sheltonjs.myatlas"
+    },
+    "splash": {
+      "image": "./assets/images/atlas-icon.png",
+      "resizeMode": "contain"
     }
   },
   "ios": {
