@@ -179,20 +179,20 @@ class CreateEventScreen extends React.Component {
       try {
         const s3Upload = await RNS3.put(imageFile, this.options);
         event.image = s3Upload.body.postResponse;
-        // const { data } = await eventsService.createEvent(event);
-        this.props.createEvent(event);
-        // TODO: dispatch action to add data.event to event markers
 
-        eventForm = initialEvent;
-        eventForm.imageLocation = '';
-        eventForm.imageCoords = null;
-        this.setState({ eventForm });
+        const { payload } = await this.props.createEvent(event);
+
+        if (payload.status === 200) {
+          eventForm = initialEvent;
+          eventForm.imageLocation = '';
+          eventForm.imageCoords = null;
+          this.setState({ eventForm });
+          this.displayAd();
+        }
       } catch (err) {
         console.log(err);
         return;
       }
-
-      this.displayAd();
     }
     
     this.setState({ isCreateDisabled: false });
@@ -294,7 +294,8 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = state => {
   return {
-    loading: state.loading
+    loading: state.loading,
+    error: state.error
   };
 };
 
