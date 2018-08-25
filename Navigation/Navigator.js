@@ -41,14 +41,7 @@ const eventsStack = createStackNavigator(
     Map: MapScreen,
     EventDetails: EventDetailsScreen, // TODO: include as component with event icon in props
     Comments: CommentsScreen,
-    UserDetails: { // TODO: UserDetails needs to be nested under EventDetails
-      screen: UserDetailsScreen,
-      navigationOptions: {
-        headerStyle: {
-          backgroundColor: PRIMARY_DARK_COLOR
-        },
-      }
-    }
+    UserDetails: UserDetailsScreen
   },
   {
     navigationOptions: {

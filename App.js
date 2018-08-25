@@ -7,6 +7,7 @@ import axiosMiddleware from 'redux-axios-middleware';
 import { ENDPOINT } from 'react-native-dotenv';
 import { local_env } from './environment.js';
 import { authHelper } from './Helpers';
+import { StatusBar, View } from 'react-native';
 
 import reducer from './reducer';
 
@@ -34,7 +35,12 @@ export default class App extends React.Component {
   render() {
     return (
       <Provider store={store}>
-        <Nav />
+        <View style={{flex: 1}}>
+          <StatusBar
+            barStyle={'dark-content'}
+          />
+          <Nav />
+        </View>
       </Provider>
     );
   }

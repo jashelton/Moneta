@@ -154,6 +154,7 @@ export default class CreateEventScreen extends React.Component {
 
   async createEvent() {
     this.setState({ isCreateDisabled: true }); // Prevent dupe insert
+
     let { imageFile, eventForm, isCreateDisabled } = this.state;
     const { title, description, eventPrivacy, imageLocation, imageCoords, addressInfo } = this.state.eventForm;
 
@@ -187,10 +188,11 @@ export default class CreateEventScreen extends React.Component {
         console.log(err);
         return;
       }
+
+      this.displayAd();
     }
     
     this.setState({ isCreateDisabled: false });
-    this.displayAd();
   }
 
   async displayAd() {
