@@ -11,6 +11,7 @@ import { authHelper, LocationHelper, commonHelper } from '../Helpers';
 import { AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, BUCKET, BUCKET_REGION } from 'react-native-dotenv';
 import ViewToggle from '../Components/ViewToggle';
 import GooglePlacesInput from '../Components/LocationAutocomplete';
+import { DIVIDER_COLOR } from '../common/styles/common-styles';
 
 const initialEvent = {
   title: '',
@@ -41,6 +42,8 @@ export default class CreateEventScreen extends React.Component {
           clear
           title='Done'
           titleStyle={{color: 'blue'}}
+          disabled={navigation.getParam('isDisabled')}
+          disabledTitleStyle={{ color: DIVIDER_COLOR }}
           onPress={navigation.getParam('createEvent')}
         />
       )
@@ -63,6 +66,7 @@ export default class CreateEventScreen extends React.Component {
       eventForm: initialEvent,
       imageFile: null,
       visiblePlacesSearch: false,
+      isCreateDisabled: false
     };
 
     this.clearEvent = this.clearEvent.bind(this);
@@ -77,7 +81,8 @@ export default class CreateEventScreen extends React.Component {
 
     this.props.navigation.setParams({
       clearEvent: () => this.clearEvent(),
-      createEvent: () => this.createEvent()
+      createEvent: () => this.createEvent(),
+      isDisabled: this.state.isCreateDisabled
     });
   }
 
@@ -148,39 +153,43 @@ export default class CreateEventScreen extends React.Component {
   }
 
   async createEvent() {
-    let { imageFile, eventForm } = this.state;
+    this.setState({ isCreateDisabled: true }); // Prevent dupe insert
+    let { imageFile, eventForm, isCreateDisabled } = this.state;
     const { title, description, eventPrivacy, imageLocation, imageCoords, addressInfo } = this.state.eventForm;
 
-    if (title === '' || description === '' || imageLocation === '' || !imageCoords || title.length > 60 || description.length > 140) {
-      alert('You must include a valid Title, Description, and Image');
-      return;
-    }
+    if (!isCreateDisabled) {
+      if (title === '' || description === '' || imageLocation === '' || !imageCoords || title.length > 60 || description.length > 140) {
+        alert('You must include a valid Title, Description, and Image');
+        return;
+      }
 
-    const event = {
-      title,
-      description,
-      privacy: eventPrivacy,
-      city: addressInfo.city,
-      region: addressInfo.region,
-      country_code: addressInfo.isoCountryCode,
-      coordinate: imageCoords
-    };
+      const event = {
+        title,
+        description,
+        privacy: eventPrivacy,
+        city: addressInfo.city,
+        region: addressInfo.region,
+        country_code: addressInfo.isoCountryCode,
+        coordinate: imageCoords
+      };
 
-    try {
-      const s3Upload = await RNS3.put(imageFile, this.options);
-      event.image = s3Upload.body.postResponse;
-      const { data } = await eventsService.createEvent(event);
-      // TODO: dispatch action to add data.event to event markers
+      try {
+        const s3Upload = await RNS3.put(imageFile, this.options);
+        event.image = s3Upload.body.postResponse;
+        const { data } = await eventsService.createEvent(event);
+        // TODO: dispatch action to add data.event to event markers
 
-      eventForm = initialEvent;
-      eventForm.imageLocation = '';
-      eventForm.imageCoords = null;
-      this.setState({ eventForm });
-    } catch (err) {
-      console.log(err);
-      return;
+        eventForm = initialEvent;
+        eventForm.imageLocation = '';
+        eventForm.imageCoords = null;
+        this.setState({ eventForm });
+      } catch (err) {
+        console.log(err);
+        return;
+      }
     }
     
+    this.setState({ isCreateDisabled: false });
     this.displayAd();
   }
 
