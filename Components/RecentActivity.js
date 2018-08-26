@@ -11,6 +11,7 @@ import { View,
          FlatList } from 'react-native';
 import PropTypes from 'prop-types';
 import { DIVIDER_COLOR } from '../common/styles/common-styles';
+import { Icon } from 'react-native-elements';
 import { connect } from 'react-redux';
 
 class RecentActivity extends React.Component {
@@ -22,6 +23,11 @@ class RecentActivity extends React.Component {
         onPress={() => this.props.navigation.navigate('EventDetails', { eventId: item.id })}
       >
         <ImageBackground style={styles.image} resizeMode='cover' source={{uri: item.image}}>
+          { item.privacy === 'Private' &&
+            <View style={styles.privacyOverlay}>
+              <Icon color={DIVIDER_COLOR} name='lock' />
+            </View>
+          }
           <View style={styles.imageOverlay}>
             <Text style={{color:DIVIDER_COLOR}}>{item.username || item.name}</Text>
             <Text style={{color:DIVIDER_COLOR, fontSize: 10}}>{item.city}, {item.region}, {item.country_code}</Text>
@@ -104,6 +110,15 @@ const styles = StyleSheet.create({
     padding: 5,
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
+  },
+  privacyOverlay: {
+    position: 'absolute',
+    top: 0,
+    width: '100%',
+    padding: 5,
+    backgroundColor: 'rgba(0, 0, 0, 0)',
+    justifyContent: 'center',
+    alignItems: 'flex-end'
   }
 });
 

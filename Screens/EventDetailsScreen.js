@@ -1,8 +1,8 @@
 import React from 'react';
-import { ScrollView, View, Image, Text, StyleSheet, ActivityIndicator, AlertIOS, Modal } from 'react-native';
+import { ScrollView, View, Image, Text, StyleSheet, ActivityIndicator, AlertIOS, Modal, ImageBackground } from 'react-native';
 import { Card, Divider, Icon, Button, ListItem, Avatar } from 'react-native-elements';
 import { authHelper, LocationHelper } from '../Helpers';
-import { WARNING_RED, ACCENT_COLOR, PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
+import { WARNING_RED, ACCENT_COLOR, PRIMARY_DARK_COLOR, DIVIDER_COLOR } from '../common/styles/common-styles';
 import { connect } from 'react-redux';
 import { updateEventDetailsLikes, deleteEvent, markEventViewed, getEventDetails } from '../reducer';
 import { notificationService } from '../Services/notification.service';
@@ -151,7 +151,14 @@ class EventDetailsScreen extends React.Component {
             containerStyle={styles.container}
           >
             <ScrollView contentContainerStyle={{height: '100%'}}>
-              <Image style={styles.uploadedImage} source={{uri: event.image}} />
+              <ImageBackground style={styles.uploadedImage} resizeMode='cover' source={{uri: event.image}}>
+                { event.privacy === 'Private' &&
+                  <View style={styles.privacyOverlay}>
+                    <Icon color={DIVIDER_COLOR} name='lock' />
+                  </View>
+                }
+              </ImageBackground>
+
               <View style={styles.iconGroup}>
                 <View style={styles.iconWrapper}>
                   <Icon
@@ -288,6 +295,15 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'space-between',
   },
+  privacyOverlay: {
+    position: 'absolute',
+    top: 0,
+    width: '100%',
+    padding: 5,
+    backgroundColor: 'rgba(0, 0, 0, 0)',
+    justifyContent: 'center',
+    alignItems: 'flex-end'
+  }
 });
 
 const mapStateToProps = state => {
