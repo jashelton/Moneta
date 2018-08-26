@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, View, Image, Text, StyleSheet, ActivityIndicator, AlertIOS, Modal, ImageBackground } from 'react-native';
+import { ScrollView, View, Image, Text, StyleSheet, ActivityIndicator, AlertIOS, Modal, ImageBackground, Dimensions } from 'react-native';
 import { Card, Divider, Icon, Button, ListItem, Avatar } from 'react-native-elements';
 import { authHelper, LocationHelper } from '../Helpers';
 import { WARNING_RED, ACCENT_COLOR, PRIMARY_DARK_COLOR, DIVIDER_COLOR } from '../common/styles/common-styles';
@@ -36,12 +36,10 @@ class EventDetailsScreen extends React.Component {
     super(props);
     this.state = {
       currentUserId: null,
-      isVisible: false
     }
 
     this.incrementCommentCount = this.incrementCommentCount.bind(this);
     this.verifyDeleteEvent = this.verifyDeleteEvent.bind(this);
-    this.toggleVisibility = this.toggleVisibility.bind(this);
   }
 
   async componentDidMount() {
@@ -126,12 +124,8 @@ class EventDetailsScreen extends React.Component {
     navigation.goBack();
   }
 
-  toggleVisibility() {
-    this.setState({isVisible: !this.state.isVisible});
-  }
-
   render() {
-    const { currentUserId, isVisible } = this.state;
+    const { currentUserId } = this.state;
     const { event } = this.props;
 
     if (!this.props.loading && event.id) {
@@ -144,13 +138,13 @@ class EventDetailsScreen extends React.Component {
                       name={event.name}
                       username={event.username}
                       image={event.user_image}
-                      setVisibility={this.toggleVisibility}
                       navigation={this.props.navigation}
                     />
                   }
             containerStyle={styles.container}
+            wrapperStyle={{flex: 1}}
           >
-            <ScrollView contentContainerStyle={{height: '100%'}}>
+            <ScrollView>
               <ImageBackground style={styles.uploadedImage} resizeMode='cover' source={{uri: event.image}}>
                 { event.privacy === 'Private' &&
                   <View style={styles.privacyOverlay}>
@@ -209,20 +203,6 @@ class EventDetailsScreen extends React.Component {
               onPress={this.verifyDeleteEvent}
             />
           }
-
-          <Modal
-            animationType="slide"
-            transparent={false}
-            visible={isVisible}
-          >
-            <View style={styles.modalHeader}>
-              <Button title='Cancel' titleStyle={{color: ACCENT_COLOR}} clear={true} onPress={() => this.setState({isVisible: false})}/>
-              <Button title='Save' titleStyle={{color: ACCENT_COLOR}} clear={true} onPress={this.createEvent}/>
-            </View>
-            <View style={{flexDirection: 'column', padding: 15}}>
-              <Text>Hello</Text>
-            </View>
-          </Modal>
         </View>
       ); 
     } else {
@@ -249,8 +229,17 @@ const styles = StyleSheet.create({
   },
   uploadedImage: {
     width: '100%',
-    height: '50%',
+    height: Dimensions.get('window').height / 2,
     borderRadius: 2,
+  },
+  privacyOverlay: {
+    position: 'absolute',
+    top: 0,
+    width: '100%',
+    padding: 5,
+    backgroundColor: 'rgba(0, 0, 0, 0)',
+    justifyContent: 'center',
+    alignItems: 'flex-end'
   },
   iconGroup: {
     marginTop: 10,
@@ -294,15 +283,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'space-between',
-  },
-  privacyOverlay: {
-    position: 'absolute',
-    top: 0,
-    width: '100%',
-    padding: 5,
-    backgroundColor: 'rgba(0, 0, 0, 0)',
-    justifyContent: 'center',
-    alignItems: 'flex-end'
   }
 });
 
