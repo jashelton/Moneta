@@ -72,7 +72,7 @@ class HomeScreen extends React.Component {
   }
 
   handleScroll(offset) {
-    if (!this.props.loading && offset > 10) {
+    if (!this.props.loading && offset >= 10) {
       this.props.loadMoreRows(this.state.socialSelected, null, offset);
     }
   }
@@ -89,7 +89,7 @@ class HomeScreen extends React.Component {
           socialSelected={socialSelected}
           updateSocialSelected={(option) => this.updateSocialSelected(option)}
         />
-        { !this.props.loading ?
+        { recentEvents.length ?
           <View>
             <RecentActivity
               refreshing={refreshing}

@@ -118,7 +118,7 @@ export default function reducer(state = initialState, action) {
     case LOAD_MORE_ROWS:
       return { ...state, loading: true };
     case LOAD_MORE_ROWS_SUCCESS:
-      const updatedEvents = update(state.recentEvents, { $push: action.payload.data });
+      const updatedEvents = update(state.recentEvents, { $push: action.payload.data.events });
       return { ...state, loading: false, recentEvents: updatedEvents };
     case LOAD_MORE_ROWS_FAIL:
       return {
