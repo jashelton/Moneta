@@ -76,7 +76,7 @@ class MyProfileScreen extends React.Component {
   }
 
   handleScroll(offset) {
-    if (!this.props.loading && offset > 4) {
+    if (!this.props.loading && offset >= 10) {
       this.props.loadMoreRowsForCurrentUserActivity(this.state.currentUser, offset);
     }
   }

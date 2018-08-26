@@ -1,17 +1,19 @@
 import React from 'react';
 import { View,
-         ScrollView,
          Text,
+         ScrollView,
          StyleSheet,
          Dimensions,
          TouchableHighlight,
+         ActivityIndicator,
          ImageBackground,
          RefreshControl,
          FlatList } from 'react-native';
 import PropTypes from 'prop-types';
 import { DIVIDER_COLOR } from '../common/styles/common-styles';
+import { connect } from 'react-redux';
 
-export default class RecentActivity extends React.Component {
+class RecentActivity extends React.Component {
   _renderImage({item, index}) {
     return(
       <TouchableHighlight
@@ -30,7 +32,15 @@ export default class RecentActivity extends React.Component {
   }
 
   render() {
-    const { events, noDataMessage, refreshing } = this.props;
+    const { events, noDataMessage, refreshing, loading } = this.props;
+
+    if (loading) {
+      return (
+        <View>
+          <ActivityIndicator />
+        </View>
+      );
+    }
 
     if (events && events.length) {
       return(
@@ -96,3 +106,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   }
 });
+
+const mapStateToProps = state => {
+  return {
+    loading: state.loading
+  };
+};
+
+export default connect(mapStateToProps)(RecentActivity);

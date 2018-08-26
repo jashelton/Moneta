@@ -91,7 +91,7 @@ export default function reducer(state = initialState, action) {
         error: 'There was a problem fetching activity for this user.'
       };
     case LOAD_MORE_ROWS_FOR_USER_ACTIVITY:
-      return { ...state, loading: true };
+      return { ...state, loading: false };
     case LOAD_MORE_ROWS_FOR_USER_ACTIVITY_SUCCESS:
       if (action.payload.data.length) {
         const updatedUserActivity = update(state.userActivity, { $push: action.payload.data });
@@ -116,7 +116,7 @@ export default function reducer(state = initialState, action) {
         error: 'There was a problem getting the details for this event.'
       };
     case LOAD_MORE_ROWS:
-      return { ...state, loading: true };
+      return { ...state, loading: false };
     case LOAD_MORE_ROWS_SUCCESS:
       const updatedEvents = update(state.recentEvents, { $push: action.payload.data.events });
       return { ...state, loading: false, recentEvents: updatedEvents };
@@ -273,7 +273,7 @@ export default function reducer(state = initialState, action) {
         error: 'There was a problem getting your account stats.'
       }
     case LOAD_MORE_ROWS_FOR_CURRENT_USER_ACTIVITY:
-      return { ...state, loading: true };
+      return { ...state, loading: false };
     case LOAD_MORE_ROWS_FOR_CURRENT_USER_ACTIVITY_SUCCESS:
       if (action.payload.data.length) {
         const updatedCurrentUserActivity = update(state.currentUserActivity, { $push: action.payload.data });
