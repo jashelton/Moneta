@@ -4,16 +4,19 @@ import { ScrollView,
          Text,
          StyleSheet,
          ActivityIndicator,
+         TouchableHighlight,
          AlertIOS,
          ImageBackground,
          AppState,
-         Dimensions } from 'react-native';
+         Dimensions,
+         Modal } from 'react-native';
 import { Card, Divider, Icon, Button, ListItem, Avatar } from 'react-native-elements';
 import { authHelper, LocationHelper } from '../Helpers';
 import { WARNING_RED, ACCENT_COLOR, PRIMARY_DARK_COLOR, DIVIDER_COLOR } from '../common/styles/common-styles';
 import { connect } from 'react-redux';
 import { updateEventDetailsLikes, deleteEvent, markEventViewed, getEventDetails } from '../reducer';
 import { notificationService } from '../Services/notification.service';
+import ImageViewer from 'react-native-image-zoom-viewer';
 
 export class EventDetailsHeader extends React.Component {
   render() {
@@ -45,7 +48,8 @@ class EventDetailsScreen extends React.Component {
     this.state = {
       currentUserId: null,
       eventId: null,
-      appState: AppState.currentState
+      appState: AppState.currentState,
+      isImageZoomed: false
     }
 
     this.incrementCommentCount = this.incrementCommentCount.bind(this);
@@ -157,7 +161,7 @@ class EventDetailsScreen extends React.Component {
   }
 
   render() {
-    const { currentUserId } = this.state;
+    const { currentUserId, isImageZoomed } = this.state;
     const { event } = this.props;
 
     if (!this.props.loading && event.id) {
@@ -177,13 +181,19 @@ class EventDetailsScreen extends React.Component {
             wrapperStyle={{flex: 1}}
           >
             <ScrollView>
-              <ImageBackground style={styles.uploadedImage} resizeMode='cover' source={{uri: event.image}}>
-                { event.privacy === 'Private' &&
-                  <View style={styles.privacyOverlay}>
-                    <Icon color={DIVIDER_COLOR} name='lock' />
-                  </View>
-                }
-              </ImageBackground>
+              <TouchableHighlight onPress={() => this.setState({ isImageZoomed: true })}>
+                <ImageBackground
+                  style={styles.uploadedImage}
+                  resizeMode='cover'
+                  source={{uri: event.image}}
+                >
+                  { event.privacy === 'Private' &&
+                    <View style={styles.privacyOverlay}>
+                      <Icon color={DIVIDER_COLOR} name='lock' />
+                    </View>
+                  }
+                </ImageBackground>
+              </TouchableHighlight>
 
               <View style={styles.iconGroup}>
                 <View style={styles.iconWrapper}>
@@ -235,6 +245,26 @@ class EventDetailsScreen extends React.Component {
               onPress={this.verifyDeleteEvent}
             />
           }
+
+          {/* Modal to display full screen image with zoom */}
+          <Modal visible={isImageZoomed} transparent={true}>
+            <ImageViewer
+              imageUrls={[{url: event.image}]}
+              index={0}
+              onSwipeDown={() => this.setState({ isImageZoomed: false })}
+              enableSwipeDown={true}
+              renderIndicator={() => null}
+              saveToLocalByLongPress={false}
+              renderHeader={() => 
+                <TouchableHighlight
+                  style={{ position: 'absolute', width: '100%', padding: 15, alignItems: 'flex-end', zIndex: 10000 }}
+                  onPress={() => this.setState({ isImageZoomed: false })}
+                >
+                  <Icon name='close' size={38} color="#fff" />
+                </TouchableHighlight>
+              }
+            />
+          </Modal>
         </View>
       ); 
     } else {
