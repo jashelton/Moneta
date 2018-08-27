@@ -47,19 +47,14 @@ class MapScreen extends React.Component {
 
     this.updateSocialSelected = this.updateSocialSelected.bind(this);
     this.onRegionChange = this.onRegionChange.bind(this);
+    this.setCurrentLocation = this.setCurrentLocation.bind(this);
   }
 
   async componentDidMount() {
     AppState.addEventListener('change', this._handleAppStateChange);
-    const { coords } = await LocationHelper.getCurrentLocation();
-    const region = {
-      latitude: coords.latitude,
-      longitude: coords.longitude,
-      latitudeDelta: 0.0922,
-      longitudeDelta: 0.0421
-    };
+    this.setCurrentLocation();
     const currentUser = await authHelper.getCurrentUserId();
-    this.setState({ region, currentUser });
+    this.setState({ currentUser });
 
     this.getEvents(this.state.socialSelected);
 
@@ -88,6 +83,18 @@ class MapScreen extends React.Component {
       this.getEvents(this.state.socialSelected);
     }
     this.setState({appState: nextAppState});
+  }
+
+  async setCurrentLocation() {
+    const { coords } = await LocationHelper.getCurrentLocation();
+    const region = {
+      latitude: coords.latitude,
+      longitude: coords.longitude,
+      latitudeDelta: 0.0922,
+      longitudeDelta: 0.0421
+    };
+
+    this.setState({ region });
   }
 
   _onRefresh() {
@@ -128,25 +135,37 @@ class MapScreen extends React.Component {
         { !loading && !refreshing ?
           <View style={styles.container}>
             { region &&
-              <MapView
-                style={{ flex: 1 }}
-                showsUserLocation={true}
-                showsPointsOfInterest={true}
-                mapType="mutedStandard"
-                region={region}
-                onRegionChangeComplete={this.onRegionChange}
-              >
-                { markers.length && markers.map((m, i) => (
-                  <MapView.Marker
-                    key={i}
-                    pinColor={m.user_id === currentUser ? PRIMARY_COLOR : m.viewed_id !== null ? DIVIDER_COLOR : 'red'}
-                    onPress={() => this.props.navigation.navigate('EventDetails', { eventId: m.id })}
-                    ref={marker => { this.marker = marker }}
-                    coordinate={m.coordinate}
+              <View style={styles.container}>
+                <MapView
+                  style={{ flex: 1 }}
+                  showsUserLocation={true}
+                  showsPointsOfInterest={true}
+                  showsMyLocationButton={true}
+                  mapType="mutedStandard"
+                  region={region}
+                  onRegionChangeComplete={this.onRegionChange}
+                >
+                  { markers.length && markers.map((m, i) => (
+                    <MapView.Marker
+                      key={i}
+                      pinColor={m.user_id === currentUser ? PRIMARY_COLOR : m.viewed_id !== null ? DIVIDER_COLOR : 'red'}
+                      onPress={() => this.props.navigation.navigate('EventDetails', { eventId: m.id })}
+                      ref={marker => { this.marker = marker }}
+                      coordinate={m.coordinate}
+                    />
+                  ))
+                  }
+                </MapView>
+                <View style={{ position: 'absolute', bottom: 25, right: 25 }}>
+                  <Icon
+                    raised
+                    size={30}
+                    color={PRIMARY_DARK_COLOR}
+                    name='my-location'
+                    onPress={this.setCurrentLocation}
                   />
-                ))
-                }
-              </MapView>
+                </View>
+              </View>
             }
           </View>
         :
