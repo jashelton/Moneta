@@ -186,8 +186,9 @@ class CreateEventScreen extends React.Component {
           eventForm.imageLocation = '';
           eventForm.imageCoords = null;
           this.setState({ eventForm });
-          this.displayAd();
         }
+        
+        this.displayAd();
       } catch (err) {
         console.log(err);
         return;
