@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ActivityIndicator, AppState } from 'react-native';
 import { Icon } from 'react-native-elements';
 import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
 import RecentActivity from '../Components/RecentActivity';
@@ -31,6 +31,7 @@ class HomeScreen extends React.Component {
       refreshing: false,
       filtersVisible: false,
       socialSelected: 'All',
+      appState: AppState.currentState
     };
 
     this._onRefresh = this._onRefresh.bind(this);
@@ -39,6 +40,7 @@ class HomeScreen extends React.Component {
   }
 
   async componentDidMount() {
+    AppState.addEventListener('change', this._handleAppStateChange);
     // Get permissions from user for push notifications.
     // If agreed, user.push_token will be updated to store push token in db.
     await permissionsHelper.registerForPushNotificationsAsync();
@@ -52,6 +54,17 @@ class HomeScreen extends React.Component {
       toggleIsVisible: () => this.toggleIsVisible(),
       showFilterList: () => this.setState({filtersVisible: !this.state.filtersVisible}),
     });
+  }
+
+  componentWillUnmount() {
+    AppState.removeEventListener('change', this._handleAppStateChange);
+  }
+
+  _handleAppStateChange = (nextAppState) => {
+    if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
+      this.props.listRecentActivity(this.state.socialSelected, null, 0);
+    }
+    this.setState({appState: nextAppState});
   }
 
   // Should be changed... if a user has already loaded more posts, its bad to clear that out.

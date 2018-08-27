@@ -1,6 +1,6 @@
 import React from 'react';
 import MapView from 'react-native-maps';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, AppState } from 'react-native';
 import { Icon } from 'react-native-elements';
 import { connect } from 'react-redux';
 import { commonHelper, LocationHelper, authHelper } from '../Helpers';
@@ -41,13 +41,15 @@ class MapScreen extends React.Component {
       socialSelected: 'All',
       coords: { latitude: null, longitude: null },
       refreshing: false,
-      currentUser: null
+      currentUser: null,
+      appState: AppState.currentState
     }
 
     this.updateSocialSelected = this.updateSocialSelected.bind(this);
   }
 
   async componentDidMount() {
+    AppState.addEventListener('change', this._handleAppStateChange);
     const { coords } = await LocationHelper.getCurrentLocation();
     const currentUser = await authHelper.getCurrentUserId();
     this.setState({ coords, currentUser });
@@ -68,6 +70,17 @@ class MapScreen extends React.Component {
       showFilterList: () => this.setState({filtersVisible: !this.state.filtersVisible}),
       refreshEventMarkers: () => this._onRefresh()
     });
+  }
+
+  componentWillUnmount() {
+    AppState.removeEventListener('change', this._handleAppStateChange);
+  }
+
+  _handleAppStateChange = (nextAppState) => {
+    if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
+      this.getEvents(this.state.socialSelected);
+    }
+    this.setState({appState: nextAppState});
   }
 
   _onRefresh() {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Dimensions, AppState } from 'react-native';
 import { PRIMARY_DARK_COLOR, ACCENT_COLOR, PRIMARY_LIGHT_COLOR } from '../common/styles/common-styles';
 import { connect } from 'react-redux';
 import Carousel, { Pagination } from 'react-native-snap-carousel';
@@ -29,7 +29,8 @@ class MyProfileScreen extends React.Component {
       refreshing: false,
       sliderActiveSlide: 0,
       followsModalVisibility: false,
-      followsList: null
+      followsList: null,
+      appState: AppState.currentState
     }
 
     this.toggleEditProfile = this.toggleEditProfile.bind(this);
@@ -41,11 +42,26 @@ class MyProfileScreen extends React.Component {
   }
 
   async componentDidMount() {
+    AppState.addEventListener('change', this._handleAppStateChange);
     const currentUser = await authHelper.getCurrentUserId();
     this.props.getCurrentUserDetails(currentUser); // TODO: This could be it's on getCurrentUserDetails()
     this.props.getCurrentUserStats(currentUser);
     this.props.listRecentActivityForCurrentUser(currentUser, 0);
     this.setState({ currentUser });
+  }
+
+  componentWillUnmount() {
+    AppState.removeEventListener('change', this._handleAppStateChange);
+  }
+
+  _handleAppStateChange = (nextAppState) => {
+    const { currentUser } = this.state;
+    if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
+      this.props.getCurrentUserDetails(currentUser);
+      this.props.getCurrentUserStats(currentUser);
+      this.props.listRecentActivityForCurrentUser(currentUser, 0);
+    }
+    this.setState({appState: nextAppState});
   }
 
   toggleEditProfile() {

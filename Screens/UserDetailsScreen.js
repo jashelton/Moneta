@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Modal, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Modal, Dimensions, AppState } from 'react-native';
 import { PRIMARY_DARK_COLOR, ACCENT_COLOR, PRIMARY_LIGHT_COLOR } from '../common/styles/common-styles';
 import { Icon, Button, Divider } from 'react-native-elements';
 import { connect } from 'react-redux';
@@ -45,7 +45,8 @@ class UserDetailsScreen extends React.Component {
       refreshing: false,
       userId: null,
       sliderActiveSlide: 0,
-      followsList: null
+      followsList: null,
+      appState: AppState.currentState
     }
 
     this.toggleOptionsModal = this.toggleOptionsModal.bind(this);
@@ -57,6 +58,7 @@ class UserDetailsScreen extends React.Component {
   }
 
   async componentDidMount() {
+    AppState.addEventListener('change', this._handleAppStateChange);
     const userId = this.props.navigation.getParam('userId', null);
     const currentUser = await authHelper.getCurrentUserId();
 
@@ -64,12 +66,26 @@ class UserDetailsScreen extends React.Component {
 
     this.props.getUserDetails(userId);
     this.props.getUserStats(userId);
-    this.props.listRecentActivityForUser(userId, 0);;
+    this.props.listRecentActivityForUser(userId, 0);
 
     this.props.navigation.setParams({
       toggleOptionsModal: () => this.toggleOptionsModal(),
       getUsername: () => this.getUsername(),
     });
+  }
+
+  componentWillUnmount() {
+    AppState.removeEventListener('change', this._handleAppStateChange);
+  }
+
+  _handleAppStateChange = (nextAppState) => {
+    const { userId } = this.state;
+    if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
+      this.props.getUserDetails(userId);
+      this.props.getUserStats(userId);
+      this.props.listRecentActivityForUser(userId, 0);
+    }
+    this.setState({appState: nextAppState});
   }
 
   getUsername() {

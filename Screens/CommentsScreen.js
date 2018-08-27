@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ScrollView, Text, StyleSheet, KeyboardAvoidingView, RefreshControl, ActivityIndicator } from 'react-native';
+import { View, ScrollView, Text, StyleSheet, KeyboardAvoidingView, RefreshControl, ActivityIndicator, AppState } from 'react-native';
 import { ListItem, Button, Divider, Avatar } from 'react-native-elements';
 import { TextField } from 'react-native-material-textfield';
 
@@ -15,7 +15,8 @@ export default class CommentsScreen extends React.Component {
       comments: [],
       newComment: '',
       refreshing: false,
-      currentUserId: null
+      currentUserId: null,
+      appState: AppState.currentState
     };
 
     this.createComment = this.createComment.bind(this);
@@ -23,12 +24,26 @@ export default class CommentsScreen extends React.Component {
   }
 
   async componentDidMount() {
+    AppState.addEventListener('change', this._handleAppStateChange);
     const event = this.props.navigation.getParam('event', null);
     const currentUserId = await authHelper.getCurrentUserId();
     this.setState({ event, currentUserId });
 
     const { data } = await commentsService.getComments(event.id);
     this.setState({comments: data});
+  }
+
+  componentWillUnmount() {
+    AppState.removeEventListener('change', this._handleAppStateChange);
+  }
+
+  _handleAppStateChange = async (nextAppState) => {
+    const { event } = this.state;
+    if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
+      const { data } = await commentsService.getComments(event.id);
+      this.setState({ comments: data });
+    }
+    this.setState({appState: nextAppState});
   }
 
   async createComment() {

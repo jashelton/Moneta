@@ -1,5 +1,13 @@
 import React from 'react';
-import { ScrollView, View, Image, Text, StyleSheet, ActivityIndicator, AlertIOS, Modal, ImageBackground, Dimensions } from 'react-native';
+import { ScrollView,
+         View,
+         Text,
+         StyleSheet,
+         ActivityIndicator,
+         AlertIOS,
+         ImageBackground,
+         AppState,
+         Dimensions } from 'react-native';
 import { Card, Divider, Icon, Button, ListItem, Avatar } from 'react-native-elements';
 import { authHelper, LocationHelper } from '../Helpers';
 import { WARNING_RED, ACCENT_COLOR, PRIMARY_DARK_COLOR, DIVIDER_COLOR } from '../common/styles/common-styles';
@@ -36,6 +44,8 @@ class EventDetailsScreen extends React.Component {
     super(props);
     this.state = {
       currentUserId: null,
+      eventId: null,
+      appState: AppState.currentState
     }
 
     this.incrementCommentCount = this.incrementCommentCount.bind(this);
@@ -43,12 +53,13 @@ class EventDetailsScreen extends React.Component {
   }
 
   async componentDidMount() {
+    AppState.addEventListener('change', this._handleAppStateChange);
     const currentUserId = await authHelper.getCurrentUserId();
     const currentLocation = await LocationHelper.getCurrentLocation();
     const eventId = this.props.navigation.getParam('eventId', null);
 
     this.props.getEventDetails(eventId, currentLocation);
-    this.setState({ currentUserId });
+    this.setState({ currentUserId, eventId });
     // This doesn't need to be triggered if the event has already been viewed.
     // Stop calling getDetails method on other screens.  Just add it here and pass event id in params.
     
@@ -56,6 +67,20 @@ class EventDetailsScreen extends React.Component {
     if (!this.props.event.viewed_id) {
       this.markEventAsViewed();
     }
+  }
+
+  componentWillUnmount() {
+    AppState.removeEventListener('change', this._handleAppStateChange);
+  }
+
+  _handleAppStateChange = async (nextAppState) => {
+    const { eventId, currentUserId } = this.state;
+    const currentLocation = await LocationHelper.getCurrentLocation();
+
+    if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
+      this.props.getEventDetails(eventId, currentLocation);
+    }
+    this.setState({appState: nextAppState});
   }
 
   // TODO: HIGH PRIORITY - Really don't like how this is handled.
@@ -73,7 +98,7 @@ class EventDetailsScreen extends React.Component {
     const { event } = this.props;
     const { currentUserId } = this.state;
 
-    this.props.updateEventDetailsLikes(event.id, event.liked);
+    await this.props.updateEventDetailsLikes(event.id, event.liked);
 
     // If event has been disliked... needs to change for readability.
     if (event.liked) {

@@ -44,9 +44,14 @@ async function createNotification(eventId, userId, type) {
 }
 
 async function deleteNotification(eventId, userId, type) {
-  const headers = await authHelper.authHeaders();
+  const { headers } = await authHelper.authHeaders();
   const data = { eventId, userId, type };
-  return axios.delete(`${ENDPOINT}/users/:id/notifications`, data, headers);
+  return axios.delete(`${ENDPOINT}/users/:id/notifications`, {
+    params: {
+      data,
+    },
+    headers
+  });
 }
 
 async function getNotifications(offset) {
