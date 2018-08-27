@@ -74,11 +74,18 @@ class EventDetailsScreen extends React.Component {
   }
 
   _handleAppStateChange = async (nextAppState) => {
-    const { eventId, currentUserId } = this.state;
+    const { eventId } = this.state;
     const currentLocation = await LocationHelper.getCurrentLocation();
 
     if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
-      this.props.getEventDetails(eventId, currentLocation);
+      try {
+        const response = await this.props.getEventDetails(eventId, currentLocation);
+        if (response.error) {
+          this.props.navigation.navigate('Recent');
+        }
+      } catch(err) {
+        this.props.navigation.navigate('Recent');
+      }
     }
     this.setState({appState: nextAppState});
   }
