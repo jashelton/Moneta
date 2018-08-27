@@ -39,20 +39,27 @@ class MapScreen extends React.Component {
     this.state = {
       filtersVisible: false,
       socialSelected: 'All',
-      coords: { latitude: null, longitude: null },
       refreshing: false,
       currentUser: null,
-      appState: AppState.currentState
+      appState: AppState.currentState,
+      region: null
     }
 
     this.updateSocialSelected = this.updateSocialSelected.bind(this);
+    this.onRegionChange = this.onRegionChange.bind(this);
   }
 
   async componentDidMount() {
     AppState.addEventListener('change', this._handleAppStateChange);
     const { coords } = await LocationHelper.getCurrentLocation();
+    const region = {
+      latitude: coords.latitude,
+      longitude: coords.longitude,
+      latitudeDelta: 0.0922,
+      longitudeDelta: 0.0421
+    };
     const currentUser = await authHelper.getCurrentUserId();
-    this.setState({ coords, currentUser });
+    this.setState({ region, currentUser });
 
     this.getEvents(this.state.socialSelected);
 
@@ -102,10 +109,13 @@ class MapScreen extends React.Component {
     this.setState({isVisible: !this.state.isVisible});
   }
 
+  onRegionChange(region) {
+    this.setState({ region });
+  }
+
   render() {
-    const { filtersVisible, socialSelected, refreshing, currentUser } = this.state;
+    const { filtersVisible, socialSelected, refreshing, currentUser, region } = this.state;
     const { markers, loading } = this.props;
-    const { latitude, longitude } = this.state.coords;
 
     return (
       <View style={styles.container}>
@@ -117,18 +127,14 @@ class MapScreen extends React.Component {
         />
         { !loading && !refreshing ?
           <View style={styles.container}>
-            { latitude && longitude &&
+            { region &&
               <MapView
                 style={{ flex: 1 }}
                 showsUserLocation={true}
                 showsPointsOfInterest={true}
-                mapType="hybrid"
-                initialRegion={{
-                  latitude,
-                  longitude,
-                  latitudeDelta: 0.0922, // lat and long delta is used to determine how far in/out you want to zoom.
-                  longitudeDelta: 0.0421,
-                }}
+                mapType="mutedStandard"
+                region={region}
+                onRegionChangeComplete={this.onRegionChange}
               >
                 { markers.length && markers.map((m, i) => (
                   <MapView.Marker
