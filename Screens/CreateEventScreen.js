@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableHighlight, Image, StyleSheet, Switch, Modal } from 'react-native';
+import { View, Text, ScrollView, TouchableHighlight, Image, StyleSheet, Switch, Modal, Dimensions } from 'react-native';
 import { Icon, Button } from 'react-native-elements';
 import { TextField } from 'react-native-material-textfield';
 import { RNS3 } from 'react-native-aws3';
@@ -215,55 +215,57 @@ class CreateEventScreen extends React.Component {
             imageCoords } = this.state.eventForm;
     const { visiblePlacesSearch } = this.state;
     return(
-      <ScrollView contentContainerStyle={{flex: 1, flexDirection: 'column', padding: 15, backgroundColor: '#fff'}}>
-        <View style={styles.eventPrivacyContainer}>
-          <Text>Create event as: {eventPrivacy}</Text>
-          <Switch
-            value={eventPrivacy === 'Public' ? true : false}
-            onValueChange={(value) => this.updatePrivacySettings(value)}
-          />
-        </View>
-        <TextField
-          label='Title'
-          value={title}
-          onChangeText={(title) => this.setState({ eventForm: { ...this.state.eventForm, title } }) }
-          characterRestriction={60}
-        />
-        <TextField
-          value={description}
-          onChangeText={(description) => this.setState({ eventForm: { ...this.state.eventForm, description } })}
-          returnKeyType='next'
-          multiline={true}
-          blurOnSubmit={true}
-          label='Description'
-          characterRestriction={140}
-        />
-        <ViewToggle hide={!localImage}>
-          <TextField
-            label='Event Location'
-            baseColor={!imageCoords ? 'red' : 'green'}
-            value={imageLocation}
-            onFocus={() => this.setState({visiblePlacesSearch: true})}
-          />
-        </ViewToggle>
-        <TouchableHighlight underlayColor="#eee" style={styles.imageUpload} onPress={this.prepS3Upload}>
-          { !localImage ?
-            <Icon style={styles.iconBtn} color="#d0d0d0" name="add-a-photo" />
-            :
-            <Image style={styles.uploadedImage} source={{uri: localImage.uri}} />
-          }
-        </TouchableHighlight>
-        <Modal
-          animationType="slide"
-          transparent={false}
-          visible={visiblePlacesSearch}
-        >
-          <View style={{paddingTop: 60}}>
-            <Button title="close" titleStyle={{color: 'blue'}} clear onPress={() => this.setState({ visiblePlacesSearch: false })} />
+      <View style={{flex: 1}}>
+        <ScrollView contentContainerStyle={{padding: 15, backgroundColor: '#fff'}}>
+          <View style={styles.eventPrivacyContainer}>
+            <Text>Create event as: {eventPrivacy}</Text>
+            <Switch
+              value={eventPrivacy === 'Public' ? true : false}
+              onValueChange={(value) => this.updatePrivacySettings(value)}
+            />
           </View>
-          <GooglePlacesInput customImageLocation={(data, details) => this.customImageLocation(data, details)} />
-        </Modal>
-      </ScrollView>
+          <TextField
+            label='Title'
+            value={title}
+            onChangeText={(title) => this.setState({ eventForm: { ...this.state.eventForm, title } }) }
+            characterRestriction={60}
+          />
+          <TextField
+            value={description}
+            onChangeText={(description) => this.setState({ eventForm: { ...this.state.eventForm, description } })}
+            returnKeyType='next'
+            multiline={true}
+            blurOnSubmit={true}
+            label='Description'
+            characterRestriction={140}
+          />
+          <ViewToggle hide={!localImage}>
+            <TextField
+              label='Event Location'
+              baseColor={!imageCoords ? 'red' : 'green'}
+              value={imageLocation}
+              onFocus={() => this.setState({visiblePlacesSearch: true})}
+            />
+          </ViewToggle>
+          <TouchableHighlight underlayColor="#eee" style={styles.imageUpload} onPress={this.prepS3Upload}>
+            { !localImage ?
+              <Icon style={styles.iconBtn} color="#d0d0d0" name="add-a-photo" />
+              :
+              <Image style={styles.uploadedImage} source={{uri: localImage.uri}} />
+            }
+          </TouchableHighlight>
+          <Modal
+            animationType="slide"
+            transparent={false}
+            visible={visiblePlacesSearch}
+          >
+            <View style={{paddingTop: 60}}>
+              <Button title="close" titleStyle={{color: 'blue'}} clear onPress={() => this.setState({ visiblePlacesSearch: false })} />
+            </View>
+            <GooglePlacesInput customImageLocation={(data, details) => this.customImageLocation(data, details)} />
+          </Modal>
+        </ScrollView>
+      </View>
     );
   }
 }
@@ -276,18 +278,17 @@ const styles = StyleSheet.create({
   },
   imageUpload: {
     width: '100%',
-    height: '50%',
+    height: Dimensions.get('window').height / 2,
     backgroundColor: '#eee',
     marginTop: 15,
     marginBottom: 15,
     borderRadius: 3,
     alignItems: 'center',
     justifyContent: 'center',
-    flex: 1
   },
   uploadedImage: {
     width: '100%',
-    height: '100%',
+    height: Dimensions.get('window').height / 2,
     borderRadius: 3
   }
 });
