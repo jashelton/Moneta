@@ -139,9 +139,11 @@ class MapScreen extends React.Component {
                 <MapView
                   style={{ flex: 1 }}
                   showsUserLocation={true}
-                  showsPointsOfInterest={true}
-                  showsMyLocationButton={true}
-                  mapType="mutedStandard"
+                  showsMyLocationButton={false}
+                  showsIndoors={true}
+                  loadingEnabled={true}
+                  showsTraffic={false}
+                  mapType="standard"
                   region={region}
                   onRegionChangeComplete={this.onRegionChange}
                 >
