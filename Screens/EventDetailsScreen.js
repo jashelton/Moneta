@@ -77,7 +77,7 @@ class EventDetailsScreen extends React.Component {
 
   componentWillUnmount() {
     AppState.removeEventListener('change', this._handleAppStateChange);
-    
+
   }
 
   _handleAppStateChange = async (nextAppState) => {
@@ -291,7 +291,7 @@ class EventDetailsScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginBottom: 15,
+    marginBottom: 5,
     overflow: 'hidden'
   },
   rightIcon: {
