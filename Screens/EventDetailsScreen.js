@@ -250,7 +250,7 @@ class EventDetailsScreen extends React.Component {
           :
             <AdMobBanner
               bannerSize="smartBannerPortrait"
-              adUnitID={EVENT_DETAILS_AD_UNIT}
+              adUnitID={process.env.NODE_ENV === 'development' ? 'ca-app-pub-3940256099942544/6300978111' : EVENT_DETAILS_AD_UNIT}
               // adUnitID="ca-app-pub-3940256099942544/6300978111" // Test ID, Replace with your-admob-unit-id
               testDeviceID="EMULATOR"
               onDidFailToReceiveAdWithError={this.bannerError}

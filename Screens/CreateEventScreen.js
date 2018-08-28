@@ -3,7 +3,7 @@ import { View, Text, ScrollView, TouchableHighlight, Image, StyleSheet, Switch, 
 import { Icon, Button } from 'react-native-elements';
 import { TextField } from 'react-native-material-textfield';
 import { RNS3 } from 'react-native-aws3';
-import { AdMobInterstitial } from 'expo';
+import { AdMobInterstitial, Haptic } from 'expo';
 import { FULL_SCREEN_AD_UNIT } from 'react-native-dotenv';
 import { createEvent } from '../reducer'
 import { connect } from 'react-redux';
@@ -186,7 +186,8 @@ class CreateEventScreen extends React.Component {
           eventForm.imageLocation = '';
           eventForm.imageCoords = null;
           this.setState({ eventForm });
-          this.displayAd();
+          Haptic.notification(Haptic.NotificationTypes.Success);
+          this.displayAd();          
         }
       } catch (err) {
         console.log(err);
@@ -198,7 +199,7 @@ class CreateEventScreen extends React.Component {
   }
 
   async displayAd() {
-    AdMobInterstitial.setAdUnitID(FULL_SCREEN_AD_UNIT);
+    AdMobInterstitial.setAdUnitID(process.env.NODE_ENV === 'development' ? 'ca-app-pub-3940256099942544/1033173712' : FULL_SCREEN_AD_UNIT);
     // AdMobInterstitial.setAdUnitID('ca-app-pub-3940256099942544/1033173712'); // Test ad-unit-id
     AdMobInterstitial.setTestDeviceID('EMULATOR');
     await AdMobInterstitial.requestAdAsync();
