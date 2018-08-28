@@ -17,6 +17,8 @@ import { connect } from 'react-redux';
 import { updateEventDetailsLikes, deleteEvent, markEventViewed, getEventDetails } from '../reducer';
 import { notificationService } from '../Services/notification.service';
 import ImageViewer from 'react-native-image-zoom-viewer';
+import { EVENT_DETAILS_AD_UNIT } from 'react-native-dotenv';
+import { AdMobBanner } from 'expo';
 
 export class EventDetailsHeader extends React.Component {
   render() {
@@ -75,6 +77,7 @@ class EventDetailsScreen extends React.Component {
 
   componentWillUnmount() {
     AppState.removeEventListener('change', this._handleAppStateChange);
+    
   }
 
   _handleAppStateChange = async (nextAppState) => {
@@ -229,7 +232,7 @@ class EventDetailsScreen extends React.Component {
               </View>
             </ScrollView>
           </Card>
-          { event.user_id && event.user_id === currentUserId &&
+          { event.user_id && event.user_id === currentUserId ?
             <Button
               style={styles.deleteEventBtn}
               buttonStyle={{backgroundColor: WARNING_RED}}
@@ -243,6 +246,14 @@ class EventDetailsScreen extends React.Component {
               iconLeft
               title='Delete Event'
               onPress={this.verifyDeleteEvent}
+            />
+          :
+            <AdMobBanner
+              bannerSize="smartBannerPortrait"
+              adUnitID={EVENT_DETAILS_AD_UNIT}
+              // adUnitID="ca-app-pub-3940256099942544/6300978111" // Test ID, Replace with your-admob-unit-id
+              testDeviceID="EMULATOR"
+              onDidFailToReceiveAdWithError={this.bannerError}
             />
           }
 
