@@ -41,6 +41,8 @@ export default class FilterEventsModal extends React.Component {
         animationType="slide"
         transparent={false}
         visible={filtersVisible}
+        // TODO: For Andriod, this is when the user presses the back button.  Need to close modal.
+        onRequestClose={setVisibility}
       >
         <View style={styles.modalHeader}>
           <View style={{flex: 1}}></View>

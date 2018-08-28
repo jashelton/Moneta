@@ -43,6 +43,7 @@ export default class FollowsModal extends React.Component {
         animationType="slide"
         transparent={false}
         visible={isVisible}
+        onRequestClose={() => toggleFollowsModal()}
       >
         <View style={styles.modalHeader}>
           <View style={{flex: 1}}></View>

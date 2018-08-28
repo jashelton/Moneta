@@ -258,6 +258,7 @@ class CreateEventScreen extends React.Component {
             animationType="slide"
             transparent={false}
             visible={visiblePlacesSearch}
+            onRequestClose={() => this.setState({ visiblePlacesSearch: false })}
           >
             <View style={{paddingTop: 60}}>
               <Button title="close" titleStyle={{color: 'blue'}} clear onPress={() => this.setState({ visiblePlacesSearch: false })} />

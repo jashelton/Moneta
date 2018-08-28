@@ -219,6 +219,7 @@ class UserDetailsScreen extends React.Component {
             animationType="slide"
             transparent={false}
             visible={optionsModalVisible}
+            onRequestClose={this.toggleOptionsModal}
           >
             <View style={styles.modalHeader}>
               <Button title='Cancel' titleStyle={{color: ACCENT_COLOR}} clear={true} onPress={this.toggleOptionsModal}/>

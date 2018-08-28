@@ -41,6 +41,7 @@ export default class FilterRecentActivityModal extends React.Component {
         animationType="slide"
         transparent={false}
         visible={filtersVisible}
+        onRequestClose={setVisibility}
       >
         <View style={styles.modalHeader}>
           <View style={{flex: 1}}></View>

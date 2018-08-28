@@ -258,7 +258,7 @@ class EventDetailsScreen extends React.Component {
           }
 
           {/* Modal to display full screen image with zoom */}
-          <Modal visible={isImageZoomed} transparent={true}>
+          <Modal visible={isImageZoomed} transparent={true} onRequestClose={() => this.setState({ isImageZoomed: false })}>
             <ImageViewer
               imageUrls={[{url: event.image}]}
               index={0}

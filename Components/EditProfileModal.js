@@ -89,6 +89,7 @@ class EditProfileModal extends React.Component {
         animationType="slide"
         transparent={false}
         visible={isVisible}
+        onRequestClose={toggleEditProfile}
       >
         <View style={styles.modalHeader}>
           <Button title='Cancel' titleStyle={{color: TEXT_ICONS_COLOR}} clear={true} onPress={toggleEditProfile}/>
