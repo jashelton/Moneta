@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, ScrollView, Text, StyleSheet } from 'react-native';
 import { ACCENT_COLOR, PRIMARY_DARK_COLOR, DIVIDER_COLOR } from '../common/styles/common-styles';
+import { Constants } from 'expo';
 
 export default class UserStats extends React.Component {
   render() {
@@ -27,7 +28,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
-    backgroundColor: PRIMARY_DARK_COLOR
+    backgroundColor: PRIMARY_DARK_COLOR,
+    paddingTop: Constants.statusBarHeight,
   },
   statsWrapper: {
     flexDirection: 'row',

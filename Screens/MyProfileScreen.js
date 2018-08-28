@@ -18,7 +18,8 @@ import FollowsModal from '../Components/FollowsModal';
 import { userService } from '../Services';
 
 class MyProfileScreen extends React.Component {
-  static navigationOptions = { title: 'My Profile' };
+  // static navigationOptions = { title: 'My Profile' };
+  static navigationOptions = { header: null };
 
   constructor() {
     super();
@@ -192,7 +193,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   userInfoContainer: {
-    height: '30%',
+    height: Dimensions.get('window').height * 0.6,
     alignItems: 'center',
     justifyContent: 'center'
   },

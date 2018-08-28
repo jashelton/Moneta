@@ -19,20 +19,21 @@ import FollowsModal from '../Components/FollowsModal';
 import { userService } from '../Services';
 
 class UserDetailsScreen extends React.Component {
-  static navigationOptions = ({navigation}) => {
-    return {
-      headerTitle: ( navigation.getParam('getUsername') ),
-      // headerRight: (
-      //   <Icon
-      //     containerStyle={styles.rightIcon}
-      //     size={28}
-      //     name="more-horiz"
-      //     color={PRIMARY_LIGHT_COLOR}
-      //     onPress={navigation.getParam('toggleOptionsModal')}
-      //   />
-      // )
-    }
-  }
+  static navigationOptions = { header: null };
+  // static navigationOptions = ({navigation}) => {
+  //   return {
+  //     headerTitle: ( navigation.getParam('getUsername') ),
+  //     // headerRight: (
+  //     //   <Icon
+  //     //     containerStyle={styles.rightIcon}
+  //     //     size={28}
+  //     //     name="more-horiz"
+  //     //     color={PRIMARY_LIGHT_COLOR}
+  //     //     onPress={navigation.getParam('toggleOptionsModal')}
+  //     //   />
+  //     // )
+  //   }
+  // }
 
   constructor() {
     super();
