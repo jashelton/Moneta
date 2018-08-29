@@ -3,7 +3,7 @@ import { View, Text, ScrollView, TouchableHighlight, Image, StyleSheet, Switch, 
 import { Icon, Button } from 'react-native-elements';
 import { TextField } from 'react-native-material-textfield';
 import { RNS3 } from 'react-native-aws3';
-import { AdMobInterstitial, Haptic } from 'expo';
+import { AdMobInterstitial, Haptic, Constants } from 'expo';
 import { FULL_SCREEN_AD_UNIT } from 'react-native-dotenv';
 import { createEvent, clearErrors } from '../reducer'
 import { connect } from 'react-redux';
@@ -13,7 +13,7 @@ import { authHelper, LocationHelper, commonHelper } from '../Helpers';
 import { AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, BUCKET, BUCKET_REGION } from 'react-native-dotenv';
 import ViewToggle from '../Components/ViewToggle';
 import GooglePlacesInput from '../Components/LocationAutocomplete';
-import { DIVIDER_COLOR } from '../common/styles/common-styles';
+import { DIVIDER_COLOR, PRIMARY_DARK_COLOR, TEXT_ICONS_COLOR } from '../common/styles/common-styles';
 
 const initialEvent = {
   title: '',
@@ -259,8 +259,15 @@ class CreateEventScreen extends React.Component {
             visible={visiblePlacesSearch}
             onRequestClose={() => this.setState({ visiblePlacesSearch: false })}
           >
-            <View style={{paddingTop: 60}}>
-              <Button title="close" titleStyle={{color: 'blue'}} clear onPress={() => this.setState({ visiblePlacesSearch: false })} />
+            <View style={styles.modalHeader}>
+              <View style={{flex: 1}}></View>
+              <Button
+                clear
+                title='Cancel'
+                titleStyle={{color: TEXT_ICONS_COLOR}}
+                buttonStyle={{marginRight: 15}}
+                onPress={() => this.setState({ visiblePlacesSearch: false })}
+              />
             </View>
             <GooglePlacesInput customImageLocation={(data, details) => this.customImageLocation(data, details)} />
           </Modal>
@@ -297,6 +304,13 @@ const styles = StyleSheet.create({
     width: '100%',
     height: Dimensions.get('window').height / 2,
     borderRadius: 3
+  },
+  modalHeader: {
+    backgroundColor: PRIMARY_DARK_COLOR,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: Constants.statusBarHeight
   }
 });
 

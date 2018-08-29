@@ -82,9 +82,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingTop: Constants.statusBarHeight
-  },
-  headerTitle: {
-    fontSize: 18,
-    color: '#fff',
-  },
+  }
 });
