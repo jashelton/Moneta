@@ -1,18 +1,20 @@
 import React from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Dimensions, AppState } from 'react-native';
-import { PRIMARY_DARK_COLOR, ACCENT_COLOR, PRIMARY_LIGHT_COLOR } from '../common/styles/common-styles';
+import { View, StyleSheet, ActivityIndicator, Dimensions, AppState } from 'react-native';
+import { PRIMARY_DARK_COLOR, ACCENT_COLOR } from '../common/styles/common-styles';
 import { connect } from 'react-redux';
 import Carousel, { Pagination } from 'react-native-snap-carousel';
-
+import { Icon } from 'react-native-elements';
 import RecentActivity from '../Components/RecentActivity';
 import { authHelper } from '../Helpers';
 import UserInfo from '../Components/UserInfo';
 import UserStats from '../Components/UserStats';
-import { getCurrentUserDetails,
+import { clearErrors,
+         getCurrentUserDetails,
          getCurrentUserStats,
          updateCurrentUserDetails,
          listRecentActivityForCurrentUser,
          loadMoreRowsForCurrentUserActivity } from '../reducer';
+import SnackBar from 'react-native-snackbar-component'
 import EditProfileModal from '../Components/EditProfileModal';
 import FollowsModal from '../Components/FollowsModal';
 import { userService } from '../Services';
@@ -45,10 +47,9 @@ class MyProfileScreen extends React.Component {
   async componentDidMount() {
     AppState.addEventListener('change', this._handleAppStateChange);
     const currentUser = await authHelper.getCurrentUserId();
-    this.props.getCurrentUserDetails(currentUser); // TODO: This could be it's on getCurrentUserDetails()
-    this.props.getCurrentUserStats(currentUser);
-    this.props.listRecentActivityForCurrentUser(currentUser, 0);
     this.setState({ currentUser });
+
+    this.fetchUserDetails();
   }
 
   componentWillUnmount() {
@@ -56,13 +57,28 @@ class MyProfileScreen extends React.Component {
   }
 
   _handleAppStateChange = (nextAppState) => {
-    const { currentUser } = this.state;
     if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
-      this.props.getCurrentUserDetails(currentUser);
-      this.props.getCurrentUserStats(currentUser);
-      this.props.listRecentActivityForCurrentUser(currentUser, 0);
+      this.fetchUserDetails();
     }
     this.setState({appState: nextAppState});
+  }
+
+  async fetchUserDetails() {
+    if (this.props.error) this.props.clearErrors();
+    const { currentUser } = this.state;
+
+    try {
+      const userDetails = await this.props.getCurrentUserDetails(currentUser);
+      const userStats = await this.props.getCurrentUserStats(currentUser);
+      const activity = await this.props.listRecentActivityForCurrentUser(currentUser, 0);
+
+      if (userDetails.error) throw(userDetails.error);
+      if (userStats.error) throw(userStats.error);
+      if (activity.error) throw(activity.error);
+
+    } catch(err) {
+      throw(err);
+    }
   }
 
   toggleEditProfile() {
@@ -88,7 +104,7 @@ class MyProfileScreen extends React.Component {
 
   async _onRefresh() {
     this.setState({ refreshing: true });
-    this.props.listRecentActivityForCurrentUser(this.state.currentUser, 0);
+    this.fetchUserDetails();
     this.setState({ refreshing: false });
   }
 
@@ -117,7 +133,7 @@ class MyProfileScreen extends React.Component {
   }
 
   render() {
-    const { currentUserDetails, currentUserStats, currentUserActivity } = this.props;
+    const { currentUserDetails, currentUserStats, currentUserActivity, loading, error } = this.props;
     const { editProfileModalVisible,
             refreshing,
             sliderActiveSlide,
@@ -126,7 +142,15 @@ class MyProfileScreen extends React.Component {
     const { width } = Dimensions.get('window');
     const carouselElements = [currentUserDetails, currentUserStats];
 
-    if (currentUserDetails.id) {
+    if (loading) {
+      return(
+        <View>
+          <ActivityIndicator />
+        </View>
+      );
+    }
+
+    if (currentUserDetails.id && !error) {
       return(
         <View style={styles.container}>
           <View style={{height: '40%'}}>
@@ -180,8 +204,22 @@ class MyProfileScreen extends React.Component {
       );
     } else {
       return(
-        <View>
-          <ActivityIndicator />
+        <View style={styles.container}>
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+            <Icon
+              containerStyle={styles.rightIcon}
+              size={36}
+              name='refresh'
+              color={PRIMARY_DARK_COLOR}
+              onPress={() => this.fetchUserDetails()}
+            />
+          </View>
+          <SnackBar
+            visible={error ? true : false}
+            textMessage={error}
+            actionHandler={() => this.props.clearErrors()}
+            actionText="close"
+          />
         </View>
       )
     }
@@ -216,7 +254,8 @@ const mapStateToProps = state => {
     loading: state.loading,
     currentUserDetails: state.currentUserDetails,
     currentUserStats: state.currentUserStats,
-    currentUserActivity: state.currentUserActivity
+    currentUserActivity: state.currentUserActivity,
+    error: state.error
   };
 };
 
@@ -225,7 +264,8 @@ const mapDispatchToProps = {
   getCurrentUserStats,
   updateCurrentUserDetails,
   listRecentActivityForCurrentUser,
-  loadMoreRowsForCurrentUserActivity
+  loadMoreRowsForCurrentUserActivity,
+  clearErrors
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(MyProfileScreen);
