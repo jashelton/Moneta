@@ -14,11 +14,12 @@ import { Card, Divider, Icon, Button, ListItem, Avatar } from 'react-native-elem
 import { authHelper, LocationHelper } from '../Helpers';
 import { WARNING_RED, ACCENT_COLOR, PRIMARY_DARK_COLOR, DIVIDER_COLOR } from '../common/styles/common-styles';
 import { connect } from 'react-redux';
-import { updateEventDetailsLikes, deleteEvent, markEventViewed, getEventDetails } from '../reducer';
+import { updateEventDetailsLikes, deleteEvent, markEventViewed, getEventDetails, clearErrors } from '../reducer';
 import { notificationService } from '../Services/notification.service';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import { EVENT_DETAILS_AD_UNIT } from 'react-native-dotenv';
 import { AdMobBanner } from 'expo';
+import SnackBar from 'react-native-snackbar-component'
 
 export class EventDetailsHeader extends React.Component {
   render() {
@@ -158,15 +159,31 @@ class EventDetailsScreen extends React.Component {
     )
   }
 
-  deleteEvent() {
+  async deleteEvent() {
     const { event, navigation, deleteEvent } = this.props;
-    deleteEvent(event.id);
-    navigation.goBack();
+
+    try {
+      const response = await deleteEvent(event.id);
+      if (response.error) throw(response.error);
+
+      navigation.goBack();
+    } catch(err) {
+      console.log(err);
+      throw(err);
+    }
   }
 
   render() {
     const { currentUserId, isImageZoomed } = this.state;
     const { event } = this.props;
+
+    if (this.props.loading) {
+      return(
+        <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+          <ActivityIndicator />
+        </View>
+      );
+    }
 
     if (!this.props.loading && event.id) {
       return(
@@ -277,12 +294,23 @@ class EventDetailsScreen extends React.Component {
               }
             />
           </Modal>
+          <SnackBar
+            visible={this.props.error ? true : false}
+            textMessage={this.props.error}
+            actionHandler={() => this.props.clearErrors()}
+            actionText="close"
+          />
         </View>
       ); 
     } else {
       return(
         <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-          <ActivityIndicator />
+          <SnackBar
+            visible={this.props.error ? true : false}
+            textMessage={this.props.error}
+            actionHandler={() => this.props.clearErrors()}
+            actionText="close"
+          />
         </View>
       );
     }
@@ -369,7 +397,7 @@ const mapStateToProps = state => {
 };
 
 const mapDispatchToProps = {
-  updateEventDetailsLikes, deleteEvent, markEventViewed, getEventDetails
+  updateEventDetailsLikes, deleteEvent, markEventViewed, getEventDetails, clearErrors
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(EventDetailsScreen);
