@@ -1,7 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, RefreshControl } from 'react-native';
 import { notificationService } from '../Services/notification.service';
-import { ListItem, Avatar } from 'react-native-elements';
+import { ListItem, Avatar, Icon } from 'react-native-elements';
+import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
+import SnackBar from 'react-native-snackbar-component';
 
 export default class NotificationsScreen extends React.Component {
   static navigationOptions = { title: 'Notifications' };
@@ -32,14 +34,26 @@ export default class NotificationsScreen extends React.Component {
   }
 
   async getNotifications(offset) {
-    const { data } = await notificationService.getNotifications(offset);
-    this.setState({ notifications: data });
+    if (this.state.error) this.setState({ error: null });
+
+    try {
+      const { data } = await notificationService.getNotifications(offset || 0);
+      this.setState({ notifications: data });
+    } catch(err) {
+      this.setState({ error: 'There was a problem getting your notifications.' });
+      throw(err);
+    }
   }
 
   async handleScroll(offset) {
     if (offset > 15) {
-      const { data } = await notificationService.getNotifications(offset);
-      this.setState({ notifications: this.state.notifications.concat(data) });
+      try {
+        const { data } = await notificationService.getNotifications(offset);
+        this.setState({ notifications: this.state.notifications.concat(data) });
+      } catch(err) {
+        this.setState({ error: 'There was a problem getting your notifications.' });
+        throw(err);
+      }
     }
   }
 
@@ -83,7 +97,28 @@ export default class NotificationsScreen extends React.Component {
   }
 
   render() {
-    const { notifications, refreshing } = this.state;
+    const { notifications, refreshing, error } = this.state;
+
+    if (error) {
+      return(
+        <View style={{flex: 1}}>
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+            <Icon
+              size={36}
+              name='refresh'
+              color={PRIMARY_DARK_COLOR}
+              onPress={() => this.getNotifications()}
+            />
+          </View>
+          <SnackBar
+            visible={error ? true : false}
+            textMessage={error}
+            actionHandler={() => this.setState({ error: null })}
+            actionText="close"
+          />
+        </View>
+      );
+    }
 
     return(
       <View style={styles.constainer}>
@@ -102,7 +137,7 @@ export default class NotificationsScreen extends React.Component {
               />
             }
           />
-        :
+        : 
           <Text style={{alignSelf: 'center'}}> There are no notifcations to display. </Text>
         }   
       </View>

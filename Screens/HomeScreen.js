@@ -134,7 +134,6 @@ class HomeScreen extends React.Component {
           <View style={styles.container}>
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center'}}>
               <Icon
-                containerStyle={styles.rightIcon}
                 size={36}
                 name='refresh'
                 color={PRIMARY_DARK_COLOR}
