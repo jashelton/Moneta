@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, Modal, Dimensions, AppState } from 'react-native';
 import { PRIMARY_DARK_COLOR, ACCENT_COLOR, PRIMARY_LIGHT_COLOR } from '../common/styles/common-styles';
-import { Icon, Button, Divider } from 'react-native-elements';
+import { Button, Divider, Icon } from 'react-native-elements';
 import { connect } from 'react-redux';
 import Carousel, { Pagination } from 'react-native-snap-carousel';
 
@@ -11,9 +11,11 @@ import { getUserDetails,
          updateUserDetailsFollows,
          listRecentActivityForUser,
          loadMoreRowsForUserActivity,
-         getUserStats } from '../reducer';
+         getUserStats,
+         clearErrors } from '../reducer';
 import UserInfo from '../Components/UserInfo';
 import UserStats from '../Components/UserStats';
+import SnackBar from 'react-native-snackbar-component'
 import EditProfileModal from '../Components/EditProfileModal';
 import FollowsModal from '../Components/FollowsModal';
 import { userService } from '../Services';
@@ -65,9 +67,7 @@ class UserDetailsScreen extends React.Component {
 
     this.setState({ currentUser, userId });
 
-    this.props.getUserDetails(userId);
-    this.props.getUserStats(userId);
-    this.props.listRecentActivityForUser(userId, 0);
+    this.fetchUserDetails();
 
     this.props.navigation.setParams({
       toggleOptionsModal: () => this.toggleOptionsModal(),
@@ -80,13 +80,27 @@ class UserDetailsScreen extends React.Component {
   }
 
   _handleAppStateChange = (nextAppState) => {
-    const { userId } = this.state;
     if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
-      this.props.getUserDetails(userId);
-      this.props.getUserStats(userId);
-      this.props.listRecentActivityForUser(userId, 0);
+      this.fetchUserDetails();
     }
     this.setState({appState: nextAppState});
+  }
+
+  async fetchUserDetails() {
+    if (this.props.error) this.props.clearErrors();
+    const { userId } = this.state;
+
+    try {
+      const userDetails = await this.props.getUserDetails(userId);
+      const userStats = await this.props.getUserStats(userId);
+      const activity = await this.props.listRecentActivityForUser(userId, 0);
+
+      if (userDetails.error) throw(userDetails.error);
+      if (userStats.error) throw(userStats.error);
+      if (activity.error) throw(activity.error);
+    } catch(err) {
+      throw(err);
+    }
   }
 
   getUsername() {
@@ -138,7 +152,7 @@ class UserDetailsScreen extends React.Component {
 
   _onRefresh() {
     this.setState({ refreshing: true });
-    this.props.listRecentActivityForUser(this.state.userId, 0);
+    this.fetchUserDetails();
     this.setState({ refreshing: false });
   }
 
@@ -174,9 +188,17 @@ class UserDetailsScreen extends React.Component {
             sliderActiveSlide,
             followsModalVisibility,
             followsList } = this.state;
-    const { userDetails, userStats, userActivity } = this.props;
+    const { userDetails, userStats, userActivity, loading, error } = this.props;
     const { width } = Dimensions.get('window');
     const carouselElements = [userDetails, userStats];
+
+    if (loading) {
+      return(
+        <View>
+          <ActivityIndicator />
+        </View>
+      );
+    }
 
     if (userDetails.id && userStats) {
       return(
@@ -250,8 +272,21 @@ class UserDetailsScreen extends React.Component {
       );
     } else {
       return(
-        <View style={[styles.container, {alignItems: 'center', justifyContent: 'center'}]}>
-          <ActivityIndicator />
+        <View style={styles.container}>
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+            <Icon
+              size={36}
+              name='refresh'
+              color={PRIMARY_DARK_COLOR}
+              onPress={() => this.fetchUserDetails()}
+            />
+          </View>
+          <SnackBar
+            visible={error ? true : false}
+            textMessage={error}
+            actionHandler={() => this.props.clearErrors()}
+            actionText="close"
+          />
         </View>
       );
     }
@@ -300,7 +335,8 @@ const mapStateToProps = state => {
     loading: state.loading,
     userDetails: state.userDetails,
     userStats: state.userStats,
-    userActivity: state.userActivity
+    userActivity: state.userActivity,
+    error: state.error
   };
 };
 
@@ -309,7 +345,8 @@ const mapDispatchToProps = {
   updateUserDetailsFollows,
   listRecentActivityForUser,
   loadMoreRowsForUserActivity,
-  getUserStats
+  getUserStats,
+  clearErrors
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(UserDetailsScreen);
