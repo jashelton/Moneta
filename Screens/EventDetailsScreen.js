@@ -64,12 +64,18 @@ class EventDetailsScreen extends React.Component {
     const currentLocation = await LocationHelper.getCurrentLocation();
     const eventId = this.props.navigation.getParam('eventId', null);
 
-    this.props.getEventDetails(eventId, currentLocation);
-    this.setState({ currentUserId, eventId });
+    try {
+      const response = await this.props.getEventDetails(eventId, currentLocation);
+      if (response.error) throw(response.error);
+
+      this.setState({ currentUserId, eventId });
+    } catch(err) {
+        this.props.navigation.goBack();
+        throw(err);
+    }
+
     // This doesn't need to be triggered if the event has already been viewed.
     // Stop calling getDetails method on other screens.  Just add it here and pass event id in params.
-    
-    
     if (!this.props.event.viewed_id) {
       this.markEventAsViewed();
     }
@@ -77,7 +83,6 @@ class EventDetailsScreen extends React.Component {
 
   componentWillUnmount() {
     AppState.removeEventListener('change', this._handleAppStateChange);
-
   }
 
   _handleAppStateChange = async (nextAppState) => {
@@ -94,18 +99,14 @@ class EventDetailsScreen extends React.Component {
         this.props.navigation.navigate('Recent');
       }
     }
-    this.setState({appState: nextAppState});
+    this.setState({ appState: nextAppState });
   }
 
-  // TODO: HIGH PRIORITY - Really don't like how this is handled.
-  // Even at 500ms, event_id was occasionally undefined.
-  markEventAsViewed() {
-    setTimeout(() => {
-      const { event } = this.props;
-      if (!event.viewed_id) {
-        this.props.markEventViewed(event.id);
-      }
-    }, 1000);
+  async markEventAsViewed() {
+    const { event } = this.props;
+    if (!event.viewed_id) {
+      await this.props.markEventViewed(event.id);
+    }
   }
 
   async favoriteEvent() {
@@ -363,6 +364,7 @@ const mapStateToProps = state => {
   return {
     event: state.event,
     loading: state.loading,
+    error: state.error
   };
 };
 

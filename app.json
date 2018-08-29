@@ -12,7 +12,19 @@
       "image": "./assets/images/atlas-icon.png",
       "resizeMode": "contain"
     },
-    "orientation": "portrait"
+    "orientation": "portrait",
+    "hooks": {
+      "postPublish": [
+        {
+          "file": "sentry-expo/upload-sourcemaps",
+          "config": {
+            "organization": "sheltonjs",
+            "project": "moneta",
+            "authToken": "20c4769abb7241afb1b2ae15af881d579607e89330ed4fb9a1a3b91f239d8972"
+          }
+        }
+      ]
+    }
   },
   "ios": {
     "googleMapsApiKey": "AIzaSyAZTKr5_Zg21AwqV_f2x3H4LsQjjXTRAk8"

@@ -7,6 +7,7 @@ import {
   AsyncStorage
 } from 'react-native';
 import { authHelper, commonHelper } from '../Helpers';
+import Sentry from 'sentry-expo';
 import { defaultFilters } from '../common/defaults/defaultEventFilters';
 
 export default class AuthLoadingScreen extends React.Component {
@@ -25,7 +26,11 @@ export default class AuthLoadingScreen extends React.Component {
       //   const newFilters = JSON.stringify(defaultFilters);
       //   AsyncStorage.setItem('user_filters', newFilters);
       // }
-
+      Sentry.setUserContext({
+        userId: user.id,
+        first_name: user.first_name,
+        last_name: user.last_name
+      });
       this.props.navigation.navigate('App');
     } else {
       this.props.navigation.navigate('Auth');

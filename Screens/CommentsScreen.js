@@ -2,6 +2,7 @@ import React from 'react';
 import { View, ScrollView, Text, StyleSheet, KeyboardAvoidingView, RefreshControl, ActivityIndicator, AppState } from 'react-native';
 import { ListItem, Button, Divider, Avatar } from 'react-native-elements';
 import { TextField } from 'react-native-material-textfield';
+import SnackBar from 'react-native-snackbar-component'
 
 import { commentsService, notificationService } from '../Services';
 import { authHelper } from '../Helpers';
@@ -16,7 +17,8 @@ export default class CommentsScreen extends React.Component {
       newComment: '',
       refreshing: false,
       currentUserId: null,
-      appState: AppState.currentState
+      appState: AppState.currentState,
+      snackbarError: null
     };
 
     this.createComment = this.createComment.bind(this);
@@ -29,8 +31,7 @@ export default class CommentsScreen extends React.Component {
     const currentUserId = await authHelper.getCurrentUserId();
     this.setState({ event, currentUserId });
 
-    const { data } = await commentsService.getComments(event.id);
-    this.setState({comments: data});
+    this.getComments(event);
   }
 
   componentWillUnmount() {
@@ -38,26 +39,42 @@ export default class CommentsScreen extends React.Component {
   }
 
   _handleAppStateChange = async (nextAppState) => {
-    const { event } = this.state;
     if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
-      const { data } = await commentsService.getComments(event.id);
-      this.setState({ comments: data });
+      this.getComments();
     }
     this.setState({appState: nextAppState});
   }
 
+  async getComments() {
+    const { event } = this.state;
+
+    try {
+      const { data } = await commentsService.getComments(event.id);
+      this.setState({comments: data});
+    } catch(err) {
+      this.setState({ snackbarError: 'There was a problem loading the comments.'});
+      throw new Error(err);
+    }
+  }
+
   async createComment() {
     let { event, newComment, comments, currentUserId } = this.state;
-    const { data } = await commentsService.createComment(event.id, newComment);
-    comments.push(data.newComment);
 
-    newComment = '';
-    this.setState({comments, newComment});
-    // Call back to EventDetailsScreen to increment the comment count.  This will need to be updated once delete comment is avail.
-    await this.props.navigation.state.params.incrementCommentCount();
+    try {
+      const { data } = await commentsService.createComment(event.id, newComment);
+      comments.push(data.newComment);
 
-    if (event.user_id !== currentUserId) {
-      this.notify(data.newComment);
+      newComment = '';
+      this.setState({comments, newComment});
+      // Call back to EventDetailsScreen to increment the comment count.  This will need to be updated once delete comment is avail.
+      await this.props.navigation.state.params.incrementCommentCount();
+
+      if (event.user_id !== currentUserId) {
+        this.notify(data.newComment);
+      }
+    } catch(err) {
+      this.setState({ snackbarError: 'There was a problem adding your comment.'});
+      throw new Error(err);
     }
   }
 
@@ -74,10 +91,9 @@ export default class CommentsScreen extends React.Component {
     notificationService.createNotification(event.id, event.user_id, 'comment');
   }
 
-  async _onRefresh() {
+  _onRefresh() {
     this.setState({ refreshing: true });
-    const { data } = await commentsService.getComments(this.state.event.id);
-    this.setState({ comments: data });
+    this.getComments();
     this.setState({ refreshing: false });
   }
 
@@ -134,6 +150,13 @@ export default class CommentsScreen extends React.Component {
           />
           <Button style={styles.btnSubmit} title='Submit' onPress={this.createComment} />
         </View>
+
+        <SnackBar
+          visible={this.state.snackbarError ? true : false}
+          textMessage={this.state.snackbarError}
+          actionHandler={() => this.setState({ snackbarError: null })}
+          actionText="close"
+        />
       </KeyboardAvoidingView>
     );
   }
@@ -158,4 +181,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   }
-})
+});

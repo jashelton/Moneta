@@ -4,12 +4,16 @@ import { createStore, applyMiddleware } from 'redux';
 import { Provider, connect } from 'react-redux';
 import axios from 'axios';
 import axiosMiddleware from 'redux-axios-middleware';
-import { ENDPOINT } from 'react-native-dotenv';
+import { ENDPOINT, SENTRY_DNS } from 'react-native-dotenv';
 import { local_env } from './environment.js';
 import { authHelper } from './Helpers';
 import { StatusBar, View } from 'react-native';
+import Sentry from 'sentry-expo';
 
 import reducer from './reducer';
+
+Sentry.enableInExpoDevelopment = true;
+Sentry.config(SENTRY_DNS).install();
 
 const client = axios.create({
   // baseURL: process.env.NODE_ENV === 'production' ? local_env.production.ENDPOINT : local_env.development.ENDPOINT,
