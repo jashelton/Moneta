@@ -143,12 +143,12 @@ export default function reducer(state = initialState, action) {
     case GET_MARKERS:
       return { ...state, loading: true };
     case GET_MARKERS_SUCCESS:
-      return { ...state, loading: false, markers: action.payload.data }
+      return { ...state, loading: false, error: false, markers: action.payload.data }
     case GET_MARKERS_FAIL:
       return {
         ...state,
         loading: false,
-        error: 'There was an error retrieving the event markers.'
+        error: 'There was an error loading the map.'
       };
     case MARK_EVENT_VIEWED:
       return { ...state, loading: false };

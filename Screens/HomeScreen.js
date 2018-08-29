@@ -76,7 +76,6 @@ class HomeScreen extends React.Component {
       const response = await listRecentActivity(socialSelected || 'All', null, 0);
       if (response.error) throw(response.error);
     } catch(err) {
-      console.log(err);
       throw(err);
     }
   }

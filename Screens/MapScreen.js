@@ -6,7 +6,8 @@ import { connect } from 'react-redux';
 import { commonHelper, LocationHelper, authHelper } from '../Helpers';
 import { PRIMARY_DARK_COLOR, PRIMARY_COLOR, DIVIDER_COLOR } from '../common/styles/common-styles';
 import FilterEventsModal from '../Components/FilterEventsModal';
-import { getEventMarkers } from '../reducer';
+import SnackBar from 'react-native-snackbar-component'
+import { getEventMarkers, clearErrors } from '../reducer';
 
 class MapScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
@@ -108,8 +109,13 @@ class MapScreen extends React.Component {
     this.getEvents(option);
   }
 
-  getEvents(selectedOption) {
-    this.props.getEventMarkers(selectedOption);
+  async getEvents(selectedOption) {
+    try {
+      const response = await this.props.getEventMarkers(selectedOption);
+      if (response.error) throw(response.error);
+    } catch(err) {
+      throw(err);
+    }
   }
 
   toggleIsVisible() {
@@ -122,7 +128,7 @@ class MapScreen extends React.Component {
 
   render() {
     const { filtersVisible, socialSelected, refreshing, currentUser, region } = this.state;
-    const { markers, loading } = this.props;
+    const { markers, loading, error } = this.props;
 
     return (
       <View style={styles.container}>
@@ -132,7 +138,7 @@ class MapScreen extends React.Component {
           socialSelected={socialSelected}
           updateSocialSelected={(option) => this.updateSocialSelected(option)}
         />
-        { !loading && !refreshing ?
+        { !loading && !refreshing && !error ?
           <View style={styles.container}>
             { region &&
               <View style={styles.container}>
@@ -170,9 +176,18 @@ class MapScreen extends React.Component {
               </View>
             }
           </View>
-        :
-          <View>
+        : loading ?
+          <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
             <ActivityIndicator />
+          </View>
+        :
+          <View style={styles.container}>
+            <SnackBar
+              visible={this.props.error ? true : false}
+              textMessage={this.props.error}
+              actionHandler={() => this.props.clearErrors()}
+              actionText="close"
+            />
           </View>
         }
       </View>
@@ -200,12 +215,14 @@ const styles = StyleSheet.create({
 const mapStateToProps = state => {
   return {
     markers: state.markers,
-    loading: state.loading
+    loading: state.loading,
+    error: state.error
   };
 };
 
 const mapDispatchToProps = {
   getEventMarkers,
+  clearErrors
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(MapScreen);
