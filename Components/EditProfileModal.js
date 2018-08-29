@@ -72,11 +72,12 @@ class EditProfileModal extends React.Component {
         user.profile_image = s3Upload.body.postResponse.location;
       }
 
-      this.props.updateCurrentUserDetails(user);
+      const response = await this.props.updateCurrentUserDetails(user);
+      if (response.error) throw(response.error);
       this.props.toggleEditProfile();
     } catch (err) {
-      console.log(err);
-      return;
+      this.props.toggleEditProfile();
+      throw(err);
     }
   }
 

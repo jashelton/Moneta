@@ -12,7 +12,6 @@ import { clearErrors,
          createError,
          getCurrentUserDetails,
          getCurrentUserStats,
-         updateCurrentUserDetails,
          listRecentActivityForCurrentUser,
          loadMoreRowsForCurrentUserActivity } from '../reducer';
 import SnackBar from 'react-native-snackbar-component'
@@ -277,7 +276,6 @@ const mapStateToProps = state => {
 const mapDispatchToProps = {
   getCurrentUserDetails,
   getCurrentUserStats,
-  updateCurrentUserDetails,
   listRecentActivityForCurrentUser,
   loadMoreRowsForCurrentUserActivity,
   clearErrors,
