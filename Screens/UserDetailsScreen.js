@@ -192,7 +192,7 @@ class UserDetailsScreen extends React.Component {
     const { width } = Dimensions.get('window');
     const carouselElements = [userDetails, userStats];
 
-    if (loading) {
+    if (loading && !error) {
       return(
         <View>
           <ActivityIndicator />
@@ -200,7 +200,7 @@ class UserDetailsScreen extends React.Component {
       );
     }
 
-    if (userDetails.id && userStats) {
+    if (userDetails.id) {
       return(
         <View style={styles.container}>
           <View style={{height: '40%'}}>
@@ -267,6 +267,13 @@ class UserDetailsScreen extends React.Component {
             followsList={followsList}
             navigation={this.props.navigation}
             navigateToUser={(user) => this._navigateToUser(user)}
+          />
+
+          <SnackBar
+            visible={error ? true : false}
+            textMessage={error}
+            actionHandler={() => this.props.clearErrors()}
+            actionText="close"
           />
         </View>
       );

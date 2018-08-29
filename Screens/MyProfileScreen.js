@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, ActivityIndicator, Dimensions, AppState } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Dimensions, AppState } from 'react-native';
 import { PRIMARY_DARK_COLOR, ACCENT_COLOR } from '../common/styles/common-styles';
 import { connect } from 'react-redux';
 import Carousel, { Pagination } from 'react-native-snap-carousel';
@@ -9,6 +9,7 @@ import { authHelper } from '../Helpers';
 import UserInfo from '../Components/UserInfo';
 import UserStats from '../Components/UserStats';
 import { clearErrors,
+         createError,
          getCurrentUserDetails,
          getCurrentUserStats,
          updateCurrentUserDetails,
@@ -88,8 +89,14 @@ class MyProfileScreen extends React.Component {
 
   async toggleFollowsModal(type) {
     if (type) {
-      const { data } = await userService.getFollows(this.state.currentUser, type);
-      this.setState({ followsList: data });
+      try {
+        const { data } = await userService.getFollows(this.state.currentUser, type);
+        this.setState({ followsList: data });
+      } catch(err) {
+        this.setState({ followsModalVisibility: false });
+        this.props.createError('Something went wrong trying to fetch users.');
+        throw(err);
+      }
     }
     const { followsModalVisibility } = this.state;
 
@@ -142,15 +149,16 @@ class MyProfileScreen extends React.Component {
     const { width } = Dimensions.get('window');
     const carouselElements = [currentUserDetails, currentUserStats];
 
-    if (loading) {
+    if (loading && !error) {
       return(
         <View>
+          <Text>Hi</Text>
           <ActivityIndicator />
         </View>
       );
     }
 
-    if (currentUserDetails.id && !error) {
+    if (currentUserDetails.id) {
       return(
         <View style={styles.container}>
           <View style={{height: '40%'}}>
@@ -200,11 +208,19 @@ class MyProfileScreen extends React.Component {
             followsList={followsList}
             navigateToUser={(userId) => this._navigateToUser(userId)}
           />
+
+          <SnackBar
+            visible={error ? true : false}
+            textMessage={error}
+            actionHandler={() => this.props.clearErrors()}
+            actionText="close"
+          />
         </View>
       );
     } else {
       return(
         <View style={styles.container}>
+          <Text>Hello</Text>
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center'}}>
             <Icon
               size={36}
@@ -264,7 +280,8 @@ const mapDispatchToProps = {
   updateCurrentUserDetails,
   listRecentActivityForCurrentUser,
   loadMoreRowsForCurrentUserActivity,
-  clearErrors
+  clearErrors,
+  createError
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(MyProfileScreen);

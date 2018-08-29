@@ -54,6 +54,7 @@ export const LOAD_MORE_ROWS_FOR_CURRENT_USER_ACTIVITY = 'moneta/events/LOAD_MORE
 export const LOAD_MORE_ROWS_FOR_CURRENT_USER_ACTIVITY_SUCCESS = 'moneta/events/LOAD_MORE_ROWS_FOR_CURRENT_USER_ACTIVITY_SUCCESS';
 export const LOAD_MORE_ROWS_FOR_CURRENT_USER_ACTIVITY_FAIL = 'moneta/events/LOAD_MORE_ROWS_FOR_CURRENT_USER_ACTIVITY_FAIL';
 
+export const CREATE_ERROR = 'moneta/errors/CREATE_ERROR';
 export const CLEAR_ERRORS = 'montea/errors/CLEAR_ERRORS';
 
 import update from 'immutability-helper';
@@ -289,8 +290,10 @@ export default function reducer(state = initialState, action) {
         loading: false,
         error: 'There was a problem loading more events for this user.'
       };
+    case CREATE_ERROR:
+      return { ...state, loading: false, error: action.payload.data };
     case CLEAR_ERRORS:
-      return { ...state, loading: false, error: null }
+      return { ...state, loading: false, error: null };
     default:
       return state;
   }
@@ -535,5 +538,14 @@ export function getCurrentUserStats(userId) {
 export function clearErrors() {
   return {
     type: CLEAR_ERRORS
+  }
+}
+
+export function createError(error) {
+  return {
+    type: CREATE_ERROR,
+    payload: {
+      data: error
+    }
   }
 }
