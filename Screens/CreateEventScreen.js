@@ -5,8 +5,9 @@ import { TextField } from 'react-native-material-textfield';
 import { RNS3 } from 'react-native-aws3';
 import { AdMobInterstitial, Haptic } from 'expo';
 import { FULL_SCREEN_AD_UNIT } from 'react-native-dotenv';
-import { createEvent } from '../reducer'
+import { createEvent, clearErrors } from '../reducer'
 import { connect } from 'react-redux';
+import SnackBar from 'react-native-snackbar-component'
 
 import { authHelper, LocationHelper, commonHelper } from '../Helpers';
 import { AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, BUCKET, BUCKET_REGION } from 'react-native-dotenv';
@@ -179,19 +180,18 @@ class CreateEventScreen extends React.Component {
         const s3Upload = await RNS3.put(imageFile, this.options);
         event.image = s3Upload.body.postResponse;
 
-        const { payload } = await this.props.createEvent(event);
+        const response = await this.props.createEvent(event);
+        if (response.error) throw (response.error);
 
-        if (payload.status === 200) {
-          eventForm = initialEvent;
-          eventForm.imageLocation = '';
-          eventForm.imageCoords = null;
-          this.setState({ eventForm });
-          Haptic.notification(Haptic.NotificationTypes.Success);
-          this.displayAd();          
-        }
+        eventForm = initialEvent;
+        eventForm.imageLocation = '';
+        eventForm.imageCoords = null;
+        this.setState({ eventForm });
+
+        Haptic.notification(Haptic.NotificationTypes.Success);
+        this.displayAd();
       } catch (err) {
-        console.log(err);
-        return;
+        throw(err);
       }
     }
     
@@ -200,7 +200,6 @@ class CreateEventScreen extends React.Component {
 
   async displayAd() {
     AdMobInterstitial.setAdUnitID(process.env.NODE_ENV === 'development' ? 'ca-app-pub-3940256099942544/1033173712' : FULL_SCREEN_AD_UNIT);
-    // AdMobInterstitial.setAdUnitID('ca-app-pub-3940256099942544/1033173712'); // Test ad-unit-id
     AdMobInterstitial.setTestDeviceID('EMULATOR');
     await AdMobInterstitial.requestAdAsync();
     await AdMobInterstitial.showAdAsync();
@@ -266,6 +265,13 @@ class CreateEventScreen extends React.Component {
             <GooglePlacesInput customImageLocation={(data, details) => this.customImageLocation(data, details)} />
           </Modal>
         </ScrollView>
+
+        <SnackBar
+          visible={this.props.error ? true : false}
+          textMessage={this.props.error}
+          actionHandler={() => this.props.clearErrors()}
+          actionText="close"
+        />
       </View>
     );
   }
@@ -302,7 +308,8 @@ const mapStateToProps = state => {
 };
 
 const mapDispatchToProps = {
-  createEvent
+  createEvent,
+  clearErrors
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(CreateEventScreen);
