@@ -10,7 +10,7 @@ import { View,
          RefreshControl,
          FlatList } from 'react-native';
 import PropTypes from 'prop-types';
-import { DIVIDER_COLOR } from '../common/styles/common-styles';
+import { DIVIDER_COLOR, PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
 import { Icon } from 'react-native-elements';
 import { connect } from 'react-redux';
 
@@ -25,11 +25,17 @@ class RecentActivity extends React.Component {
         <ImageBackground style={styles.image} resizeMode='cover' source={{uri: item.image}}>
           <View style={styles.imageTopOverlay}>
             <View style={{ flexDirection: 'row', alignItems: 'center'}}>
-              <Icon color='#fff' name='visibility' size={15} />
-              <Text style={{ color: '#fff', marginLeft: 5, fontSize: 12 }}>{item.view_count}</Text>
+              <Icon color={PRIMARY_DARK_COLOR} name='visibility' size={15} />
+              <Text style={{ color: '#000', marginLeft: 5, fontSize: 12, fontWeight: 'bold' }}>{item.view_count}</Text>
+              { item.recent_views &&
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 10 }}>
+                  <Icon color='green' name='arrow-upward' size={15} />
+                  <Text style={{ color: '#000', marginLeft: 5, fontSize: 12, fontWeight: 'bold' }}>{item.recent_views}</Text>
+                </View>
+              }
             </View>
             { item.privacy === 'Private' &&
-              <Icon color={DIVIDER_COLOR} name='lock' size={15} />
+              <Icon color='red' name='lock' size={15} />
             }
           </View>
           <View style={styles.imageOverlay}>
@@ -120,7 +126,7 @@ const styles = StyleSheet.create({
     top: 0,
     width: '100%',
     padding: 5,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center'
