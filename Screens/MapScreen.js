@@ -79,8 +79,8 @@ class MapScreen extends React.Component {
 
   async setCurrentLocation() {
     const region = {
-      latitudeDelta: 0.0922,
-      longitudeDelta: 0.0421
+      latitudeDelta: 0.1922,
+      longitudeDelta: 0.1421
     }
     const currentLocation = await LocationHelper.getCurrentLocation();
 
