@@ -207,11 +207,15 @@ class EventDetailsScreen extends React.Component {
                   resizeMode='cover'
                   source={{uri: event.image}}
                 >
-                  { event.privacy === 'Private' &&
-                    <View style={styles.privacyOverlay}>
-                      <Icon color={DIVIDER_COLOR} name='lock' />
+                  <View style={styles.imageTopOverlay}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center'}}>
+                      <Icon color='#fff' name='visibility' />
+                      <Text style={{ color: '#fff', marginLeft: 5 }}>{event.view_count}</Text>
                     </View>
-                  }
+                    { event.privacy === 'Private' &&
+                      <Icon color={DIVIDER_COLOR} name='lock' />
+                    }
+                  </View>
                 </ImageBackground>
               </TouchableHighlight>
 
@@ -333,14 +337,15 @@ const styles = StyleSheet.create({
     height: Dimensions.get('window').height / 2,
     borderRadius: 2,
   },
-  privacyOverlay: {
+  imageTopOverlay: {
     position: 'absolute',
     top: 0,
     width: '100%',
     padding: 5,
-    backgroundColor: 'rgba(0, 0, 0, 0)',
-    justifyContent: 'center',
-    alignItems: 'flex-end'
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
   },
   iconGroup: {
     marginTop: 10,

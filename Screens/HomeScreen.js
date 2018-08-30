@@ -72,6 +72,7 @@ class HomeScreen extends React.Component {
     try {
       // For nearby events, pass coords as second parameter
       const response = await listRecentActivity(socialSelected || 'All', null, 0);
+
       if (response.error) throw(response.error);
     } catch(err) {
       throw(err);

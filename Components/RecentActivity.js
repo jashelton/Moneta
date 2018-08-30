@@ -23,11 +23,15 @@ class RecentActivity extends React.Component {
         onPress={() => this.props.navigation.navigate('EventDetails', { eventId: item.id })}
       >
         <ImageBackground style={styles.image} resizeMode='cover' source={{uri: item.image}}>
-          { item.privacy === 'Private' &&
-            <View style={styles.privacyOverlay}>
-              <Icon color={DIVIDER_COLOR} name='lock' />
+          <View style={styles.imageTopOverlay}>
+            <View style={{ flexDirection: 'row', alignItems: 'center'}}>
+              <Icon color='#fff' name='visibility' size={15} />
+              <Text style={{ color: '#fff', marginLeft: 5, fontSize: 12 }}>{item.view_count}</Text>
             </View>
-          }
+            { item.privacy === 'Private' &&
+              <Icon color={DIVIDER_COLOR} name='lock' size={15} />
+            }
+          </View>
           <View style={styles.imageOverlay}>
             <Text style={{color:DIVIDER_COLOR}}>{item.username || item.name}</Text>
             <Text style={{color:DIVIDER_COLOR, fontSize: 10}}>{item.city}, {item.region}, {item.country_code}</Text>
@@ -111,14 +115,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
   },
-  privacyOverlay: {
+  imageTopOverlay: {
     position: 'absolute',
     top: 0,
     width: '100%',
     padding: 5,
-    backgroundColor: 'rgba(0, 0, 0, 0)',
-    justifyContent: 'center',
-    alignItems: 'flex-end'
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
   }
 });
 
