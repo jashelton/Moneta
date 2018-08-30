@@ -59,15 +59,6 @@ class MapScreen extends React.Component {
 
     this.getEvents(this.state.socialSelected);
 
-    // commonHelper.getFilters()
-    //   .then(res => {
-    //     this.setState({socialSelected: res.eventsFor});
-    //   })
-    //   .then(() => {
-    //     this.getEvents(this.state.socialSelected);
-    //   })
-    //   .catch(err => console.log(err)),
-
     this.props.navigation.setParams({
       toggleIsVisible: () => this.toggleIsVisible(),
       showFilterList: () => this.setState({filtersVisible: !this.state.filtersVisible}),
@@ -87,14 +78,14 @@ class MapScreen extends React.Component {
   }
 
   async setCurrentLocation() {
-    const { coords } = await LocationHelper.getCurrentLocation();
     const region = {
-      latitude: coords.latitude,
-      longitude: coords.longitude,
       latitudeDelta: 0.0922,
       longitudeDelta: 0.0421
-    };
+    }
+    const currentLocation = await LocationHelper.getCurrentLocation();
 
+    region.latitude = currentLocation ? currentLocation.coords.latitude : 39.50;
+    region.longitude = currentLocation ? currentLocation.coords.longitude : -98.35;
     this.setState({ region });
   }
 

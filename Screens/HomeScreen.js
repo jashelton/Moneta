@@ -3,7 +3,7 @@ import { View, StyleSheet, ActivityIndicator, AppState } from 'react-native';
 import { Icon } from 'react-native-elements';
 import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
 import RecentActivity from '../Components/RecentActivity';
-import { LocationHelper, permissionsHelper } from '../Helpers';
+import { permissionsHelper } from '../Helpers';
 import { listRecentActivity, loadMoreRows, clearErrors } from '../reducer'
 import { connect } from 'react-redux';
 import SnackBar from 'react-native-snackbar-component'
@@ -45,8 +45,6 @@ class HomeScreen extends React.Component {
     // Get permissions from user for push notifications.
     // If agreed, user.push_token will be updated to store push token in db.
     await permissionsHelper.registerForPushNotificationsAsync();
-
-    const { coords } = await LocationHelper.getCurrentLocation();
 
     this.getActivity();
 

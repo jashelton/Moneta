@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableHighlight, Image, StyleSheet, Switch, Modal, Dimensions } from 'react-native';
+import { View, Text, ScrollView, TouchableHighlight, Image, StyleSheet, Switch, Modal, Dimensions, Linking, Alert } from 'react-native';
 import { Icon, Button } from 'react-native-elements';
 import { TextField } from 'react-native-material-textfield';
 import { RNS3 } from 'react-native-aws3';
@@ -22,7 +22,8 @@ const initialEvent = {
   eventPrivacy: 'Public',
   imageLocation: '',
   imageCoords: null,
-  addressInfo: null
+  addressInfo: null,
+  isLocationDisabled: false
 };
 
 class CreateEventScreen extends React.Component {
@@ -78,6 +79,7 @@ class CreateEventScreen extends React.Component {
   }
 
   async componentDidMount() {
+    if (! await this.checkLocation()) this.locationDisabledAlert();
     const user_data = await authHelper.getParsedUserData();
     this.options.keyPrefix = `user_${user_data.id}/`;
 
@@ -86,6 +88,21 @@ class CreateEventScreen extends React.Component {
       createEvent: () => this.createEvent(),
       isDisabled: this.state.isCreateDisabled
     });
+  }
+
+  async checkLocation() {
+    return await LocationHelper.getCurrentLocation();
+  }
+
+  locationDisabledAlert() {
+    Alert.alert(
+      'Geolocation Disabled',
+      'Please enable location in settings.',
+      [
+        { text: 'Settings', onPress: () =>  Linking.openURL('app-settings:')},
+        { text: 'Cancel', onPress: () => this.setState({ isLocationDisabled: true }) }
+      ]
+    );
   }
 
   clearEvent() {
@@ -155,6 +172,7 @@ class CreateEventScreen extends React.Component {
   }
 
   async createEvent() {
+    this.checkLocation();
     this.setState({ isCreateDisabled: true }); // Prevent dupe insert
 
     let { imageFile, eventForm, isCreateDisabled } = this.state;
@@ -212,7 +230,7 @@ class CreateEventScreen extends React.Component {
             eventPrivacy,
             imageLocation,
             imageCoords } = this.state.eventForm;
-    const { visiblePlacesSearch } = this.state;
+    const { visiblePlacesSearch, isLocationDisabled } = this.state;
     return(
       <View style={{flex: 1}}>
         <ScrollView contentContainerStyle={{padding: 15, backgroundColor: '#fff'}}>
@@ -226,6 +244,7 @@ class CreateEventScreen extends React.Component {
           <TextField
             label='Title'
             value={title}
+            disabled={isLocationDisabled}
             onChangeText={(title) => this.setState({ eventForm: { ...this.state.eventForm, title } }) }
             characterRestriction={60}
           />
@@ -235,6 +254,7 @@ class CreateEventScreen extends React.Component {
             returnKeyType='next'
             multiline={true}
             blurOnSubmit={true}
+            disabled={isLocationDisabled}
             label='Description'
             characterRestriction={140}
           />
@@ -243,10 +263,11 @@ class CreateEventScreen extends React.Component {
               label='Event Location'
               baseColor={!imageCoords ? 'red' : 'green'}
               value={imageLocation}
+              disabled={isLocationDisabled}
               onFocus={() => this.setState({visiblePlacesSearch: true})}
             />
           </ViewToggle>
-          <TouchableHighlight underlayColor="#eee" style={styles.imageUpload} onPress={this.prepS3Upload}>
+          <TouchableHighlight disabled={isLocationDisabled} underlayColor="#eee" style={styles.imageUpload} onPress={this.prepS3Upload}>
             { !localImage ?
               <Icon style={styles.iconBtn} color="#d0d0d0" name="add-a-photo" />
               :

@@ -30,7 +30,6 @@ async function sendPushNotification(userId, title, body) {
     };
 
     const push = await axios.post('https://exp.host/--/api/v2/push/send', notifyData, options);
-    console.log(push);
     return push;
   }
 

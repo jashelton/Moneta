@@ -168,7 +168,6 @@ class EventDetailsScreen extends React.Component {
 
       navigation.goBack();
     } catch(err) {
-      console.log(err);
       throw(err);
     }
   }
