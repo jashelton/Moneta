@@ -62,18 +62,11 @@ class EventDetailsScreen extends React.Component {
   async componentDidMount() {
     AppState.addEventListener('change', this._handleAppStateChange);
     const currentUserId = await authHelper.getCurrentUserId();
-    const currentLocation = await LocationHelper.getCurrentLocation();
     const eventId = this.props.navigation.getParam('eventId', null);
 
-    try {
-      const response = await this.props.getEventDetails(eventId, currentLocation);
-      if (response.error) throw(response.error);
+    this.setState({ currentUserId, eventId });
 
-      this.setState({ currentUserId, eventId });
-    } catch(err) {
-        this.props.navigation.goBack();
-        throw(err);
-    }
+    await this.fetchEventDetails();
 
     // This doesn't need to be triggered if the event has already been viewed.
     // Stop calling getDetails method on other screens.  Just add it here and pass event id in params.
@@ -87,20 +80,29 @@ class EventDetailsScreen extends React.Component {
   }
 
   _handleAppStateChange = async (nextAppState) => {
-    const { eventId } = this.state;
-    const currentLocation = await LocationHelper.getCurrentLocation();
-
     if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
       try {
-        const response = await this.props.getEventDetails(eventId, currentLocation);
-        if (response.error) {
-          this.props.navigation.navigate('Recent');
-        }
+        this.fetchEventDetails();
       } catch(err) {
-        this.props.navigation.navigate('Recent');
+        throw(err);
       }
     }
+
     this.setState({ appState: nextAppState });
+  }
+
+  async fetchEventDetails() {
+    if (this.props.error) this.props.clearErrors();
+
+    const currentLocation = await LocationHelper.getCurrentLocation();
+    const { eventId } = this.state;
+
+    try {
+      const response = await this.props.getEventDetails(eventId, currentLocation);
+      if (response.error) throw(response.error);
+    } catch(err) {
+        throw(err);
+    }
   }
 
   async markEventAsViewed() {
@@ -184,7 +186,7 @@ class EventDetailsScreen extends React.Component {
       );
     }
 
-    if (!this.props.loading && event.id) {
+    if (event.id) {
       return(
         <View style={styles.container}>
           <Card
@@ -307,7 +309,15 @@ class EventDetailsScreen extends React.Component {
       ); 
     } else {
       return(
-        <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+        <View style={{ flex: 1 }}>
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+            <Icon
+              size={36}
+              name='refresh'
+              color={PRIMARY_DARK_COLOR}
+              onPress={() => this.fetchEventDetails()}
+            />
+          </View>
           <SnackBar
             visible={this.props.error ? true : false}
             textMessage={this.props.error}
