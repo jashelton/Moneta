@@ -134,7 +134,7 @@ class MapScreen extends React.Component {
             { region &&
               <View style={styles.container}>
                 <MapView
-                  style={{ flex: 1 }}
+                  style={styles.map}
                   showsUserLocation={true}
                   showsMyLocationButton={false}
                   showsIndoors={true}
@@ -189,6 +189,9 @@ class MapScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  map: {
+    ...StyleSheet.absoluteFillObject
   },
   leftIcon: {
     marginLeft: 10
