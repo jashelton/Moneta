@@ -211,11 +211,17 @@ class EventDetailsScreen extends React.Component {
                 >
                   <View style={styles.imageTopOverlay}>
                     <View style={{ flexDirection: 'row', alignItems: 'center'}}>
-                      <Icon color='#fff' name='visibility' />
-                      <Text style={{ color: '#fff', marginLeft: 5 }}>{event.view_count}</Text>
+                      <Icon color={PRIMARY_DARK_COLOR} name='visibility' />
+                      <Text style={{ color: '#000', marginLeft: 5, fontWeight: 'bold' }}>{event.view_count}</Text>
+                      { event.recent_views &&
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 10 }}>
+                          <Icon color='green' name='arrow-upward' />
+                          <Text style={{ color: '#000', marginLeft: 5, fontWeight: 'bold' }}>{event.recent_views}</Text>
+                        </View>
+                      }
                     </View>
                     { event.privacy === 'Private' &&
-                      <Icon color={DIVIDER_COLOR} name='lock' />
+                      <Icon color='red' name='lock' />
                     }
                   </View>
                 </ImageBackground>
@@ -352,7 +358,7 @@ const styles = StyleSheet.create({
     top: 0,
     width: '100%',
     padding: 5,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center'
