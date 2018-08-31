@@ -23,7 +23,8 @@ const initialEvent = {
   imageLocation: '',
   imageCoords: null,
   addressInfo: null,
-  isLocationDisabled: false
+  isLocationDisabled: false,
+  randomizeLocation: false
 };
 
 class CreateEventScreen extends React.Component {
@@ -69,7 +70,7 @@ class CreateEventScreen extends React.Component {
       eventForm: initialEvent,
       imageFile: null,
       visiblePlacesSearch: false,
-      isCreateDisabled: false
+      isCreateDisabled: false,
     };
 
     this.clearEvent = this.clearEvent.bind(this);
@@ -108,6 +109,7 @@ class CreateEventScreen extends React.Component {
   clearEvent() {
     let { eventForm } = this.state;
     eventForm.localImage = null;
+    eventForm.randomizeLocation = false;
     eventForm = initialEvent;
 
     this.setState({ eventForm, imageFile: null });
@@ -118,6 +120,13 @@ class CreateEventScreen extends React.Component {
     eventForm.eventPrivacy = val ? 'Public' : 'Private';
 
     this.setState({eventForm});
+  }
+
+  updateRandomizeLocationState(value) {
+    let { eventForm } = this.state;
+
+    eventForm.randomizeLocation = value;
+    this.setState({ eventForm });
   }
 
   createDateString() {
@@ -176,7 +185,7 @@ class CreateEventScreen extends React.Component {
     this.setState({ isCreateDisabled: true }); // Prevent dupe insert
 
     let { imageFile, eventForm, isCreateDisabled } = this.state;
-    const { title, description, eventPrivacy, imageLocation, imageCoords, addressInfo } = this.state.eventForm;
+    const { title, description, eventPrivacy, imageLocation, imageCoords, addressInfo, randomizeLocation } = this.state.eventForm;
 
     if (!isCreateDisabled) {
       if (title === '' || description === '' || imageLocation === '' || !imageCoords || title.length > 60 || description.length > 140) {
@@ -191,7 +200,7 @@ class CreateEventScreen extends React.Component {
         city: addressInfo.city,
         region: addressInfo.region,
         country_code: addressInfo.isoCountryCode,
-        coordinate: imageCoords
+        coordinate: randomizeLocation ? LocationHelper.generateRandomPoint(imageCoords, 2500) : imageCoords
       };
 
       try {
@@ -229,6 +238,7 @@ class CreateEventScreen extends React.Component {
             description,
             eventPrivacy,
             imageLocation,
+            randomizeLocation,
             imageCoords } = this.state.eventForm;
     const { visiblePlacesSearch, isLocationDisabled } = this.state;
     return(
@@ -239,6 +249,13 @@ class CreateEventScreen extends React.Component {
             <Switch
               value={eventPrivacy === 'Public' ? true : false}
               onValueChange={(value) => this.updatePrivacySettings(value)}
+            />
+          </View>
+          <View style={styles.eventPrivacyContainer}>
+            <Text>Randomize location within radius nearby?</Text>
+            <Switch
+              value={randomizeLocation ? true : false}
+              onValueChange={(value) => this.updateRandomizeLocationState(value)}
             />
           </View>
           <TextField
@@ -310,6 +327,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingVertical: 10
   },
   imageUpload: {
     width: '100%',
