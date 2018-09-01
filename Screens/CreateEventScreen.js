@@ -170,11 +170,13 @@ class CreateEventScreen extends React.Component {
   // Custom location selection.  Get address and coords.
   async customImageLocation(data, details) {
     const { location } = details.geometry;
+    const { description } = data;
     let { eventForm } = this.state;
 
     eventForm.imageCoords = { latitude: location.lat, longitude: location.lng };
     const address = await LocationHelper.coordsToAddress(eventForm.imageCoords);
-    eventForm.imageLocation = `${address[0].name}, ${address[0].city}, ${address[0].region}, ${address[0].isoCountryCode}`
+
+    eventForm.imageLocation = description;
     eventForm.addressInfo = address[0];
 
     this.setState({ eventForm, visiblePlacesSearch: false });
@@ -213,7 +215,8 @@ class CreateEventScreen extends React.Component {
         eventForm = initialEvent;
         eventForm.imageLocation = '';
         eventForm.imageCoords = null;
-        this.setState({ eventForm });
+        imageFile = null;
+        this.setState({ eventForm, imageFile });
 
         Haptic.notification(Haptic.NotificationTypes.Success);
         this.displayAd();
