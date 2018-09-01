@@ -2,7 +2,7 @@
   "expo": {
     "name": "My Atlas",
     "icon": "./assets/images/atlas-icon.png",
-    "version": "3.0.1",
+    "version": "3.0.2",
     "slug": "moneta",
     "sdkVersion": "27.0.0",
     "ios": {
