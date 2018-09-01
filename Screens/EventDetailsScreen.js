@@ -68,8 +68,6 @@ class EventDetailsScreen extends React.Component {
 
     await this.fetchEventDetails();
 
-    // This doesn't need to be triggered if the event has already been viewed.
-    // Stop calling getDetails method on other screens.  Just add it here and pass event id in params.
     if (!this.props.event.viewed_id) {
       this.markEventAsViewed();
     }

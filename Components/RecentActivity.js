@@ -20,7 +20,7 @@ class RecentActivity extends React.Component {
       <TouchableHighlight
         underlayColor="#eee"
         style={styles.imageTouch}
-        onPress={() => this.props.navigation.navigate('EventDetails', { eventId: item.id })}
+        onPress={() => this.props.navigation.push('EventDetails', { eventId: item.id })}
       >
         <ImageBackground style={styles.image} resizeMode='cover' source={{uri: item.image}}>
           <View style={styles.imageTopOverlay}>
@@ -40,7 +40,7 @@ class RecentActivity extends React.Component {
           </View>
           <View style={styles.imageOverlay}>
             <Text style={{color:DIVIDER_COLOR}}>{item.username || item.name}</Text>
-            <Text style={{color:DIVIDER_COLOR, fontSize: 10}}>{item.city}, {item.region}, {item.country_code}</Text>
+            <Text style={{color:DIVIDER_COLOR, fontSize: 10}}>{item.city ? `${item.city},` : null} {item.region}, {item.country_code}</Text>
           </View>
         </ImageBackground>
       </TouchableHighlight>
