@@ -23,7 +23,6 @@ const initialEvent = {
   imageLocation: '',
   imageCoords: null,
   addressInfo: null,
-  isLocationDisabled: false,
   randomizeLocation: false
 };
 
@@ -80,7 +79,6 @@ class CreateEventScreen extends React.Component {
   }
 
   async componentDidMount() {
-    if (! await this.checkLocation()) this.locationDisabledAlert();
     const user_data = await authHelper.getParsedUserData();
     this.options.keyPrefix = `user_${user_data.id}/`;
 
@@ -93,17 +91,6 @@ class CreateEventScreen extends React.Component {
 
   async checkLocation() {
     return await LocationHelper.getCurrentLocation();
-  }
-
-  locationDisabledAlert() {
-    Alert.alert(
-      'Geolocation Disabled',
-      'Please enable location in settings.',
-      [
-        { text: 'Settings', onPress: () =>  Linking.openURL('app-settings:')},
-        { text: 'Cancel', onPress: () => this.setState({ isLocationDisabled: true }) }
-      ]
-    );
   }
 
   clearEvent() {
@@ -243,7 +230,7 @@ class CreateEventScreen extends React.Component {
             imageLocation,
             randomizeLocation,
             imageCoords } = this.state.eventForm;
-    const { visiblePlacesSearch, isLocationDisabled } = this.state;
+    const { visiblePlacesSearch } = this.state;
     return(
       <View style={{flex: 1}}>
         <ScrollView contentContainerStyle={{padding: 15, backgroundColor: '#fff'}}>
@@ -264,7 +251,6 @@ class CreateEventScreen extends React.Component {
           <TextField
             label='Title'
             value={title}
-            disabled={isLocationDisabled}
             onChangeText={(title) => this.setState({ eventForm: { ...this.state.eventForm, title } }) }
             characterRestriction={60}
           />
@@ -274,7 +260,6 @@ class CreateEventScreen extends React.Component {
             returnKeyType='next'
             multiline={true}
             blurOnSubmit={true}
-            disabled={isLocationDisabled}
             label='Description'
             characterRestriction={140}
           />
@@ -283,11 +268,10 @@ class CreateEventScreen extends React.Component {
               label='Event Location'
               baseColor={!imageCoords ? 'red' : 'green'}
               value={imageLocation}
-              disabled={isLocationDisabled}
               onFocus={() => this.setState({visiblePlacesSearch: true})}
             />
           </ViewToggle>
-          <TouchableHighlight disabled={isLocationDisabled} underlayColor="#eee" style={styles.imageUpload} onPress={this.prepS3Upload}>
+          <TouchableHighlight underlayColor="#eee" style={styles.imageUpload} onPress={this.prepS3Upload}>
             { !localImage ?
               <Icon style={styles.iconBtn} color="#d0d0d0" name="add-a-photo" />
               :
