@@ -95,8 +95,6 @@ class CreateEventScreen extends React.Component {
 
   clearEvent() {
     let { eventForm } = this.state;
-    eventForm.localImage = null;
-    eventForm.randomizeLocation = false;
     eventForm = initialEvent;
 
     this.setState({ eventForm, imageFile: null });
@@ -139,7 +137,7 @@ class CreateEventScreen extends React.Component {
       if (result.exif.GPSLatitude && result.exif.GPSLongitude) {
         const imageCoords = LocationHelper.formatExifCoords(result.exif);
         const address = await LocationHelper.coordsToAddress(imageCoords);
-        const imageLocation = `${address[0].name}, ${address[0].city}, ${address[0].region}, ${address[0].isoCountryCode}`
+        const imageLocation = `${address[0].name}, ${address[0].city || null}, ${address[0].region}, ${address[0].isoCountryCode}`
 
         const { eventForm } = this.state;
         eventForm.imageLocation = imageLocation;
@@ -199,11 +197,7 @@ class CreateEventScreen extends React.Component {
         const response = await this.props.createEvent(event);
         if (response.error) throw (response.error);
 
-        eventForm = initialEvent;
-        eventForm.imageLocation = '';
-        eventForm.imageCoords = null;
-        imageFile = null;
-        this.setState({ eventForm, imageFile });
+        this.clearEvent();
 
         Haptic.notification(Haptic.NotificationTypes.Success);
         this.displayAd();

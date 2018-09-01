@@ -16,9 +16,6 @@ async function getCurrentLocation() {
 };
 
 async function coordsToAddress(coords) {
-  // let { status } = await Permissions.askAsync(Permissions.LOCATION);
-  // if (status !== 'granted') return null;
-
   const address = await Location.reverseGeocodeAsync(coords);
   return address;
 }
