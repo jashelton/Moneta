@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, ActivityIndicator, AppState } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, AppState } from 'react-native';
 import { Icon } from 'react-native-elements';
 import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
 import RecentActivity from '../Components/RecentActivity';
@@ -31,7 +31,7 @@ class HomeScreen extends React.Component {
     this.state = {
       refreshing: false,
       filtersVisible: false,
-      socialSelected: 'All',
+      socialSelected: 'Popular',
       appState: AppState.currentState
     };
 
@@ -71,7 +71,7 @@ class HomeScreen extends React.Component {
 
     try {
       // For nearby events, pass coords as second parameter
-      const response = await listRecentActivity(socialSelected || 'All', null, 0);
+      const response = await listRecentActivity(socialSelected || 'Popular', null, 0);
 
       if (response.error) throw(response.error);
     } catch(err) {
@@ -103,8 +103,16 @@ class HomeScreen extends React.Component {
   }
 
   render() {
-    const { navigation, recentEvents, loading } = this.props;
+    const { navigation, recentEvents, loading, error } = this.props;
     const { filtersVisible, socialSelected, refreshing } = this.state;
+
+    if (loading && !filtersVisible) {
+      return (
+        <View style={{ flex: 1, alignItems:'center', justifyContent: 'center' }}>
+          <ActivityIndicator />
+        </View>
+      )
+    }
 
     return(
       <View style={styles.container}>
@@ -129,7 +137,7 @@ class HomeScreen extends React.Component {
           <View style={styles.loadingContainer}>
             <ActivityIndicator />
           </View>
-        :
+        : error ?
           <View style={styles.container}>
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center'}}>
               <Icon
@@ -138,6 +146,7 @@ class HomeScreen extends React.Component {
                 color={PRIMARY_DARK_COLOR}
                 onPress={() => this.getActivity()}
               />
+              <Text>Could not find any events.</Text>
             </View>
             <SnackBar
               visible={this.props.error ? true : false}
@@ -146,6 +155,8 @@ class HomeScreen extends React.Component {
               actionText="close"
             />
           </View>
+        :
+          <View></View>
         }
       </View>
     );

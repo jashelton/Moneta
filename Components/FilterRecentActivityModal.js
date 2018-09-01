@@ -8,7 +8,7 @@ import { PRIMARY_DARK_COLOR, TEXT_ICONS_COLOR } from '../common/styles/common-st
 
 export default class FilterRecentActivityModal extends React.Component {
 
-  socialOptions = ['All', 'Following', 'Me'];
+  socialOptions = ['Popular', 'Following', 'Me'];
 
   constructor(props) {
     super(props);
