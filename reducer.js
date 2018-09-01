@@ -28,6 +28,9 @@ export const DELETE_EVENT_FAIL = 'moneta/events/DELETE_EVENT_FAIL';
 export const CREATE_EVENT = 'moneta/events/CREATE_EVENT';
 export const CREATE_EVENT_SUCCESS = 'moneta/events/CREATE_EVENT_SUCCESS';
 export const CREATE_EVENT_FAIL = 'moneta/events/CREATE_EVENT_FAIL';
+export const CREATE_VIBE = 'moneta/events/CREATE_VIBE';
+export const CREATE_VIBE_SUCCESS = 'moneta/events/CREATE_VIBE_SUCCESS';
+export const CREATE_VIBE_FAIL = 'moneta/events/CREATE_VIBE_FAIL';
 
 export const GET_USER_DETAILS = 'moneta/users/LOAD_USER_DETAILS';
 export const GET_USER_DETAILS_SUCCESS = 'moneta/users/LOAD_USER_DETAILS_SUCCESS';
@@ -200,6 +203,17 @@ export default function reducer(state = initialState, action) {
         loading: false,
         error: 'There was a problem creating the event'
       }
+    case CREATE_VIBE:
+      return { ...state, loading: true };
+    case CREATE_EVENT_SUCCESS:
+      console.log(action.payload);
+      return { ...state, loading: false };
+    case CREATE_EVENT_FAIL:
+      return {
+        ...state,
+        loading: false,
+        error: 'There was a problem creating the vibe.'
+      };
 
     // Users
     case GET_USER_DETAILS:
@@ -452,6 +466,19 @@ export function createEvent(event) {
         url: `/events/create`,
         method: 'POST',
         data: event
+      }
+    }
+  }
+}
+
+export function createVibe(vibe) {
+  return {
+    type: CREATE_VIBE,
+    payload: {
+      request: {
+        url: '/events/vibe/create',
+        method: 'POST',
+        data: vibe
       }
     }
   }

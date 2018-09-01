@@ -13,6 +13,8 @@ import UserDetailsScreen from '../Screens/UserDetailsScreen';
 import NotificationsScreen from '../Screens/NotificationsScreen';
 import MyProfileScreen from '../Screens/MyProfileScreen';
 import CreateEventScreen from '../Screens/CreateEventScreen';
+import CreateVibeScreen from '../Screens/CreateVibeScreen';
+import CreateMomentScreen from '../Screens/CreateMomentScreen';
 
 // Header shows up on Events screen because the events stack is inside the tab navigator
 
@@ -62,7 +64,9 @@ const newEventStack = createStackNavigator(
           fontSize: 16
         }
       }
-    }
+    },
+    CreateVibe: CreateVibeScreen,
+    CreateMoment: CreateMomentScreen
   }
 );
 const notificationsStack = createStackNavigator(
