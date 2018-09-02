@@ -1,11 +1,11 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableHighlight, Image, StyleSheet, Switch, Modal, Dimensions, Linking, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableHighlight, Image, StyleSheet, Switch, Modal, Dimensions } from 'react-native';
 import { Icon, Button } from 'react-native-elements';
 import { TextField } from 'react-native-material-textfield';
 import { RNS3 } from 'react-native-aws3';
 import { AdMobInterstitial, Haptic, Constants } from 'expo';
 import { FULL_SCREEN_AD_UNIT } from 'react-native-dotenv';
-import { createEvent, clearErrors } from '../reducer'
+import { createEvent, clearErrors } from '../reducer';
 import { connect } from 'react-redux';
 import SnackBar from 'react-native-snackbar-component';
 
@@ -183,6 +183,7 @@ class CreateMomentScreen extends React.Component {
       const event = {
         title,
         description,
+        event_type: 'moment',
         privacy: eventPrivacy,
         city: addressInfo.city,
         region: addressInfo.region,
@@ -192,6 +193,7 @@ class CreateMomentScreen extends React.Component {
 
       try {
         const s3Upload = await RNS3.put(imageFile, this.options);
+        console.log(s3Upload.body.postResponse);
         event.image = s3Upload.body.postResponse;
 
         const response = await this.props.createEvent(event);

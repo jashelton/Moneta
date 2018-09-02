@@ -3,7 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { Button } from 'react-native-elements';
 import { TextField } from 'react-native-material-textfield';
 import { connect } from 'react-redux';
-import { createVibe, clearErrors } from '../reducer';
+import { createEvent, clearErrors } from '../reducer';
 import { DIVIDER_COLOR } from '../common/styles/common-styles';
 import SnackBar from 'react-native-snackbar-component';
 
@@ -56,12 +56,13 @@ class CreateVibeScreen extends React.Component {
     this.setState({ isCreateDisabled: true });
 
     const vibe = {
-      status: this.state.vibeText,
+      event_type: 'vibe',
+      description: this.state.vibeText,
       privacy: this.state.privacy
     };
 
     try {
-      const response = await this.props.createVibe(vibe);
+      const response = await this.props.createEvent(vibe);
       if (response.error) throw(response.error);
 
       this.clearVibe();
@@ -119,6 +120,6 @@ const mapStateToProps = state => {
   };
 };
 
-const mapDispatchToProps = { createVibe, clearErrors };
+const mapDispatchToProps = { createEvent, clearErrors };
 
 export default connect(mapStateToProps, mapDispatchToProps)(CreateVibeScreen);
