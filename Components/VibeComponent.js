@@ -1,23 +1,32 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
+import { ListItem, Avatar } from 'react-native-elements';
 
 export default class VibeComponent extends React.Component {
   render() {
-    const { vibe, height, navigation } = this.props;
+    const { vibe, navigation } = this.props;
     return(
-      <View style={ [styles.container, { height }] }>
+      <View style={ [styles.container] }>
+        <ListItem
+          leftAvatar={
+            <Avatar
+              size="small"
+              rounded
+              source={vibe.profile_image ? { uri: vibe.profile_image } : null}
+              icon={{ name: 'person', size: 20 }}
+              activeOpacity={0.7}
+            />
+          }
+          title={vibe.name}
+          titleStyle={{ color: PRIMARY_DARK_COLOR}}
+          subtitle={new Date(vibe.created_at).toISOString().substring(0, 10)}
+          subtitleStyle={styles.subText}
+          chevron
+          onPress={() => navigation.navigate('UserDetails', { userId: vibe.user_id })}
+        />
         <View style={{ alignItems: 'flex-end', justifyContent: 'center', padding: 10 }}>
           <Text>Rank Vibe (coming soon)</Text>
-        </View>
-        <View style={{ alignItems: 'flex-start' }}>
-          <Text>
-            <Text
-              style={{ color: 'blue' }}
-              onPress={() => navigation.navigate('UserDetails', { userId: vibe.user_id })}>
-              {vibe.name}
-            </Text>
-            <Text> has created a new vibe.</Text>
-          </Text>
         </View>
         <View style={{ flex: 1, padding: 15 }}>
           <Text>{vibe.description}</Text>
@@ -33,6 +42,10 @@ const styles = StyleSheet.create({
     margin: 5,
     flex: 1,
     flexDirection: 'column',
-    padding: 5
+  },
+  subText: {
+    fontWeight: '200',
+    color: 'grey',
+    fontSize: 12
   },
 });

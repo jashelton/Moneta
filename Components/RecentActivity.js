@@ -13,7 +13,7 @@ import VibeComponent from '../Components/VibeComponent';
 
 class RecentActivity extends React.Component {
 
-  height = Dimensions.get('window').height / 4;
+  height = Dimensions.get('window').height / 2;
 
   _renderImage({item}) {
     return(

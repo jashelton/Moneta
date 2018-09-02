@@ -1,17 +1,35 @@
 import React from 'react';
 import { View,
-         Text,
          StyleSheet,
          TouchableHighlight,
          Image } from 'react-native';
-import { DIVIDER_COLOR, PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
-import { Icon } from 'react-native-elements';
+import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
+import { ListItem, Avatar } from 'react-native-elements';
 
 export default class MomentComponent extends React.Component {
   render() {
     const { moment, navigation, height } = this.props;
+
     return(
-      <View style={{ flex: 1, flexDirection: 'row', margin: 5, backgroundColor: '#fff' }}>
+      <View style={{ flex: 1, flexDirection: 'column', margin: 5, backgroundColor: '#fff' }}>
+        <ListItem
+          leftAvatar={
+            <Avatar
+              size="small"
+              rounded
+              source={moment.profile_image ? {uri: moment.profile_image} : null}
+              icon={{name: 'person', size: 20}}
+              activeOpacity={0.7}
+            />
+          }
+          title={moment.name}
+          titleStyle={{ color: PRIMARY_DARK_COLOR}}
+          subtitle={new Date(moment.created_at).toISOString().substring(0, 10)}
+          subtitleStyle={styles.subText}
+          chevron
+          onPress={() => navigation.navigate('UserDetails', {userId: moment.user_id})}
+        />
+
         <TouchableHighlight
           underlayColor="#eee"
           style={[styles.imageTouch, { height }]}
@@ -19,7 +37,7 @@ export default class MomentComponent extends React.Component {
         >
           <Image style={styles.image} resizeMode='cover' source={{uri: moment.image}} />
         </TouchableHighlight>
-        <View style={{ flex: 1, flexDirection: 'column' }}>
+        {/* <View style={{ flex: 1, flexDirection: 'column' }}>
           <View style={styles.imageTopOverlay}>
             <View style={{ flexDirection: 'row', alignItems: 'center'}}>
               <Icon color={PRIMARY_DARK_COLOR} name='visibility' size={15} />
@@ -38,11 +56,7 @@ export default class MomentComponent extends React.Component {
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <Text>{moment.title}</Text>
           </View>
-          <View style={styles.imageOverlay}>
-            <Text style={{color:DIVIDER_COLOR}}>{moment.username || moment.name}</Text>
-            <Text style={{color:DIVIDER_COLOR, fontSize: 10}}>{moment.city ? `${moment.city},` : null} {moment.region}, {moment.country_code}</Text>
-          </View>
-        </View>
+        </View> */}
       </View>
     );
   }
@@ -50,7 +64,7 @@ export default class MomentComponent extends React.Component {
 
 const styles = StyleSheet.create({
   imageTouch: {
-    width: '50%',
+    width: '100%',
     padding: 2
   },
   image: {
@@ -67,5 +81,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center'
-  }
+  },
+  subText: {
+    fontWeight: '200',
+    color: 'grey',
+    fontSize: 12
+  },
 });
