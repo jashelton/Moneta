@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Button } from 'react-native-elements';
 import { TextField } from 'react-native-material-textfield';
 import { connect } from 'react-redux';
@@ -55,6 +55,13 @@ class CreateVibeScreen extends React.Component {
   async createVibe() {
     this.setState({ isCreateDisabled: true });
 
+    const { vibeText } = this.state;
+
+    if (vibeText.length > 240 || vibeText < 1) {
+      alert('You must provide a valid status.');
+      return;
+    }
+
     const vibe = {
       event_type: 'vibe',
       description: this.state.vibeText,
@@ -94,11 +101,22 @@ class CreateVibeScreen extends React.Component {
 
     return(
       <View style={styles.container}>
+        <View style={{ backgroundColor: '#ffae42', padding: 20 }}>
+          <Text style={{ paddingBottom: 15 }}>
+            This is an initial implementation of text based posting. There are still a lot of features that need to be built for this
+            specific feature.  Feedback is appreciated.
+          </Text>
+          <Text>
+            Ratings: The purpose of ratings is for people to anonomously rate a post.  There will be filters that will filter out low
+            rated posts.  The end goal of this is to incentivice positivity rather than everyone being spammed with negative content all the time.
+          </Text>
+        </View>
         <TextField
           label="What's going on?"
           value={vibeText}
           onChangeText={(content) => this.setState({ vibeText: content }) }
           characterRestriction={240}
+          multiline={true}
         />
       </View>
     )

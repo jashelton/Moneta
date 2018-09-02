@@ -55,18 +55,18 @@ const eventsStack = createStackNavigator(
 );
 const newEventStack = createStackNavigator(
   {
-    NewEvent: {
-      screen: CreateEventScreen,
-      navigationOptions: {
-        title: 'Create Event',
-        headerTitleStyle: {
-          fontWeight: '200',
-          fontSize: 16
-        }
-      }
-    },
+    NewEvent: CreateEventScreen,
     CreateVibe: CreateVibeScreen,
     CreateMoment: CreateMomentScreen
+  },
+  {
+    navigationOptions: {
+      title: 'Create Event',
+      headerTitleStyle: {
+        fontWeight: '200',
+        fontSize: 16
+      }
+    }
   }
 );
 const notificationsStack = createStackNavigator(

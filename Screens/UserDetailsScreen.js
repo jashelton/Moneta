@@ -21,7 +21,7 @@ import FollowsModal from '../Components/FollowsModal';
 import { userService } from '../Services';
 
 class UserDetailsScreen extends React.Component {
-  static navigationOptions = { header: null };
+  // static navigationOptions = { header: null };
   // static navigationOptions = ({navigation}) => {
   //   return {
   //     headerTitle: ( navigation.getParam('getUsername') ),

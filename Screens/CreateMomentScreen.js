@@ -29,7 +29,7 @@ const initialEvent = {
 class CreateMomentScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
     return {
-      title: 'Event Moment',
+      title: 'Create Moment',
       // headerLeft: (
       //   <Button
       //     containerStyle={styles.leftIcon}
@@ -171,11 +171,11 @@ class CreateMomentScreen extends React.Component {
     this.checkLocation();
     this.setState({ isCreateDisabled: true }); // Prevent dupe insert
 
-    let { imageFile, eventForm, isCreateDisabled } = this.state;
+    let { imageFile, isCreateDisabled } = this.state;
     const { title, description, eventPrivacy, imageLocation, imageCoords, addressInfo, randomizeLocation } = this.state.eventForm;
 
     if (!isCreateDisabled) {
-      if (title === '' || description === '' || imageLocation === '' || !imageCoords || title.length > 60 || description.length > 140) {
+      if (title === '' || description === '' || imageLocation === '' || !imageCoords || title.length > 60 || description.length > 240) {
         alert('You must include a valid Title, Description, and Image');
         return;
       }
