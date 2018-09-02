@@ -1,9 +1,15 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Alert } from 'react-native';
 import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
 import { ListItem, Avatar } from 'react-native-elements';
+import { AirbnbRating } from 'react-native-ratings';
 
 export default class VibeComponent extends React.Component {
+
+  submitRating(value) {
+    // TODO: Upsert to ratings table
+  }
+
   render() {
     const { vibe, navigation } = this.props;
     return(
@@ -25,8 +31,14 @@ export default class VibeComponent extends React.Component {
           chevron
           onPress={() => navigation.navigate('UserDetails', { userId: vibe.user_id })}
         />
-        <View style={{ alignItems: 'flex-end', justifyContent: 'center', padding: 10 }}>
-          <Text>Rank Vibe (coming soon)</Text>
+        <View style={{ alignItems: 'flex-end', justifyContent: 'center', marginRight: 15 }}>
+          <AirbnbRating
+            count={5}
+            defaultRating={0}
+            size={20}
+            showRating={false}
+            onFinishRating={this.submitRating}
+          />
         </View>
         <View style={{ flex: 1, padding: 15 }}>
           <Text>{vibe.description}</Text>
