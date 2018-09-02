@@ -4,6 +4,7 @@ import { View,
          ScrollView,
          ActivityIndicator,
          RefreshControl,
+         Dimensions,
          FlatList } from 'react-native';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
@@ -11,11 +12,23 @@ import MomentComponent from '../Components/MomentComponent';
 import VibeComponent from '../Components/VibeComponent';
 
 class RecentActivity extends React.Component {
-  _renderImage({item, index}) {
+
+  height = Dimensions.get('window').height / 4;
+
+  _renderImage({item}) {
     return(
       item.event_type === 'moment' ? 
-        <MomentComponent moment={item} navigation={this.props.navigation} /> :
-        <VibeComponent vibe={item} navigation={this.props.navigation} />
+        <MomentComponent
+          moment={item}
+          navigation={this.props.navigation}
+          height={this.height}
+        /> 
+        :
+        <VibeComponent
+          vibe={item}
+          navigation={this.props.navigation}
+          height={this.height}
+        />
     );
   }
 
@@ -35,10 +48,10 @@ class RecentActivity extends React.Component {
         <View style={{ paddingTop: 5 }}>
           <FlatList
             keyExtractor={(item, index) => index.toString()}
-            numColumns={2}
+            numColumns={1}
             data={events}
             renderItem={this._renderImage.bind(this)}
-            onEndReached={ () => this.props.handleScroll(events.length)}
+            onEndReached={() => this.props.handleScroll(events.length)}
             onEndReachedThreshold={0}
             refreshControl={
               <RefreshControl

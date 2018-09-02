@@ -193,7 +193,6 @@ class CreateMomentScreen extends React.Component {
 
       try {
         const s3Upload = await RNS3.put(imageFile, this.options);
-        console.log(s3Upload.body.postResponse);
         event.image = s3Upload.body.postResponse;
 
         const response = await this.props.createEvent(event);
