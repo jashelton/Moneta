@@ -1,3 +1,3 @@
 export const defaultFilters = {
-  eventsFor: 'Popular'
+  eventsFor: 'Feed'
 };

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
 import { ListItem, Avatar } from 'react-native-elements';
 import { AirbnbRating } from 'react-native-ratings';

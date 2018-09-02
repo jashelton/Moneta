@@ -31,7 +31,7 @@ class HomeScreen extends React.Component {
     this.state = {
       refreshing: false,
       filtersVisible: false,
-      socialSelected: 'Popular',
+      socialSelected: 'Feed',
       appState: AppState.currentState
     };
 
@@ -71,7 +71,7 @@ class HomeScreen extends React.Component {
 
     try {
       // For nearby events, pass coords as second parameter
-      const response = await listRecentActivity(socialSelected || 'Popular', null, 0);
+      const response = await listRecentActivity(socialSelected || 'Feed', null, 0);
 
       if (response.error) throw(response.error);
     } catch(err) {
