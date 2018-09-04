@@ -2,7 +2,7 @@
   "expo": {
     "name": "+Vibe",
     "icon": "./assets/images/vibe.png",
-    "version": "4.0.0",
+    "version": "4.0.2",
     "slug": "moneta",
     "sdkVersion": "27.0.0",
     "ios": {

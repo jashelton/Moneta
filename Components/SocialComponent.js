@@ -44,14 +44,26 @@ class SocialComponent extends React.Component {
     return (
       <View style={styles.container}>
         <Divider />
-        <View style={{ padding: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' }}>
-          <Icon
-            color='#fb3958'
-            name={!event.liked ? 'favorite-border' : 'favorite'}
-            onPress={() => this.favoriteEvent()}
-            containerStyle={{ padding: 5 }}
-          />
-          <Text>{event.likes_count}</Text>
+        <View style={{ padding: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Icon
+              color='#fb3958'
+              name={!event.liked ? 'favorite-border' : 'favorite'}
+              containerStyle={styles.iconContainer}
+              onPress={() => this.favoriteEvent()}
+            />
+            <Text>{event.likes_count}</Text>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text>{event.comment_count}</Text>
+            <Icon
+              style={styles.rightIcon}
+              color='#fb3958'
+              name='comment'
+              containerStyle={styles.iconContainer}
+              onPress={() => this.props.navigation.navigate('Comments', { event: event, incrementCommentCount: this.incrementCommentCount.bind(this) })}
+            />
+          </View>
         </View>
       </View>
     );
@@ -61,6 +73,9 @@ class SocialComponent extends React.Component {
 const styles = StyleSheet.create({
   container: {
     marginTop: 10
+  },
+  iconContainer: {
+    padding: 5
   }
 });
 

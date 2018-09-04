@@ -12,7 +12,7 @@ import Sentry from 'sentry-expo';
 
 import reducer from './reducer';
 
-Sentry.enableInExpoDevelopment = true;
+// Sentry.enableInExpoDevelopment = true;
 Sentry.config(SENTRY_DNS).install();
 
 const client = axios.create({
