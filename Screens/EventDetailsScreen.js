@@ -11,14 +11,12 @@ import { ScrollView,
          Dimensions,
          Modal } from 'react-native';
 import { Card, Divider, Icon, Button, ListItem, Avatar } from 'react-native-elements';
-import { authHelper, LocationHelper } from '../Helpers';
+import { authHelper, LocationHelper, adHelper } from '../Helpers';
 import { WARNING_RED, ACCENT_COLOR, PRIMARY_DARK_COLOR, DIVIDER_COLOR } from '../common/styles/common-styles';
 import { connect } from 'react-redux';
 import { updateEventDetailsLikes, deleteEvent, markEventViewed, getEventDetails, clearErrors } from '../reducer';
 import { notificationService } from '../Services/notification.service';
 import ImageViewer from 'react-native-image-zoom-viewer';
-import { EVENT_DETAILS_AD_UNIT } from 'react-native-dotenv';
-import { AdMobBanner } from 'expo';
 import SnackBar from 'react-native-snackbar-component'
 
 export class EventDetailsHeader extends React.Component {
@@ -275,13 +273,7 @@ class EventDetailsScreen extends React.Component {
               onPress={this.verifyDeleteEvent}
             />
           :
-            <AdMobBanner
-              bannerSize="smartBannerPortrait"
-              adUnitID={process.env.NODE_ENV === 'development' ? 'ca-app-pub-3940256099942544/6300978111' : EVENT_DETAILS_AD_UNIT}
-              // adUnitID="ca-app-pub-3940256099942544/6300978111" // Test ID, Replace with your-admob-unit-id
-              testDeviceID="EMULATOR"
-              onDidFailToReceiveAdWithError={this.bannerError}
-            />
+            adHelper.displayPublisherBanner()
           }
 
           {/* Modal to display full screen image with zoom */}

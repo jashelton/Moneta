@@ -3,13 +3,11 @@ import { View, Text, ScrollView, TouchableHighlight, Image, StyleSheet, Switch, 
 import { Icon, Button } from 'react-native-elements';
 import { TextField } from 'react-native-material-textfield';
 import { RNS3 } from 'react-native-aws3';
-import { AdMobInterstitial, Haptic, Constants } from 'expo';
-import { FULL_SCREEN_AD_UNIT } from 'react-native-dotenv';
+import { Haptic, Constants } from 'expo';
 import { createEvent, clearErrors } from '../reducer';
 import { connect } from 'react-redux';
 import SnackBar from 'react-native-snackbar-component';
-
-import { authHelper, LocationHelper, commonHelper } from '../Helpers';
+import { authHelper, LocationHelper, commonHelper, adHelper } from '../Helpers';
 import { AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, BUCKET, BUCKET_REGION } from 'react-native-dotenv';
 import ViewToggle from '../Components/ViewToggle';
 import GooglePlacesInput from '../Components/LocationAutocomplete';
@@ -201,7 +199,7 @@ class CreateMomentScreen extends React.Component {
         this.clearEvent();
 
         Haptic.notification(Haptic.NotificationTypes.Success);
-        this.displayAd();
+        adHelper.displayAd();
         this.props.navigation.goBack();
       } catch (err) {
         throw(err);
@@ -209,13 +207,6 @@ class CreateMomentScreen extends React.Component {
     }
     
     this.setState({ isCreateDisabled: false });
-  }
-
-  async displayAd() {
-    AdMobInterstitial.setAdUnitID(process.env.NODE_ENV === 'development' ? 'ca-app-pub-3940256099942544/1033173712' : FULL_SCREEN_AD_UNIT);
-    AdMobInterstitial.setTestDeviceID('EMULATOR');
-    await AdMobInterstitial.requestAdAsync();
-    await AdMobInterstitial.showAdAsync();
   }
 
   render() {

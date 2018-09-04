@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ActivityIndicator, AppState } from 'react-nativ
 import { Icon } from 'react-native-elements';
 import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
 import RecentActivity from '../Components/RecentActivity';
-import { permissionsHelper } from '../Helpers';
+import { permissionsHelper, adHelper } from '../Helpers';
 import { listRecentActivity, loadMoreRows, clearErrors } from '../reducer'
 import { connect } from 'react-redux';
 import SnackBar from 'react-native-snackbar-component'

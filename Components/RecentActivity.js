@@ -10,25 +10,34 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import MomentComponent from '../Components/MomentComponent';
 import VibeComponent from '../Components/VibeComponent';
+import { adHelper } from '../Helpers';
 
 class RecentActivity extends React.Component {
 
   height = Dimensions.get('window').height / 2;
 
-  _renderImage({item}) {
+  _renderImage({item, index}) {
     return(
       item.event_type === 'moment' ? 
-        <MomentComponent
-          moment={item}
-          navigation={this.props.navigation}
-          height={this.height}
-        /> 
+        <View>
+          <MomentComponent
+            moment={item}
+            navigation={this.props.navigation}
+            height={this.height}
+          />
+          
+          { index % 5 === 0 && adHelper.displayPublisherBanner() }
+        </View>
         :
-        <VibeComponent
-          vibe={item}
-          navigation={this.props.navigation}
-          height={this.height}
-        />
+        <View>
+          <VibeComponent
+            vibe={item}
+            navigation={this.props.navigation}
+            height={this.height}
+          />
+
+          { index % 5 === 0 && adHelper.displayPublisherBanner() }
+        </View>
     );
   }
 

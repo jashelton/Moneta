@@ -6,6 +6,8 @@ import { connect } from 'react-redux';
 import { createEvent, clearErrors } from '../reducer';
 import { DIVIDER_COLOR } from '../common/styles/common-styles';
 import SnackBar from 'react-native-snackbar-component';
+import { Haptic } from 'expo';
+import { adHelper } from '../Helpers';
 
 class CreateVibeScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
@@ -73,7 +75,8 @@ class CreateVibeScreen extends React.Component {
       if (response.error) throw(response.error);
 
       this.clearVibe();
-      // TODO: Display Ad
+      Haptic.notification(Haptic.NotificationTypes.Success);
+      adHelper.displayAd();
       this.props.navigation.goBack();
     } catch(err) {
       throw(err);
