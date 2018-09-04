@@ -29,7 +29,7 @@ export default class NotificationsScreen extends React.Component {
     this.handleScroll = this.handleScroll.bind(this);
   }
 
-  async componentDidMount() {
+  componentDidMount() {
     this.getNotifications(0);
   }
 
@@ -82,6 +82,8 @@ export default class NotificationsScreen extends React.Component {
             size="small"
             rounded
             source={{ uri: item.event_image }}
+            source={item.event_image ? { uri: item.event_image } : null}
+            icon={{name: 'chat-bubble-outline', size: 20}}
             activeOpacity={0.7}
           />
         }

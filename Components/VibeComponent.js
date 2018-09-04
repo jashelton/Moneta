@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
 import { ListItem, Avatar } from 'react-native-elements';
 import { AirbnbRating } from 'react-native-ratings';
+import SocialComponent from '../Components/SocialComponent';
 
 export default class VibeComponent extends React.Component {
 
@@ -43,6 +44,7 @@ export default class VibeComponent extends React.Component {
         <View style={{ flex: 1, padding: 15 }}>
           <Text>{vibe.description}</Text>
         </View>
+        <SocialComponent event={vibe} />
       </View>
     );
   }

@@ -16,6 +16,9 @@ export const GET_EVENT_DETAILS_FAIL = 'moneta/eventDetails/LOAD_FAIL';
 export const UPDATE_EVENT_LIKES = 'moneta/eventDetails/UPDATE_LIKES';
 export const UPDATE_EVENT_LIKES_SUCCESS = 'moneta/eventDetails/UPDATE_LIKES_SUCCESS';
 export const UPDATE_EVENT_LIKES_FAIL = 'moneta/eventDetails/UPDATE_LIKES_FAIL';
+export const UPDATE_EVENT_LIKES_ACTIVITY = 'moneta/eventDetails/UPDATE_LIKES_ACTIVITY';
+export const UPDATE_EVENT_LIKES_ACTIVITY_SUCCESS = 'moneta/eventDetails/UPDATE_LIKES_ACTIVITY_SUCCESS';
+export const UPDATE_EVENT_LIKES_ACTIVITY_FAIL = 'moneta/eventDetails/UPDATE_LIKES_ACTIVITY_FAIL';
 export const GET_MARKERS = 'moneta/markers/GET_MARKERS';
 export const GET_MARKERS_SUCCESS = 'moneta/markers/GET_MARKERS_SUCCESS';
 export const GET_MARKERS_FAIL = 'moneta/markers/GET_MARKERS_FAIL';
@@ -136,6 +139,22 @@ export default function reducer(state = initialState, action) {
       const updatedEvent = update(state.event, { $set: {...state.event, liked, likes_count } });
       return { ...state, event: updatedEvent };
     case UPDATE_EVENT_LIKES_FAIL:
+      return {
+        ...state,
+        loading: false,
+        error: 'An error occured'
+      }
+    case UPDATE_EVENT_LIKES_ACTIVITY:
+      return { ...state };
+    case UPDATE_EVENT_LIKES_ACTIVITY_SUCCESS:
+      const activityLiked = action.payload.data.liked;
+      const activityLikesCount = action.payload.data.likes_count;
+      const activityEventId = action.payload.data.event_id;
+      const eventIndex = state.recentEvents.findIndex(ei => ei.id === parseInt(activityEventId));
+      const updatedLikeInRecent = update(state.recentEvents, { [eventIndex]: { liked: {$set: activityLiked}, likes_count: {$set: activityLikesCount} }});
+
+      return { ...state, recentEvents: updatedLikeInRecent };
+    case UPDATE_EVENT_LIKES_ACTIVITY_FAIL:
       return {
         ...state,
         loading: false,
@@ -392,11 +411,12 @@ export function getEventDetails(eventId, userLocation) {
   }
 }
 
-export function updateEventDetailsLikes(eventId, eventLiked) {
+export function updateEventDetailsLikes(eventId, eventLiked, from) {
   const isLiked = !eventLiked ? 1 : 0;
+  const type = from === 'details' ? UPDATE_EVENT_LIKES : UPDATE_EVENT_LIKES_ACTIVITY;
 
   return {
-    type: UPDATE_EVENT_LIKES,
+    type,
     payload: {
       request: {
         url:  `/events/${eventId}/${isLiked ? 'like' : 'unlike'}`,

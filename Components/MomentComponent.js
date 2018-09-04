@@ -5,6 +5,7 @@ import { View,
          Image } from 'react-native';
 import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
 import { ListItem, Avatar } from 'react-native-elements';
+import SocialComponent from './SocialComponent';
 
 export default class MomentComponent extends React.Component {
   render() {
@@ -37,26 +38,7 @@ export default class MomentComponent extends React.Component {
         >
           <Image style={styles.image} resizeMode='cover' source={{uri: moment.image}} />
         </TouchableHighlight>
-        {/* <View style={{ flex: 1, flexDirection: 'column' }}>
-          <View style={styles.imageTopOverlay}>
-            <View style={{ flexDirection: 'row', alignItems: 'center'}}>
-              <Icon color={PRIMARY_DARK_COLOR} name='visibility' size={15} />
-              <Text style={{ color: '#000', marginLeft: 5, fontSize: 12 }}>{moment.view_count}</Text>
-              { moment.recent_views &&
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 10 }}>
-                  <Icon color='green' name='arrow-upward' size={15} />
-                  <Text style={{ color: '#000', marginLeft: 5, fontSize: 12 }}>{moment.recent_views}</Text>
-                </View>
-              }
-            </View>
-            { moment.privacy === 'Private' &&
-              <Icon color='red' name='lock' size={15} />
-            }
-          </View>
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Text>{moment.title}</Text>
-          </View>
-        </View> */}
+        <SocialComponent event={moment} />
       </View>
     );
   }

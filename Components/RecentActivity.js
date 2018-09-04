@@ -25,7 +25,7 @@ class RecentActivity extends React.Component {
             navigation={this.props.navigation}
             height={this.height}
           />
-          
+
           { index % 5 === 0 && adHelper.displayPublisherBanner() }
         </View>
         :

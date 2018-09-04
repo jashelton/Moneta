@@ -112,7 +112,7 @@ class EventDetailsScreen extends React.Component {
     const { event } = this.props;
     const { currentUserId } = this.state;
 
-    await this.props.updateEventDetailsLikes(event.id, event.liked);
+    await this.props.updateEventDetailsLikes(event.id, event.liked, 'details');
 
     // If event has been disliked... needs to change for readability.
     if (event.liked) {
