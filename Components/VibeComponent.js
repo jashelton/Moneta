@@ -44,7 +44,7 @@ export default class VibeComponent extends React.Component {
         <View style={{ flex: 1, padding: 15 }}>
           <Text>{vibe.description}</Text>
         </View>
-        <SocialComponent event={vibe} />
+        <SocialComponent event={vibe} navigation={navigation} />
       </View>
     );
   }

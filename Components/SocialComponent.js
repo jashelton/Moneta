@@ -39,7 +39,7 @@ class SocialComponent extends React.Component {
   }
 
   render() {
-    const { event } = this.props;
+    const { event, navigation } = this.props;
 
     return (
       <View style={styles.container}>
@@ -61,7 +61,7 @@ class SocialComponent extends React.Component {
               color='#fb3958'
               name='comment'
               containerStyle={styles.iconContainer}
-              onPress={() => this.props.navigation.navigate('Comments', { event: event, incrementCommentCount: this.incrementCommentCount.bind(this) })}
+              onPress={() => navigation.push('EventDetails', { eventId: event.id })}
             />
           </View>
         </View>
