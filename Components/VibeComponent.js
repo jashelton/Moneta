@@ -12,7 +12,7 @@ export default class VibeComponent extends React.Component {
   }
 
   render() {
-    const { vibe, navigation } = this.props;
+    const { vibe, navigation, handleLike } = this.props;
     return(
       <View style={ [styles.container] }>
         <ListItem
@@ -44,7 +44,13 @@ export default class VibeComponent extends React.Component {
         <View style={{ flex: 1, padding: 15 }}>
           <Text>{vibe.description}</Text>
         </View>
-        <SocialComponent event={vibe} navigation={navigation} showCommentIcon={true} />
+        <SocialComponent
+          event={vibe}
+          navigation={navigation}
+          showCommentIcon={true}
+          onLikePress={() => handleLike()}
+          onCommentPress={() => navigation.navigate('EventDetails', { eventId: vibe.id })}
+        />
       </View>
     );
   }

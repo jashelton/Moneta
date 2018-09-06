@@ -10,11 +10,43 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import MomentComponent from '../Components/MomentComponent';
 import VibeComponent from '../Components/VibeComponent';
-import { adHelper } from '../Helpers';
+import { adHelper, authHelper } from '../Helpers';
+import { updateEventDetailsLikes } from '../reducer';
+import { notificationService } from '../Services';
 
 class RecentActivity extends React.Component {
 
   height = Dimensions.get('window').height / 2;
+
+  async handleEventLike(event) {
+    const { updateEventDetailsLikes } = this.props;
+    const currentUserId = await authHelper.getCurrentUserId();
+
+    // If event has been disliked... needs to change for readability.
+    if (event.liked) {
+      notificationService.deleteNotification(event.id, event.user_id, 'like');
+    }
+
+    try {
+      const response = await updateEventDetailsLikes(event.id, event.liked, 'activity');
+      if (response.error) throw(response.error);
+
+    } catch(err) {
+      throw(err);
+    }
+
+    // If event has been liked and the creator isn't the current user, send necessary notifications.
+    if (!event.liked && event.user_id !== currentUserId) {
+      this.notify();
+    }
+  }
+
+  async notify() {
+    const { event } = this.props;
+
+    await notificationService.sendPushNotification(event.user_id, `Someone liked your ${event.event_type}!`, event.title || event.description);
+    notificationService.createNotification(event.id, event.user_id, 'like');
+  }
 
   _renderImage({item, index}) {
     return(
@@ -24,6 +56,7 @@ class RecentActivity extends React.Component {
             moment={item}
             navigation={this.props.navigation}
             height={this.height}
+            handleLike={() => this.handleEventLike(item)}
           />
 
           { index % 5 === 0 && adHelper.displayPublisherBanner() }
@@ -34,6 +67,7 @@ class RecentActivity extends React.Component {
             vibe={item}
             navigation={this.props.navigation}
             height={this.height}
+            handleLike={() => this.handleEventLike(item)}
           />
 
           { index % 5 === 0 && adHelper.displayPublisherBanner() }
@@ -101,4 +135,9 @@ const mapStateToProps = state => {
   };
 };
 
-export default connect(mapStateToProps)(RecentActivity);
+const mapDispatchToProps = {
+  updateEventDetailsLikes
+};
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(RecentActivity);

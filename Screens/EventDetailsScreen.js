@@ -208,9 +208,8 @@ class EventDetailsScreen extends React.Component {
   }
 
   render() {
-    const { currentUserId, isImageZoomed, commentValue } = this.state;
+    const { isImageZoomed, commentValue } = this.state;
     const { event, navigation } = this.props;
-    let inputPosition = 0;
 
     if (this.props.loading) {
       return(
@@ -253,7 +252,11 @@ class EventDetailsScreen extends React.Component {
                   <Image style={styles.image} source={{uri: event.image}} />
                 </TouchableHighlight>
               }
-              <SocialComponent event={event} navigation={navigation} />
+              <SocialComponent
+                event={event}
+                navigation={navigation}
+                onLikePress={() => this.favoriteEvent()}
+              />
             </View>
 
             <CommentsComponent comments={event.comments} />

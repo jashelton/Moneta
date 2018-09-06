@@ -9,7 +9,7 @@ import SocialComponent from './SocialComponent';
 
 export default class MomentComponent extends React.Component {
   render() {
-    const { moment, navigation, height } = this.props;
+    const { moment, navigation, height, handleLike } = this.props;
 
     return(
       <View style={{ flex: 1, flexDirection: 'column', margin: 5, backgroundColor: '#fff' }}>
@@ -38,7 +38,13 @@ export default class MomentComponent extends React.Component {
         >
           <Image style={styles.image} resizeMode='cover' source={{uri: moment.image}} />
         </TouchableHighlight>
-        <SocialComponent event={moment} navigation={navigation} showCommentIcon={true} />
+        <SocialComponent
+          event={moment}
+          navigation={navigation}
+          showCommentIcon={true}
+          onLikePress={() => handleLike()}
+          onCommentPress={() => navigation.navigate('EventDetails', { eventId: moment.id })}
+        />
       </View>
     );
   }
