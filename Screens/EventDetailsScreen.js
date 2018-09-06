@@ -6,15 +6,15 @@ import { ScrollView,
          ActivityIndicator,
          TouchableHighlight,
          KeyboardAvoidingView,
-         AlertIOS,
+         Alert,
          Image,
          AppState,
          Dimensions,
          Keyboard,
          Modal } from 'react-native';
-import { Icon, ListItem, Avatar, Input } from 'react-native-elements';
+import { Icon, ListItem, Avatar, Input, Button } from 'react-native-elements';
 import { authHelper, LocationHelper, adHelper } from '../Helpers';
-import { PRIMARY_DARK_COLOR, DIVIDER_COLOR } from '../common/styles/common-styles';
+import { PRIMARY_DARK_COLOR, DIVIDER_COLOR, ACCENT_COLOR, WARNING_RED } from '../common/styles/common-styles';
 import { connect } from 'react-redux';
 import { updateEventDetailsLikes, deleteEvent, markEventViewed, getEventDetails, clearErrors, addCommentToEvent } from '../reducer';
 import { notificationService } from '../Services/notification.service';
@@ -49,6 +49,20 @@ export class EventDetailsHeader extends React.Component {
 }
 
 class EventDetailsScreen extends React.Component {
+  static navigationOptions = ({ navigation }) => {
+    return {
+      headerRight: (
+        <Icon
+          containerStyle={{ marginRight: 15 }}
+          size={28}
+          name="more-horiz"
+          color={PRIMARY_DARK_COLOR}
+          onPress={navigation.getParam('toggleEventOptionsModal')}
+        />
+      )
+    }
+  }
+
   constructor(props) {
     super(props);
     this.state = {
@@ -57,19 +71,24 @@ class EventDetailsScreen extends React.Component {
       appState: AppState.currentState,
       isImageZoomed: false,
       commentValue: '',
-      inputFocused: false
+      inputFocused: false,
+      eventOptionsModalVisible: false
     }
 
-    this.incrementCommentCount = this.incrementCommentCount.bind(this);
     this.verifyDeleteEvent = this.verifyDeleteEvent.bind(this);
     this._keyboardDidShow = this._keyboardDidShow.bind(this);
     this._keyboardDidHide = this._keyboardDidHide.bind(this);
+    this.toggleEventOptionsModal = this.toggleEventOptionsModal.bind(this);
   }
 
   async componentDidMount() {
     AppState.addEventListener('change', this._handleAppStateChange);
     this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', this._keyboardDidShow);
     this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this._keyboardDidHide);
+
+    this.props.navigation.setParams({
+      toggleEventOptionsModal: () => this.toggleEventOptionsModal()
+    });
 
     const currentUserId = await authHelper.getCurrentUserId();
     const eventId = this.props.navigation.getParam('eventId', null);
@@ -123,6 +142,10 @@ class EventDetailsScreen extends React.Component {
     }
   }
 
+  toggleEventOptionsModal() {
+    this.setState({ eventOptionsModalVisible: !this.state.eventOptionsModalVisible });
+  }
+
   async markEventAsViewed() {
     const { event } = this.props;
     if (!event.viewed_id) {
@@ -155,17 +178,10 @@ class EventDetailsScreen extends React.Component {
     notificationService.createNotification(event.id, event.user_id, 'like');
   }
 
-  incrementCommentCount() {
-    const { event } = this.props;
-    event.comment_count ++;
-
-    this.setState({ event });
-  }
-
   verifyDeleteEvent() {
-    AlertIOS.alert(
+    Alert.alert(
       'Delete Event',
-      `Are you sure you want to delete: ${this.props.event.title}?`,
+      `Are you sure you want to delete this ${this.props.event.event_type}?`,
       [
         {
           text: 'Cancel',
@@ -181,6 +197,7 @@ class EventDetailsScreen extends React.Component {
 
   async deleteEvent() {
     const { event, navigation, deleteEvent } = this.props;
+    this.setState({ eventOptionsModalVisible: false });
 
     try {
       const response = await deleteEvent(event.id);
@@ -208,7 +225,7 @@ class EventDetailsScreen extends React.Component {
   }
 
   render() {
-    const { isImageZoomed, commentValue } = this.state;
+    const { isImageZoomed, commentValue, eventOptionsModalVisible, currentUserId } = this.state;
     const { event, navigation } = this.props;
 
     if (this.props.loading) {
@@ -282,6 +299,23 @@ class EventDetailsScreen extends React.Component {
                   </TouchableHighlight>
                 }
               />
+            </Modal>
+
+            {/* Event Options Modal */}
+            <Modal
+              visible={eventOptionsModalVisible}
+              animationType="slide"
+              onRequestClose={() => this.setState({ eventOptionsModalVisible: false })}
+            >
+              <View style={styles.modalHeader}>
+                <Button title='Cancel' titleStyle={{color: ACCENT_COLOR}} clear={true} onPress={this.toggleEventOptionsModal}/>
+                <Button title='Done' titleStyle={{color: ACCENT_COLOR}} clear={true}/>
+              </View>
+              { event.user_id && event.user_id === currentUserId &&
+                <View style={{ position: 'absolute', bottom: 0, width: '100%', padding: 5, backgroundColor: WARNING_RED }}>
+                  <Button title='Delete Event' clear={true} onPress={this.verifyDeleteEvent}/>
+                </View>
+              }
             </Modal>
           </ScrollView>
           <KeyboardAvoidingView
@@ -369,6 +403,13 @@ const styles = StyleSheet.create({
     fontWeight: '200',
     color: 'grey',
     fontSize: 12
+  },
+  modalHeader: {
+    height: 60,
+    backgroundColor: PRIMARY_DARK_COLOR,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
   },
 });
 
