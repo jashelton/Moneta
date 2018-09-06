@@ -245,7 +245,10 @@ class EventDetailsScreen extends React.Component {
                 { event.title &&
                   <Text style={{ fontSize: 18, fontWeight: '500' }}>{event.title}</Text>
                 }
-                <Text style={{ fontSize: 14, fontWeight: '200' }}>{event.description}</Text>
+                { event.distanceFrom && event.distanceFrom.status === 'OK' &&
+                  <Text style={styles.subText}>{event.distanceFrom.distance.text}</Text>
+                }
+                <Text style={{ fontSize: 14, fontWeight: '200', marginTop: 15 }}>{event.description}</Text>
               </View>
               { event.image &&
                 <TouchableHighlight onPress={() => this.setState({ isImageZoomed: true })}>
