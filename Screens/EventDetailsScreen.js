@@ -22,6 +22,7 @@ import ImageViewer from 'react-native-image-zoom-viewer';
 import SnackBar from 'react-native-snackbar-component'
 import SocialComponent from '../Components/SocialComponent';
 import ViewToggle from '../Components/ViewToggle';
+import CommentsComponent from '../Components/CommentsComponent';
 
 export class EventDetailsHeader extends React.Component {
   render() {
@@ -255,24 +256,7 @@ class EventDetailsScreen extends React.Component {
               <SocialComponent event={event} navigation={navigation} />
             </View>
 
-            <View style={styles.commentSection}>
-              { event.comments.map((comment, i) => (
-                <View style={{ flexDirection: 'row', marginVertical: 5 }} key={i}>
-                  <View>
-                    <Avatar
-                      size="small"
-                      rounded
-                      source={{uri: comment.profile_image}}
-                      activeOpacity={0.7}
-                    />
-                  </View>
-                  <View style={{ flex: 1, padding: 10, marginHorizontal: 10, backgroundColor: '#eee', borderRadius: 5 }}>
-                    <Text style={{ fontWeight: '500', fontSize: 14 }}>{comment.name}</Text>
-                    <Text style={{ fontWeight: '200' }}>{comment.text}</Text>
-                  </View>
-                </View>
-              ))}
-            </View>
+            <CommentsComponent comments={event.comments} />
 
             {/* Modal to display full screen image with zoom */}
             <Modal visible={isImageZoomed} transparent={true} onRequestClose={() => this.setState({ isImageZoomed: false })}>
@@ -363,11 +347,6 @@ const styles = StyleSheet.create({
   },
   eventSection: {
     backgroundColor: '#fff'
-  },
-  commentSection: {
-    flex: 1,
-    backgroundColor: '#fff',
-    padding: 5
   },
   commentInput: {
     flexDirection: 'row',
