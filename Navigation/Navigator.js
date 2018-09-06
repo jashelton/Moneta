@@ -8,7 +8,6 @@ import MapScreen from '../Screens/MapScreen';
 import EventDetailsScreen from '../Screens/EventDetailsScreen';
 import AuthLoadingScreen from '../Screens/AuthLoadingScreen';
 import LoginScreen from '../Screens/LoginScreen';
-import CommentsScreen from '../Screens/CommentsScreen';
 import UserDetailsScreen from '../Screens/UserDetailsScreen';
 import NotificationsScreen from '../Screens/NotificationsScreen';
 import MyProfileScreen from '../Screens/MyProfileScreen';
@@ -26,7 +25,6 @@ const recentActivityStack = createStackNavigator(
   {
     Recent: HomeScreen,
     EventDetails: EventDetailsScreen,
-    Comments: CommentsScreen,
     UserDetails: UserDetailsScreen,
   },
   {
@@ -42,7 +40,6 @@ const eventsStack = createStackNavigator(
   {
     Map: MapScreen,
     EventDetails: EventDetailsScreen, // TODO: include as component with event icon in props
-    Comments: CommentsScreen,
     UserDetails: UserDetailsScreen
   },
   {
