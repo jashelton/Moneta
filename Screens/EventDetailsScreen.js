@@ -5,19 +5,23 @@ import { ScrollView,
          StyleSheet,
          ActivityIndicator,
          TouchableHighlight,
+         KeyboardAvoidingView,
          AlertIOS,
-         ImageBackground,
+         Image,
          AppState,
          Dimensions,
+         Keyboard,
          Modal } from 'react-native';
-import { Card, Divider, Icon, Button, ListItem, Avatar } from 'react-native-elements';
+import { Icon, ListItem, Avatar, Input } from 'react-native-elements';
 import { authHelper, LocationHelper, adHelper } from '../Helpers';
-import { WARNING_RED, ACCENT_COLOR, PRIMARY_DARK_COLOR, DIVIDER_COLOR } from '../common/styles/common-styles';
+import { PRIMARY_DARK_COLOR, DIVIDER_COLOR } from '../common/styles/common-styles';
 import { connect } from 'react-redux';
-import { updateEventDetailsLikes, deleteEvent, markEventViewed, getEventDetails, clearErrors } from '../reducer';
+import { updateEventDetailsLikes, deleteEvent, markEventViewed, getEventDetails, clearErrors, addCommentToEvent } from '../reducer';
 import { notificationService } from '../Services/notification.service';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import SnackBar from 'react-native-snackbar-component'
+import SocialComponent from '../Components/SocialComponent';
+import ViewToggle from '../Components/ViewToggle';
 
 export class EventDetailsHeader extends React.Component {
   render() {
@@ -50,15 +54,22 @@ class EventDetailsScreen extends React.Component {
       currentUserId: null,
       eventId: null,
       appState: AppState.currentState,
-      isImageZoomed: false
+      isImageZoomed: false,
+      commentValue: '',
+      inputFocused: false
     }
 
     this.incrementCommentCount = this.incrementCommentCount.bind(this);
     this.verifyDeleteEvent = this.verifyDeleteEvent.bind(this);
+    this._keyboardDidShow = this._keyboardDidShow.bind(this);
+    this._keyboardDidHide = this._keyboardDidHide.bind(this);
   }
 
   async componentDidMount() {
     AppState.addEventListener('change', this._handleAppStateChange);
+    this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', this._keyboardDidShow);
+    this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this._keyboardDidHide);
+
     const currentUserId = await authHelper.getCurrentUserId();
     const eventId = this.props.navigation.getParam('eventId', null);
 
@@ -73,6 +84,8 @@ class EventDetailsScreen extends React.Component {
 
   componentWillUnmount() {
     AppState.removeEventListener('change', this._handleAppStateChange);
+    this.keyboardDidShowListener.remove();
+    this.keyboardDidHideListener.remove();
   }
 
   _handleAppStateChange = async (nextAppState) => {
@@ -85,6 +98,14 @@ class EventDetailsScreen extends React.Component {
     }
 
     this.setState({ appState: nextAppState });
+  }
+
+  _keyboardDidShow () {
+    this.setState({ inputFocused: true });
+  }
+
+  _keyboardDidHide () {
+    this.setState({ inputFocused: false });
   }
 
   async fetchEventDetails() {
@@ -170,9 +191,25 @@ class EventDetailsScreen extends React.Component {
     }
   }
 
+  submitComment() {
+    let { commentValue } = this.state;
+    const { event, addCommentToEvent } = this.props;
+    
+    try {
+      const { data } = addCommentToEvent(event.id, commentValue);
+      Keyboard.dismiss();
+    } catch(err) {
+      throw(err);
+    }
+
+    commentValue = '';
+    this.setState({ commentValue, inputFocused: false });
+  }
+
   render() {
-    const { currentUserId, isImageZoomed } = this.state;
-    const { event } = this.props;
+    const { currentUserId, isImageZoomed, commentValue } = this.state;
+    const { event, navigation } = this.props;
+    let inputPosition = 0;
 
     if (this.props.loading) {
       return(
@@ -184,123 +221,115 @@ class EventDetailsScreen extends React.Component {
 
     if (event.id) {
       return(
-        <View style={styles.container}>
-          <Card
-            title={ <EventDetailsHeader
-                      date={event.created_at}
-                      creator={event.user_id}
-                      name={event.name}
-                      username={event.username}
-                      image={event.user_image}
-                      navigation={this.props.navigation}
-                    />
-                  }
-            containerStyle={styles.container}
-            wrapperStyle={{flex: 1}}
-          >
-            <ScrollView>
-              <TouchableHighlight onPress={() => this.setState({ isImageZoomed: true })}>
-                <ImageBackground
-                  style={styles.uploadedImage}
-                  resizeMode='cover'
-                  source={{uri: event.image}}
-                >
-                  <View style={styles.imageTopOverlay}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center'}}>
-                      <Icon color={PRIMARY_DARK_COLOR} name='visibility' />
-                      <Text style={{ color: '#000', marginLeft: 5, fontWeight: 'bold' }}>{event.view_count}</Text>
-                      { event.recent_views &&
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 10 }}>
-                          <Icon color='green' name='arrow-upward' />
-                          <Text style={{ color: '#000', marginLeft: 5, fontWeight: 'bold' }}>{event.recent_views}</Text>
-                        </View>
-                      }
-                    </View>
-                    { event.privacy === 'Private' &&
-                      <Icon color='red' name='lock' />
-                    }
-                  </View>
-                </ImageBackground>
-              </TouchableHighlight>
-
-              <View style={styles.iconGroup}>
-                <View style={styles.iconWrapper}>
-                  <Icon
-                    style={styles.rightIcon}
-                    color='#fb3958'
-                    name={!event.liked ? 'favorite-border' : 'favorite'}
-                    onPress={() => this.favoriteEvent()}
-                  />
-                  <Text style={styles.socialCount}>{event.likes_count || ''}</Text>
-                </View>
-                <View style={styles.iconWrapper}>
-                  <Icon
-                    style={styles.rightIcon}
-                    color='#fb3958'
-                    name='comment'
-                    onPress={() => this.props.navigation.navigate('Comments', { event: event, incrementCommentCount: this.incrementCommentCount.bind(this) })}
-                  />
-                  <Text style={styles.socialCount}>{event.comment_count}</Text>
-                </View>
-              </View>
-
-              <Divider style={{marginBottom: 15}} />
-
-              <View style={styles.eventBody}>
-                <View style={{marginBottom: 15}}>
-                  <Text style={styles.titleText}>{event.title}</Text>
-                  { event.distanceFrom && event.distanceFrom.status === 'OK' &&
-                    <Text style={styles.subText}>{event.distanceFrom.distance.text}</Text>
-                  }
-                </View>
-                <Text style={styles.eventText}>{event.description}</Text>
-              </View>
-            </ScrollView>
-          </Card>
-          { event.user_id && event.user_id === currentUserId ?
-            <Button
-              style={styles.deleteEventBtn}
-              buttonStyle={{backgroundColor: WARNING_RED}}
-              icon={
-                <Icon
-                  name='delete'
-                  size={20}
-                  color='#fff'
+        <View style={{ flex: 1 }}>
+          <ScrollView>
+            <ListItem
+              leftAvatar={
+                <Avatar
+                  size="small"
+                  rounded
+                  source={event.profile_image ? {uri: event.profile_image} : null}
+                  icon={{name: 'person', size: 20}}
+                  activeOpacity={0.7}
                 />
               }
-              iconLeft
-              title='Delete Event'
-              onPress={this.verifyDeleteEvent}
+              title={event.name}
+              titleStyle={{ color: PRIMARY_DARK_COLOR}}
+              subtitle={new Date(event.created_at).toISOString().substring(0, 10)}
+              subtitleStyle={styles.subText}
+              chevron
+              onPress={() => navigation.navigate('UserDetails', {userId: event.user_id})}
             />
-          :
-            adHelper.displayPublisherBanner()
-          }
-
-          {/* Modal to display full screen image with zoom */}
-          <Modal visible={isImageZoomed} transparent={true} onRequestClose={() => this.setState({ isImageZoomed: false })}>
-            <ImageViewer
-              imageUrls={[{url: event.image}]}
-              index={0}
-              onSwipeDown={() => this.setState({ isImageZoomed: false })}
-              enableSwipeDown={true}
-              renderIndicator={() => null}
-              saveToLocalByLongPress={false}
-              renderHeader={() => 
-                <TouchableHighlight
-                  style={{ position: 'absolute', width: '100%', padding: 15, alignItems: 'flex-end', zIndex: 10000 }}
-                  onPress={() => this.setState({ isImageZoomed: false })}
-                >
-                  <Icon name='close' size={38} color="#fff" />
+            <View style={styles.eventSection}>
+              <View style={[styles.textContent, { padding: 10 }]}>
+                { event.title &&
+                  <Text style={{ fontSize: 18, fontWeight: '500' }}>{event.title}</Text>
+                }
+                <Text style={{ fontSize: 14, fontWeight: '200' }}>{event.description}</Text>
+              </View>
+              { event.image &&
+                <TouchableHighlight onPress={() => this.setState({ isImageZoomed: true })}>
+                  <Image style={styles.image} source={{uri: event.image}} />
                 </TouchableHighlight>
               }
-            />
-          </Modal>
-          <SnackBar
-            visible={this.props.error ? true : false}
-            textMessage={this.props.error}
-            actionHandler={() => this.props.clearErrors()}
-            actionText="close"
-          />
+              <SocialComponent event={event} navigation={navigation} />
+            </View>
+
+            <View style={styles.commentSection}>
+              { event.comments.map((comment, i) => (
+                <View style={{ flexDirection: 'row', marginVertical: 5 }} key={i}>
+                  <View>
+                    <Avatar
+                      size="small"
+                      rounded
+                      source={{uri: comment.profile_image}}
+                      activeOpacity={0.7}
+                    />
+                  </View>
+                  <View style={{ flex: 1, padding: 10, marginHorizontal: 10, backgroundColor: '#eee', borderRadius: 5 }}>
+                    <Text style={{ fontWeight: '500', fontSize: 14 }}>{comment.name}</Text>
+                    <Text style={{ fontWeight: '200' }}>{comment.text}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+
+            {/* Modal to display full screen image with zoom */}
+            <Modal visible={isImageZoomed} transparent={true} onRequestClose={() => this.setState({ isImageZoomed: false })}>
+              <ImageViewer
+                imageUrls={[{url: event.image}]}
+                index={0}
+                onSwipeDown={() => this.setState({ isImageZoomed: false })}
+                enableSwipeDown={true}
+                renderIndicator={() => null}
+                saveToLocalByLongPress={false}
+                renderHeader={() => 
+                  <TouchableHighlight
+                    style={{ position: 'absolute', width: '100%', padding: 15, alignItems: 'flex-end', zIndex: 10000 }}
+                    onPress={() => this.setState({ isImageZoomed: false })}
+                  >
+                    <Icon name='close' size={38} color="#fff" />
+                  </TouchableHighlight>
+                }
+              />
+            </Modal>
+          </ScrollView>
+          <KeyboardAvoidingView
+            alwaysVisible={true}
+            behavior='padding'
+          >
+            <View style={styles.commentInput}>
+              <Input
+                placeholder='Comment'
+                containerStyle={{ backgroundColor: '#eee' }}
+                inputContainerStyle={{ borderBottomWidth: 0 }}
+                inputStyle={{ paddingTop: 8 }}
+                value={commentValue}
+                onChangeText={(value) => this.setState({ commentValue: value })}
+                multiline={true}
+                shake={true}
+                onFocus={() => this.setState({ inputFocused: true })}
+                onBlur={() => this.setState({ inputFocused: false })}
+                leftIcon={
+                  <Icon
+                    name='comment'
+                    size={22}
+                    color={DIVIDER_COLOR}
+                  />
+                }
+              />
+              <View style={{ alignItems: 'center', justifyContent: 'center', flexGrow: 1 }}>
+                <Icon
+                  name='send'
+                  size={24}
+                  color={commentValue.length ? PRIMARY_DARK_COLOR : DIVIDER_COLOR}
+                  disabled={!commentValue.length}
+                  onPress={this.submitComment.bind(this)}
+                />
+              </View>
+            </View>
+            <ViewToggle hide={!this.state.inputFocused} style={{ height: 65 }} />
+          </KeyboardAvoidingView>
         </View>
       ); 
     } else {
@@ -329,73 +358,33 @@ class EventDetailsScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginBottom: 5,
-    overflow: 'hidden'
+    flexDirection: 'column',
+    margin: 5,
   },
-  rightIcon: {
-    marginRight: 10
+  eventSection: {
+    backgroundColor: '#fff'
   },
-  socialCount: {
-    marginLeft: 5
+  commentSection: {
+    flex: 1,
+    backgroundColor: '#fff',
+    padding: 5
   },
-  uploadedImage: {
-    width: '100%',
-    height: Dimensions.get('window').height / 2,
-    borderRadius: 2,
-  },
-  imageTopOverlay: {
-    position: 'absolute',
-    top: 0,
-    width: '100%',
-    padding: 5,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+  commentInput: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center'
+    backgroundColor: '#fff',
+    padding: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#eee'
   },
-  iconGroup: {
-    marginTop: 10,
-    marginBottom: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between'
-  },
-  iconWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  eventBody: {
-  },
-  titleText: {
-    fontSize: 18,
-    fontWeight: '600'
-  },
-  eventText: {
-    fontSize: 16,
-    fontWeight: '200'
+  image: {
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').height * 0.35
   },
   subText: {
     fontWeight: '200',
     color: 'grey',
     fontSize: 12
   },
-  headerContainer: {
-    marginBottom: 15,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center'
-  },
-  deleteEventBtn: {
-    marginRight: 15,
-    marginLeft: 15,
-  },
-  modalHeader: {
-    height: 60,
-    backgroundColor: PRIMARY_DARK_COLOR,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-  }
 });
 
 const mapStateToProps = state => {
@@ -407,7 +396,7 @@ const mapStateToProps = state => {
 };
 
 const mapDispatchToProps = {
-  updateEventDetailsLikes, deleteEvent, markEventViewed, getEventDetails, clearErrors
+  updateEventDetailsLikes, deleteEvent, markEventViewed, getEventDetails, clearErrors, addCommentToEvent
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(EventDetailsScreen);

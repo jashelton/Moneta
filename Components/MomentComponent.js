@@ -38,7 +38,7 @@ export default class MomentComponent extends React.Component {
         >
           <Image style={styles.image} resizeMode='cover' source={{uri: moment.image}} />
         </TouchableHighlight>
-        <SocialComponent event={moment} navigation={navigation} />
+        <SocialComponent event={moment} navigation={navigation} showCommentIcon={true} />
       </View>
     );
   }

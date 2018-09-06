@@ -39,7 +39,7 @@ class SocialComponent extends React.Component {
   }
 
   render() {
-    const { event, navigation } = this.props;
+    const { event, navigation, showCommentIcon } = this.props;
 
     return (
       <View style={styles.container}>
@@ -54,17 +54,20 @@ class SocialComponent extends React.Component {
             />
             <Text>{event.likes_count}</Text>
           </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text>{event.comment_count}</Text>
-            <Icon
-              style={styles.rightIcon}
-              color='#fb3958'
-              name='comment'
-              containerStyle={styles.iconContainer}
-              onPress={() => navigation.push('EventDetails', { eventId: event.id })}
-            />
-          </View>
+          { showCommentIcon &&
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text>{event.comment_count}</Text>
+              <Icon
+                style={styles.rightIcon}
+                color='#fb3958'
+                name='comment'
+                containerStyle={styles.iconContainer}
+                onPress={() => navigation.push('EventDetails', { eventId: event.id })}
+              />
+            </View>
+          }
         </View>
+        <Divider />
       </View>
     );
   }

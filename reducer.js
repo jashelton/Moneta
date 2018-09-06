@@ -31,6 +31,9 @@ export const DELETE_EVENT_FAIL = 'moneta/events/DELETE_EVENT_FAIL';
 export const CREATE_EVENT = 'moneta/events/CREATE_EVENT';
 export const CREATE_EVENT_SUCCESS = 'moneta/events/CREATE_EVENT_SUCCESS';
 export const CREATE_EVENT_FAIL = 'moneta/events/CREATE_EVENT_FAIL';
+export const CREATE_COMMENT = 'moneta/events/CREATE_COMMENT';
+export const CREATE_COMMENT_SUCCESS = 'moneta/events/CREATE_COMMENT_SUCCESS';
+export const CREATE_COMMENT_FAIL = 'moneta/events/CREATE_COMMENT_FAIL';
 
 export const GET_USER_DETAILS = 'moneta/users/LOAD_USER_DETAILS';
 export const GET_USER_DETAILS_SUCCESS = 'moneta/users/LOAD_USER_DETAILS_SUCCESS';
@@ -219,6 +222,17 @@ export default function reducer(state = initialState, action) {
         loading: false,
         error: 'There was a problem creating the event'
       }
+    case CREATE_COMMENT:
+      return { ...state };
+    case CREATE_COMMENT_SUCCESS:
+      const updatedEventDetails = update(state.event, { comments: { $push: action.payload.data } } );
+      return { ...state, event: updatedEventDetails };
+    case CREATE_COMMENT_FAIL:
+      return {
+        ...state,
+        loading: false,
+        error: 'There was a problem adding a comment'
+      };
 
     // Users
     case GET_USER_DETAILS:
@@ -406,6 +420,19 @@ export function getEventDetails(eventId, userLocation) {
         url: `/events/${eventId}/details`,
         method: 'GET',
         params: { userLocation }
+      }
+    }
+  }
+}
+
+export function addCommentToEvent(eventId, text) {
+  return {
+    type: CREATE_COMMENT,
+    payload: {
+      request: {
+        url: `events/${eventId}/comments`,
+        method: 'POST',
+        data: { text }
       }
     }
   }
