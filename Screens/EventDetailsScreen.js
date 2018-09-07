@@ -275,7 +275,9 @@ class EventDetailsScreen extends React.Component {
               <SocialComponent
                 event={event}
                 navigation={navigation}
+                showCommentIcon={true}
                 onLikePress={() => this.favoriteEvent()}
+                onCommentPress={() => this.commentInputField.focus()}
               />
             </View>
 
@@ -324,6 +326,7 @@ class EventDetailsScreen extends React.Component {
           >
             <View style={styles.commentInput}>
               <Input
+                ref={(input) => this.commentInputField = input}
                 placeholder='Comment'
                 containerStyle={{ backgroundColor: '#eee' }}
                 inputContainerStyle={{ borderBottomWidth: 0 }}
