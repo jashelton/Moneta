@@ -7,6 +7,7 @@ import { View,
 import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
 import { ListItem, Avatar } from 'react-native-elements';
 import SocialComponent from './SocialComponent';
+import TimeAgo from 'react-native-timeago';
 
 export default class MomentComponent extends React.Component {
   render() {
@@ -26,8 +27,7 @@ export default class MomentComponent extends React.Component {
           }
           title={moment.name}
           titleStyle={{ color: PRIMARY_DARK_COLOR}}
-          subtitle={new Date(moment.created_at).toISOString().substring(0, 10)}
-          subtitleStyle={styles.subText}
+          subtitle={<TimeAgo time={moment.created_at} style={styles.subText}/>}
           chevron
           onPress={() => navigation.navigate('UserDetails', {userId: moment.user_id})}
         />

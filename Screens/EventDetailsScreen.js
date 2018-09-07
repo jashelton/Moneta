@@ -23,6 +23,7 @@ import SnackBar from 'react-native-snackbar-component'
 import SocialComponent from '../Components/SocialComponent';
 import ViewToggle from '../Components/ViewToggle';
 import CommentsComponent from '../Components/CommentsComponent';
+import TimeAgo from 'react-native-timeago';
 
 export class EventDetailsHeader extends React.Component {
   render() {
@@ -252,8 +253,7 @@ class EventDetailsScreen extends React.Component {
               }
               title={event.name}
               titleStyle={{ color: PRIMARY_DARK_COLOR}}
-              subtitle={new Date(event.created_at).toISOString().substring(0, 10)}
-              subtitleStyle={styles.subText}
+              subtitle={<TimeAgo time={event.created_at} style={styles.subText}/>}
               chevron
               onPress={() => navigation.navigate('UserDetails', {userId: event.user_id})}
             />

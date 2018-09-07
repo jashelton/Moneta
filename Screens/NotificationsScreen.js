@@ -4,6 +4,7 @@ import { notificationService } from '../Services/notification.service';
 import { ListItem, Avatar, Icon } from 'react-native-elements';
 import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
 import SnackBar from 'react-native-snackbar-component';
+import TimeAgo from 'react-native-timeago';
 
 export default class NotificationsScreen extends React.Component {
   static navigationOptions = { title: 'Notifications' };
@@ -67,8 +68,7 @@ export default class NotificationsScreen extends React.Component {
       <ListItem
         title={`${item.username || item.name} ${action_type === 'like' ? 'liked' : 'commented on'} your event.`}
         titleStyle={{ fontSize: 12 }}
-        subtitle={new Date(item.created_at).toISOString().substring(0, 10)}
-        subtitleStyle={{ fontSize: 10, color: 'grey'}}
+        subtitle={<TimeAgo time={item.created_at} style={styles.subText}/>}
         leftAvatar={
           <Avatar
             size="small"

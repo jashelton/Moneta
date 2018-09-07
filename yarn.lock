@@ -5985,6 +5985,10 @@ react-native-tab-view@^1.0.0, react-native-tab-view@^1.0.2:
   dependencies:
     prop-types "^15.6.1"
 
+react-native-timeago@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/react-native-timeago/-/react-native-timeago-0.4.0.tgz#653b3a11217a3c6a331de99f9d614b3e58faf523"
+
 react-native-touchable-scale@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/react-native-touchable-scale/-/react-native-touchable-scale-2.0.0.tgz#13a83a9423e46049cad3e3cc306eba2130883cb1"

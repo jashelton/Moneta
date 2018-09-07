@@ -30,7 +30,7 @@ export default class UserInfo extends React.Component {
             <View style={{flexDirection: 'column'}}>
               <Text style={{fontSize: 18, color: '#fff', fontWeight: '200'}}>{userDetails.name}</Text>
               <Text style={{color: LIGHT_PRIMARY_COLOR, fontSize: 12, fontWeight: '200'}}>
-                {`Joined: ${new Date(userDetails.created_at).toISOString().substring(0, 10)}`}
+                {<TimeAgo time={userDetails.created_at} style={styles.subText}/>}
               </Text>
             </View>
             { currentUser !== userDetails.id ?

@@ -4,6 +4,7 @@ import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
 import { ListItem, Avatar } from 'react-native-elements';
 import { AirbnbRating } from 'react-native-ratings';
 import SocialComponent from '../Components/SocialComponent';
+import TimeAgo from 'react-native-timeago';
 
 export default class VibeComponent extends React.Component {
 
@@ -27,8 +28,7 @@ export default class VibeComponent extends React.Component {
           }
           title={vibe.name}
           titleStyle={{ color: PRIMARY_DARK_COLOR}}
-          subtitle={new Date(vibe.created_at).toISOString().substring(0, 10)}
-          subtitleStyle={styles.subText}
+          subtitle={<TimeAgo time={vibe.created_at} style={styles.subText}/>}
           chevron
           onPress={() => navigation.navigate('UserDetails', { userId: vibe.user_id })}
         />
