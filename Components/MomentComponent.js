@@ -1,5 +1,6 @@
 import React from 'react';
 import { View,
+         Text,
          StyleSheet,
          TouchableHighlight,
          Image } from 'react-native';
@@ -30,6 +31,11 @@ export default class MomentComponent extends React.Component {
           chevron
           onPress={() => navigation.navigate('UserDetails', {userId: moment.user_id})}
         />
+
+        <View style={{ padding: 10 }}>
+          <Text style={{ fontSize: 15, fontWeight: '400', marginBottom: 5 }}>{moment.title}</Text>
+          <Text style={{ fontSize: 14, fontWeight: '200' }}>{moment.description}</Text>
+        </View>
 
         <TouchableHighlight
           underlayColor="#eee"
