@@ -75,8 +75,8 @@ class CreateVibeScreen extends React.Component {
       if (response.error) throw(response.error);
 
       this.clearVibe();
+      
       Haptic.notification(Haptic.NotificationTypes.Success);
-      adHelper.displayAd();
       this.props.navigation.goBack();
     } catch(err) {
       throw(err);

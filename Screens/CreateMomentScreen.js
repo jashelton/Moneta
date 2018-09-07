@@ -199,7 +199,6 @@ class CreateMomentScreen extends React.Component {
         this.clearEvent();
 
         Haptic.notification(Haptic.NotificationTypes.Success);
-        adHelper.displayAd();
         this.props.navigation.goBack();
       } catch (err) {
         throw(err);

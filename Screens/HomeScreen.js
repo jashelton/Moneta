@@ -156,7 +156,15 @@ class HomeScreen extends React.Component {
             />
           </View>
         :
-          <View></View>
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+            <Icon
+              size={36}
+              name='refresh'
+              color={PRIMARY_DARK_COLOR}
+              onPress={() => this.getActivity()}
+            />
+            <Text>Could not find any events.</Text>
+          </View>
         }
       </View>
     );
