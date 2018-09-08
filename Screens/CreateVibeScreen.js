@@ -104,16 +104,6 @@ class CreateVibeScreen extends React.Component {
 
     return(
       <View style={styles.container}>
-        <View style={{ backgroundColor: '#ffae42', padding: 20 }}>
-          <Text style={{ paddingBottom: 15 }}>
-            This is an initial implementation of text based posting. There are still a lot of features that need to be built for this
-            specific feature.  Feedback is appreciated.
-          </Text>
-          <Text>
-            Ratings: The purpose of ratings is for people to anonomously rate a post.  There will be filters that will filter out low
-            rated posts.  The end goal of this is to incentivice positivity rather than everyone being spammed with negative content all the time.
-          </Text>
-        </View>
         <TextField
           label="What's going on?"
           value={vibeText}

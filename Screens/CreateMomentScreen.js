@@ -247,7 +247,7 @@ class CreateMomentScreen extends React.Component {
             multiline={true}
             blurOnSubmit={true}
             label='Description'
-            characterRestriction={140}
+            characterRestriction={240}
           />
           <ViewToggle hide={!localImage}>
             <TextField
