@@ -37,6 +37,9 @@ export const CREATE_COMMENT_FAIL = 'moneta/events/CREATE_COMMENT_FAIL';
 export const UPDATE_EVENT_RATING = 'moneta/events/UPDATE_EVENT_RATING';
 export const UPDATE_EVENT_RATING_SUCCESS = 'moneta/events/UPDATE_EVENT_RATING_SUCCESS';
 export const UPDATE_EVENT_RATING_FAIL = 'moneta/events/UPDATE_EVENT_RATING_FAIL';
+export const CREATE_EVENT_RATING = 'moneta/events/CREATE_EVENT_RATING';
+export const CREATE_EVENT_RATING_SUCCESS = 'moneta/events/CREATE_EVENT_RATING_SUCCESS';
+export const CREATE_EVENT_RATING_FAIL = 'moneta/events/CREATE_EVENT_RATING_FAIL';
 
 export const GET_USER_DETAILS = 'moneta/users/LOAD_USER_DETAILS';
 export const GET_USER_DETAILS_SUCCESS = 'moneta/users/LOAD_USER_DETAILS_SUCCESS';
@@ -255,6 +258,25 @@ export default function reducer(state = initialState, action) {
       });
       return { ...state, recentEvents: updatedRatingForEvent };
     case UPDATE_EVENT_RATING_FAIL:
+      return {
+        ...state,
+        loading: false,
+        error: 'There was a problem rating the event.'
+      }
+    case CREATE_EVENT_RATING:
+      return { ...state };
+    case CREATE_EVENT_RATING_SUCCESS:
+      const createRatingInfo = action.payload.data[0];
+      const indexForCreateRating = state.recentEvents.findIndex(e => e.id === parseInt(createRatingInfo.event_id));
+      const newRatingForEvent = update(state.recentEvents, {
+        [indexForCreateRating]: {
+          rating: {
+            $set: createRatingInfo
+          }
+        }
+      });
+      return { ...state, recentEvents: newRatingForEvent };
+    case CREATE_EVENT_RATING_SUCCESS:
       return {
         ...state,
         loading: false,
@@ -532,14 +554,25 @@ export function createEvent(event) {
 }
 
 export function updateRating(eventId, rating) {
-  const method = rating.previousRating ? 'PUT' : 'POST';
-
   return {
     type: UPDATE_EVENT_RATING,
     payload: {
       request: {
         url: `/events/${eventId}/rating`,
-        method,
+        method: 'PUT',
+        data: rating
+      }
+    }
+  }
+}
+
+export function createRating(eventId, rating) {
+  return {
+    type: CREATE_EVENT_RATING,
+    payload: {
+      request: {
+        url: `/events/${eventId}/rating`,
+        method: 'POST',
         data: rating
       }
     }
