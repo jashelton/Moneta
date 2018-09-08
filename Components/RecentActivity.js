@@ -11,7 +11,7 @@ import { connect } from 'react-redux';
 import MomentComponent from '../Components/MomentComponent';
 import VibeComponent from '../Components/VibeComponent';
 import { adHelper, authHelper } from '../Helpers';
-import { updateEventDetailsLikes, updateRating, createRating } from '../reducer';
+import { updateEventDetailsLikes, updateRating } from '../reducer';
 import { notificationService } from '../Services';
 
 class RecentActivity extends React.Component {
@@ -53,12 +53,8 @@ class RecentActivity extends React.Component {
 
   async submitRating(eventId, value) {
     this.setState({ canRate: false });
-
-    if (value.previousRating) {
-      await this.props.updateRating(eventId, value);
-    } else {
-      await this.props.createRating(eventId, value);
-    }
+    
+    await this.props.updateRating(eventId, value);
 
     this.setState({ canRate: true });
   }
@@ -156,8 +152,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = {
   updateEventDetailsLikes,
-  updateRating,
-  createRating
+  updateRating
 };
 
 
