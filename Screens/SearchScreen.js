@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
 import { SearchBar, ListItem, Avatar } from 'react-native-elements';
 import { Constants } from 'expo';
 import { connect } from 'react-redux';
@@ -54,7 +54,7 @@ class SearchScreen extends React.Component {
           showLoading={loading}
           platform="ios"
           cancelButtonTitle="Cancel"
-          placeholder='Search'
+          placeholder='Search for user'
           onChangeText={val => this.searchQuery(val)}
           onClear={() => this.props.clearUserSearch()}
           onCancel={() => this.searchQuery('')}
@@ -71,14 +71,6 @@ class SearchScreen extends React.Component {
             numColumns={1}
             data={userList}
             renderItem={this._renderUser.bind(this)}
-            // onEndReached={() => this.props.handleScroll(events.length)}
-            // onEndReachedThreshold={0}
-            // refreshControl={
-            //   <RefreshControl
-            //     refreshing={refreshing}
-            //     onRefresh={this.props._onRefresh}
-            //   />
-            // }
           />
         }
       </View>
