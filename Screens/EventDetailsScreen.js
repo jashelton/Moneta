@@ -16,7 +16,13 @@ import { Icon, ListItem, Avatar, Input, Button } from 'react-native-elements';
 import { authHelper, LocationHelper, adHelper } from '../Helpers';
 import { PRIMARY_DARK_COLOR, DIVIDER_COLOR, ACCENT_COLOR, WARNING_RED } from '../common/styles/common-styles';
 import { connect } from 'react-redux';
-import { updateEventDetailsLikes, deleteEvent, markEventViewed, getEventDetails, clearErrors, addCommentToEvent } from '../reducer';
+import { updateEventDetailsLikes,
+         deleteEvent,
+         markEventViewed,
+         getEventDetails,
+         clearErrors,
+         addCommentToEvent,
+         detailsUpdateRating } from '../reducer';
 import { notificationService } from '../Services/notification.service';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import SnackBar from 'react-native-snackbar-component'
@@ -24,6 +30,7 @@ import SocialComponent from '../Components/SocialComponent';
 import ViewToggle from '../Components/ViewToggle';
 import CommentsComponent from '../Components/CommentsComponent';
 import TimeAgo from 'react-native-timeago';
+import { AirbnbRating } from 'react-native-ratings';
 
 export class EventDetailsHeader extends React.Component {
   render() {
@@ -73,7 +80,8 @@ class EventDetailsScreen extends React.Component {
       isImageZoomed: false,
       commentValue: '',
       inputFocused: false,
-      eventOptionsModalVisible: false
+      eventOptionsModalVisible: false,
+      canRate: true
     }
 
     this.verifyDeleteEvent = this.verifyDeleteEvent.bind(this);
@@ -225,6 +233,24 @@ class EventDetailsScreen extends React.Component {
     this.setState({ commentValue, inputFocused: false });
   }
 
+  async submitRating(value) {
+    const { event } = this.props;
+    const { canRate } = this.state;
+
+    if (event.rating.user_rating !== value && canRate) {
+      this.setState({ canRate: false });
+
+      const rating = {
+        previousRating: event.rating.user_rating || null,
+        newRating: value
+      };
+
+      await this.props.detailsUpdateRating(event.id, rating);
+    }
+
+    this.setState({ canRate: true });
+  }
+
   render() {
     const { isImageZoomed, commentValue, eventOptionsModalVisible, currentUserId } = this.state;
     const { event, navigation } = this.props;
@@ -258,6 +284,23 @@ class EventDetailsScreen extends React.Component {
               onPress={() => navigation.navigate('UserDetails', {userId: event.user_id})}
             />
             <View style={styles.eventSection}>
+              <View style={{ alignItems: 'flex-end', justifyContent: 'center', marginRight: 15 }}>
+                <View>
+                  <Text style={{ alignSelf: 'center', fontSize: 14, fontWeight: '200' }}>
+                    {event.rating.avg_rating ? `Avg: ${event.rating.avg_rating}` : 'No ratings yet.'}
+                  </Text>
+                  <AirbnbRating
+                    count={5}
+                    defaultRating={event.rating.user_rating || 0}
+                    size={22}
+                    showRating={false}
+                    onFinishRating={(value) => this.submitRating(value)}
+                  />
+                  <Text style={{ alignSelf: 'center', fontSize: 14, fontWeight: '200' }}>
+                    { event.rating.user_rating ? `My Rating: ${event.rating.user_rating}` : 'Rate Anonymously'}
+                  </Text>
+                </View>
+              </View>
               <View style={[styles.textContent, { padding: 10 }]}>
                 { event.title &&
                   <Text style={{ fontSize: 18, fontWeight: '500' }}>{event.title}</Text>
@@ -425,7 +468,13 @@ const mapStateToProps = state => {
 };
 
 const mapDispatchToProps = {
-  updateEventDetailsLikes, deleteEvent, markEventViewed, getEventDetails, clearErrors, addCommentToEvent
+  updateEventDetailsLikes,
+  deleteEvent,
+  markEventViewed,
+  getEventDetails,
+  clearErrors,
+  addCommentToEvent,
+  detailsUpdateRating
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(EventDetailsScreen);

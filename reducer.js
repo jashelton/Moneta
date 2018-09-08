@@ -40,6 +40,9 @@ export const UPDATE_EVENT_RATING_FAIL = 'moneta/events/UPDATE_EVENT_RATING_FAIL'
 export const CREATE_EVENT_RATING = 'moneta/events/CREATE_EVENT_RATING';
 export const CREATE_EVENT_RATING_SUCCESS = 'moneta/events/CREATE_EVENT_RATING_SUCCESS';
 export const CREATE_EVENT_RATING_FAIL = 'moneta/events/CREATE_EVENT_RATING_FAIL';
+export const UPDATE_EVENT_DETAILS_RATING = 'moneta/events/UPDATE_EVENT_DETAILS_RATING';
+export const UPDATE_EVENT_DETAILS_RATING_SUCCESS = 'moneta/events/UPDATE_EVENT_DETAILS_RATING_SUCCESS';
+export const UPDATE_EVENT_DETAILS_RATING_FAIL = 'moneta/events/UPDATE_EVENT_DETAILS_RATING_FAIL';
 
 export const GET_USER_DETAILS = 'moneta/users/LOAD_USER_DETAILS';
 export const GET_USER_DETAILS_SUCCESS = 'moneta/users/LOAD_USER_DETAILS_SUCCESS';
@@ -256,6 +259,7 @@ export default function reducer(state = initialState, action) {
           }
         }
       });
+      
       return { ...state, recentEvents: updatedRatingForEvent };
     case UPDATE_EVENT_RATING_FAIL:
       return {
@@ -277,6 +281,22 @@ export default function reducer(state = initialState, action) {
       });
       return { ...state, recentEvents: newRatingForEvent };
     case CREATE_EVENT_RATING_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        error: 'There was a problem rating the event.'
+      }
+    case UPDATE_EVENT_DETAILS_RATING:
+      return { ...state };
+    case UPDATE_EVENT_DETAILS_RATING_SUCCESS:
+      const detailsRatingInfo = action.payload.data[0];
+      const detailsUpdateRatingForEvent = update(state.event, {
+        rating: {
+          $set: detailsRatingInfo
+        }
+      });
+      return { ...state, event: detailsUpdateRatingForEvent };
+    case UPDATE_EVENT_DETAILS_RATING_FAIL:
       return {
         ...state,
         loading: false,
@@ -573,6 +593,21 @@ export function createRating(eventId, rating) {
       request: {
         url: `/events/${eventId}/rating`,
         method: 'POST',
+        data: rating
+      }
+    }
+  }
+}
+
+export function detailsUpdateRating(eventId, rating) {
+  const method = rating.previousRating ? 'PUT' : 'POST';
+
+  return {
+    type: UPDATE_EVENT_DETAILS_RATING,
+    payload: {
+      request: {
+        url: `/events/${eventId}/rating`,
+        method,
         data: rating
       }
     }

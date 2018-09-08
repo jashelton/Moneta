@@ -54,9 +54,9 @@ export default class VibeComponent extends React.Component {
               showRating={false}
               onFinishRating={(value) => this.submitRating(value)}
             />
-            { vibe.rating.user_rating &&
-              <Text style={{ alignSelf: 'center', fontSize: 14, fontWeight: '200' }}>My Rating: {vibe.rating.user_rating}</Text>
-            }
+            <Text style={{ alignSelf: 'center', fontSize: 14, fontWeight: '200' }}>
+              { vibe.rating.user_rating ? `My Rating: ${vibe.rating.user_rating}` : 'Rate Anonymously'}
+            </Text>
           </View>
         </View>
         <View style={{ flex: 1, padding: 15 }}>

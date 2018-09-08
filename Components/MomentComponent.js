@@ -60,9 +60,9 @@ export default class MomentComponent extends React.Component {
               showRating={false}
               onFinishRating={(value) => this.submitRating(value)}
             />
-            { moment.rating.user_rating &&
-              <Text style={{ alignSelf: 'center', fontSize: 14, fontWeight: '200' }}>My Rating: {moment.rating.user_rating}</Text>
-            }
+            <Text style={{ alignSelf: 'center', fontSize: 14, fontWeight: '200' }}>
+              { moment.rating.user_rating ? `My Rating: ${moment.rating.user_rating}` : 'Rate Anonymously'}
+            </Text>
           </View>
         </View>
 
