@@ -34,6 +34,9 @@ export const CREATE_EVENT_FAIL = 'moneta/events/CREATE_EVENT_FAIL';
 export const CREATE_COMMENT = 'moneta/events/CREATE_COMMENT';
 export const CREATE_COMMENT_SUCCESS = 'moneta/events/CREATE_COMMENT_SUCCESS';
 export const CREATE_COMMENT_FAIL = 'moneta/events/CREATE_COMMENT_FAIL';
+export const UPDATE_EVENT_RATING = 'moneta/events/UPDATE_EVENT_RATING';
+export const UPDATE_EVENT_RATING_SUCCESS = 'moneta/events/UPDATE_EVENT_RATING_SUCCESS';
+export const UPDATE_EVENT_RATING_FAIL = 'moneta/events/UPDATE_EVENT_RATING_FAIL';
 
 export const GET_USER_DETAILS = 'moneta/users/LOAD_USER_DETAILS';
 export const GET_USER_DETAILS_SUCCESS = 'moneta/users/LOAD_USER_DETAILS_SUCCESS';
@@ -233,6 +236,30 @@ export default function reducer(state = initialState, action) {
         loading: false,
         error: 'There was a problem adding a comment'
       };
+    case UPDATE_EVENT_RATING:
+      return { ...state };
+    case UPDATE_EVENT_RATING_SUCCESS:
+      const updatedRatingInfo = action.payload.data[0];
+      const eventIndexForRating = state.recentEvents.findIndex(e => e.id === parseInt(updatedRatingInfo.event_id));
+      const updatedRatingForEvent = update(state.recentEvents, {
+        [eventIndexForRating]: {
+          rating: {
+            user_rating: {
+              $set: updatedRatingInfo.user_rating
+            },
+            avg_rating: {
+              $set: updatedRatingInfo.avg_rating
+            }
+          }
+        }
+      });
+      return { ...state, recentEvents: updatedRatingForEvent };
+    case UPDATE_EVENT_RATING_FAIL:
+      return {
+        ...state,
+        loading: false,
+        error: 'There was a problem rating the event.'
+      }
 
     // Users
     case GET_USER_DETAILS:
@@ -499,6 +526,21 @@ export function createEvent(event) {
         url: `/events/create`,
         method: 'POST',
         data: event
+      }
+    }
+  }
+}
+
+export function updateRating(eventId, rating) {
+  const method = rating.previousRating ? 'PUT' : 'POST';
+
+  return {
+    type: UPDATE_EVENT_RATING,
+    payload: {
+      request: {
+        url: `/events/${eventId}/rating`,
+        method,
+        data: rating
       }
     }
   }

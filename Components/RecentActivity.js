@@ -11,7 +11,7 @@ import { connect } from 'react-redux';
 import MomentComponent from '../Components/MomentComponent';
 import VibeComponent from '../Components/VibeComponent';
 import { adHelper, authHelper } from '../Helpers';
-import { updateEventDetailsLikes } from '../reducer';
+import { updateEventDetailsLikes, updateRating } from '../reducer';
 import { notificationService } from '../Services';
 
 class RecentActivity extends React.Component {
@@ -48,6 +48,10 @@ class RecentActivity extends React.Component {
     notificationService.createNotification(event.id, event.user_id, 'like');
   }
 
+  async submitRating(eventId, value) {
+    this.props.updateRating(eventId, value);
+  }
+
   _renderImage({item, index}) {
     return(
       item.event_type === 'moment' ? 
@@ -68,6 +72,7 @@ class RecentActivity extends React.Component {
             navigation={this.props.navigation}
             height={this.height}
             handleLike={() => this.handleEventLike(item)}
+            submitRating={(eventId, value) => this.submitRating(eventId, value)}
           />
 
           { index % 5 === 0 && adHelper.displayPublisherBanner() }
@@ -136,7 +141,8 @@ const mapStateToProps = state => {
 };
 
 const mapDispatchToProps = {
-  updateEventDetailsLikes
+  updateEventDetailsLikes,
+  updateRating
 };
 
 

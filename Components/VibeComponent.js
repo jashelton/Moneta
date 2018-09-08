@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
-import { ListItem, Avatar } from 'react-native-elements';
+import { ListItem, Avatar, Rating } from 'react-native-elements';
 import { AirbnbRating } from 'react-native-ratings';
 import SocialComponent from '../Components/SocialComponent';
 import TimeAgo from 'react-native-timeago';
@@ -10,10 +10,21 @@ export default class VibeComponent extends React.Component {
 
   submitRating(value) {
     // TODO: Upsert to ratings table
+    const { vibe } = this.props;
+
+    if (vibe.rating.user_rating !== value) {
+      const rating = {
+        previousRating: vibe.rating.user_rating,
+        newRating: value
+      };
+
+      this.props.submitRating(vibe.id, rating);
+    }
   }
 
   render() {
     const { vibe, navigation, handleLike } = this.props;
+
     return(
       <View style={ [styles.container] }>
         <ListItem
@@ -33,13 +44,19 @@ export default class VibeComponent extends React.Component {
           onPress={() => navigation.navigate('UserDetails', { userId: vibe.user_id })}
         />
         <View style={{ alignItems: 'flex-end', justifyContent: 'center', marginRight: 15 }}>
-          <AirbnbRating
-            count={5}
-            defaultRating={0}
-            size={20}
-            showRating={false}
-            onFinishRating={this.submitRating}
-          />
+          <View>
+            <Text style={{ alignSelf: 'center', fontSize: 14, fontWeight: '200' }}>{vibe.rating.avg_rating}</Text>
+            <AirbnbRating
+              count={5}
+              defaultRating={vibe.rating.user_rating || 0}
+              size={22}
+              showRating={false}
+              onFinishRating={(value) => this.submitRating(value)}
+            />
+            { vibe.rating.user_rating &&
+              <Text style={{ alignSelf: 'center', fontSize: 14, fontWeight: '200' }}>My Rating: {vibe.rating.user_rating}</Text>
+            }
+          </View>
         </View>
         <View style={{ flex: 1, padding: 15 }}>
           <Text style={{ fontSize: 14, fontWeight: '200' }}>{vibe.description}</Text>
