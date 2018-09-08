@@ -65,6 +65,7 @@ class RecentActivity extends React.Component {
             navigation={this.props.navigation}
             height={this.height}
             handleLike={() => this.handleEventLike(item)}
+            submitRating={(eventId, value) => this.submitRating(eventId, value)}
           />
 
           { index % 5 === 0 && adHelper.displayPublisherBanner() }

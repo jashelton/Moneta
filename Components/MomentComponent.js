@@ -6,10 +6,26 @@ import { View,
          Image } from 'react-native';
 import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
 import { ListItem, Avatar } from 'react-native-elements';
+import { AirbnbRating } from 'react-native-ratings';
 import SocialComponent from './SocialComponent';
 import TimeAgo from 'react-native-timeago';
 
 export default class MomentComponent extends React.Component {
+
+  submitRating(value) {
+    // TODO: Upsert to ratings table
+    const { moment } = this.props;
+
+    if (moment.rating.user_rating !== value) {
+      const rating = {
+        previousRating: moment.rating.user_rating || null,
+        newRating: value
+      };
+
+      this.props.submitRating(moment.id, rating);
+    }
+  }
+
   render() {
     const { moment, navigation, height, handleLike } = this.props;
 
@@ -31,6 +47,25 @@ export default class MomentComponent extends React.Component {
           chevron
           onPress={() => navigation.navigate('UserDetails', {userId: moment.user_id})}
         />
+
+        <View style={{ alignItems: 'flex-end', justifyContent: 'center', marginRight: 15 }}>
+          <View>
+            <Text
+              style={{ alignSelf: 'center', fontSize: 14, fontWeight: '200' }}>
+              {moment.rating.avg_rating ? `Avg: ${moment.rating.avg_rating}` : 'No ratings yet.'}
+            </Text>
+            <AirbnbRating
+              count={5}
+              defaultRating={moment.rating.user_rating || 0}
+              size={22}
+              showRating={false}
+              onFinishRating={(value) => this.submitRating(value)}
+            />
+            { moment.rating.user_rating &&
+              <Text style={{ alignSelf: 'center', fontSize: 14, fontWeight: '200' }}>My Rating: {moment.rating.user_rating}</Text>
+            }
+          </View>
+        </View>
 
         <View style={{ padding: 10 }}>
           <Text style={{ fontSize: 15, fontWeight: '400', marginBottom: 5 }}>{moment.title}</Text>

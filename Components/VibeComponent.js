@@ -14,7 +14,7 @@ export default class VibeComponent extends React.Component {
 
     if (vibe.rating.user_rating !== value) {
       const rating = {
-        previousRating: vibe.rating.user_rating,
+        previousRating: vibe.rating.user_rating || null,
         newRating: value
       };
 
@@ -45,7 +45,9 @@ export default class VibeComponent extends React.Component {
         />
         <View style={{ alignItems: 'flex-end', justifyContent: 'center', marginRight: 15 }}>
           <View>
-            <Text style={{ alignSelf: 'center', fontSize: 14, fontWeight: '200' }}>{vibe.rating.avg_rating}</Text>
+            <Text style={{ alignSelf: 'center', fontSize: 14, fontWeight: '200' }}>
+              {vibe.rating.avg_rating ? `Avg: ${vibe.rating.avg_rating}` : 'No ratings yet.'}
+            </Text>
             <AirbnbRating
               count={5}
               defaultRating={vibe.rating.user_rating || 0}
