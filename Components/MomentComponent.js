@@ -13,10 +13,9 @@ import TimeAgo from 'react-native-timeago';
 export default class MomentComponent extends React.Component {
 
   submitRating(value) {
-    // TODO: Upsert to ratings table
-    const { moment } = this.props;
+    const { moment, canRate } = this.props;
 
-    if (moment.rating.user_rating !== value) {
+    if (moment.rating.user_rating !== value && canRate) {
       const rating = {
         previousRating: moment.rating.user_rating || null,
         newRating: value

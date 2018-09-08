@@ -9,10 +9,9 @@ import TimeAgo from 'react-native-timeago';
 export default class VibeComponent extends React.Component {
 
   submitRating(value) {
-    // TODO: Upsert to ratings table
-    const { vibe } = this.props;
+    const { vibe, canRate } = this.props;
 
-    if (vibe.rating.user_rating !== value) {
+    if (vibe.rating.user_rating !== value && canRate) {
       const rating = {
         previousRating: vibe.rating.user_rating || null,
         newRating: value

@@ -17,6 +17,9 @@ import { notificationService } from '../Services';
 class RecentActivity extends React.Component {
 
   height = Dimensions.get('window').height / 2;
+  state = {
+    canRate: true
+  }
 
   async handleEventLike(event) {
     const { updateEventDetailsLikes } = this.props;
@@ -49,11 +52,15 @@ class RecentActivity extends React.Component {
   }
 
   async submitRating(eventId, value) {
+    this.setState({ canRate: false });
+
     if (value.previousRating) {
-      this.props.updateRating(eventId, value);
+      await this.props.updateRating(eventId, value);
     } else {
-      this.props.createRating(eventId, value);
+      await this.props.createRating(eventId, value);
     }
+
+    this.setState({ canRate: true });
   }
 
   _renderImage({item, index}) {
@@ -66,6 +73,7 @@ class RecentActivity extends React.Component {
             height={this.height}
             handleLike={() => this.handleEventLike(item)}
             submitRating={(eventId, value) => this.submitRating(eventId, value)}
+            canRate={this.state.canRate}
           />
 
           { index % 5 === 0 && adHelper.displayPublisherBanner() }
@@ -78,6 +86,7 @@ class RecentActivity extends React.Component {
             height={this.height}
             handleLike={() => this.handleEventLike(item)}
             submitRating={(eventId, value) => this.submitRating(eventId, value)}
+            canRate={this.state.canRate}
           />
 
           { index % 5 === 0 && adHelper.displayPublisherBanner() }
