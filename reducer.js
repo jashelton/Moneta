@@ -41,6 +41,11 @@ export const UPDATE_EVENT_DETAILS_RATING = 'moneta/events/UPDATE_EVENT_DETAILS_R
 export const UPDATE_EVENT_DETAILS_RATING_SUCCESS = 'moneta/events/UPDATE_EVENT_DETAILS_RATING_SUCCESS';
 export const UPDATE_EVENT_DETAILS_RATING_FAIL = 'moneta/events/UPDATE_EVENT_DETAILS_RATING_FAIL';
 
+export const USER_SEARCH = 'moneta/search/USER_SEARCH';
+export const USER_SEARCH_SUCCESS = 'moneta/search/USER_SEARCH_SUCCESS';
+export const USER_SEARCH_FAIL = 'moneta/search/USER_SEARCH_FAIL';
+export const CLEAR_USER_SEARCH = 'moneta/search/CLEAR_USER_SEARCH';
+
 export const GET_USER_DETAILS = 'moneta/users/LOAD_USER_DETAILS';
 export const GET_USER_DETAILS_SUCCESS = 'moneta/users/LOAD_USER_DETAILS_SUCCESS';
 export const GET_USER_DETAILS_FAIL = 'moneta/users/LOAD_USER_DETAILS_FAIL';
@@ -80,7 +85,8 @@ const initialState = {
   currentUserDetails: {},
   currentUserStats: {},
   userActivity: [],
-  currentUserActivity: []
+  currentUserActivity: [],
+  userList: []
 };
 
 export default function reducer(state = initialState, action) {
@@ -369,6 +375,18 @@ export default function reducer(state = initialState, action) {
       return { ...state, loading: false, error: action.payload.data };
     case CLEAR_ERRORS:
       return { ...state, loading: false, error: null };
+    case USER_SEARCH:
+      return { ...state, loading: true };
+    case USER_SEARCH_SUCCESS:
+      return { ...state, loading: false, userList: action.payload.data };
+    case USER_SEARCH_FAIL:
+      return {
+        ...state,
+        loading: false,
+        error: 'There was a problem searching for users.'
+      }
+    case CLEAR_USER_SEARCH:
+      return { ...state, loading: false, userList: [] };
     default:
       return state;
   }
@@ -665,5 +683,24 @@ export function createError(error) {
     payload: {
       data: error
     }
+  }
+}
+
+export function getUsersSearch(text) {
+  return {
+    type: USER_SEARCH,
+    payload: {
+      request: {
+        url: '/users/search',
+        method: 'GET',
+        params: { query: text }
+      }
+    }
+  }
+}
+
+export function clearUserSearch() {
+  return {
+    type: CLEAR_USER_SEARCH,
   }
 }

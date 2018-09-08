@@ -14,6 +14,7 @@ import MyProfileScreen from '../Screens/MyProfileScreen';
 import CreateEventScreen from '../Screens/CreateEventScreen';
 import CreateVibeScreen from '../Screens/CreateVibeScreen';
 import CreateMomentScreen from '../Screens/CreateMomentScreen';
+import SearchScreen from '../Screens/SearchScreen';
 
 // Header shows up on Events screen because the events stack is inside the tab navigator
 
@@ -94,13 +95,22 @@ const profileStack = createStackNavigator(
   }
 );
 
+const searchStack = createStackNavigator(
+  {
+    Search: SearchScreen,
+    EventDetails: EventDetailsScreen,
+    UserDetails: UserDetailsScreen
+  }
+);
+
 const AppStack = createBottomTabNavigator(
   {
     Recent: recentActivityStack,
-    Events: eventsStack,
-    'New Event': newEventStack,
+    Map: eventsStack,
+    New: newEventStack,
+    Search: searchStack,
     Notifications: notificationsStack,
-    Profile: profileStack,
+    Profile: profileStack
   },
   {
     initialRouteName: 'Recent',
@@ -110,9 +120,11 @@ const AppStack = createBottomTabNavigator(
         let iconName;
         if (routeName === 'Recent') {
           iconName = 'access-time'
-        } else if (routeName === 'Events') {
+        } else if (routeName === 'Map') {
           iconName = 'pin-drop'
-        } else if (routeName === 'New Event') {
+        } else if (routeName === 'Search') {
+          iconName = 'search'
+        } else if (routeName === 'New') {
           iconName = 'add'
         } else if (routeName === 'Profile') {
           iconName = 'person'
