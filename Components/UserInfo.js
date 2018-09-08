@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableHighlight, Dimensions } from 'react-native';
 import { Avatar, Button } from 'react-native-elements';
-
+import TimeAgo from 'react-native-timeago';
 import { PRIMARY_DARK_COLOR, TEXT_ICONS_COLOR, ACCENT_COLOR, LIGHT_PRIMARY_COLOR } from '../common/styles/common-styles';
 
 export default class UserInfo extends React.Component {
