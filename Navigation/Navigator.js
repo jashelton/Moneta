@@ -15,6 +15,7 @@ import CreateEventScreen from '../Screens/CreateEventScreen';
 import CreateVibeScreen from '../Screens/CreateVibeScreen';
 import CreateMomentScreen from '../Screens/CreateMomentScreen';
 import SearchScreen from '../Screens/SearchScreen';
+import LikeScreen from '../Screens/LikeScreen';
 
 // Header shows up on Events screen because the events stack is inside the tab navigator
 
@@ -27,6 +28,7 @@ const recentActivityStack = createStackNavigator(
     Recent: HomeScreen,
     EventDetails: EventDetailsScreen,
     UserDetails: UserDetailsScreen,
+    Likes: LikeScreen
   },
   {
     navigationOptions: {
@@ -41,7 +43,8 @@ const eventsStack = createStackNavigator(
   {
     Map: MapScreen,
     EventDetails: EventDetailsScreen, // TODO: include as component with event icon in props
-    UserDetails: UserDetailsScreen
+    UserDetails: UserDetailsScreen,
+    Likes: LikeScreen
   },
   {
     navigationOptions: {
@@ -70,7 +73,8 @@ const newEventStack = createStackNavigator(
 const notificationsStack = createStackNavigator(
   {
     Notifications: NotificationsScreen,
-    EventDetails: EventDetailsScreen
+    EventDetails: EventDetailsScreen,
+    Likes: LikeScreen
   },
   {
     navigationOptions: {
@@ -85,6 +89,7 @@ const profileStack = createStackNavigator(
     Profile: MyProfileScreen,
     EventDetails: EventDetailsScreen, // TODO: include as component with profile icon in props
     UserDetails: UserDetailsScreen,
+    Likes: LikeScreen
   },
   {
     navigationOptions: {
@@ -99,7 +104,8 @@ const searchStack = createStackNavigator(
   {
     Search: SearchScreen,
     EventDetails: EventDetailsScreen,
-    UserDetails: UserDetailsScreen
+    UserDetails: UserDetailsScreen,
+    Likes: LikeScreen
   }
 );
 

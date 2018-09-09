@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
+import { ScrollView, View, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
 import { SearchBar, ListItem, Avatar } from 'react-native-elements';
 import { Constants } from 'expo';
 import { connect } from 'react-redux';
@@ -59,19 +59,21 @@ class SearchScreen extends React.Component {
           onClear={() => this.props.clearUserSearch()}
           onCancel={() => this.searchQuery('')}
           value={this.state.query}
-          containerStyle={{ backgroundColor: '#fff', borderBottomColor: '#eee', borderBottomWidth: 1 }}/>
+          containerStyle={{ backgroundColor: '#fff', borderBottomColor: '#eee', borderBottomWidth: 1 }} />
 
         { loading ?
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <ActivityIndicator />
           </View>
         :
-          <FlatList
-            keyExtractor={(item, index) => index.toString()}
-            numColumns={1}
-            data={userList}
-            renderItem={this._renderUser.bind(this)}
-          />
+          <ScrollView>
+            <FlatList
+              keyExtractor={(item, index) => index.toString()}
+              numColumns={1}
+              data={userList}
+              renderItem={this._renderUser.bind(this)}
+            />
+          </ScrollView>
         }
       </View>
     );
