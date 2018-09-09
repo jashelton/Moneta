@@ -1,14 +1,14 @@
-import React from 'react';
+import React from "react";
 import {
   ActivityIndicator,
   StyleSheet,
   View,
   Text,
   AsyncStorage
-} from 'react-native';
-import { authHelper, commonHelper } from '../Helpers';
-import Sentry from 'sentry-expo';
-import { defaultFilters } from '../common/defaults/defaultEventFilters';
+} from "react-native";
+import { authHelper, commonHelper } from "../Helpers";
+import Sentry from "sentry-expo";
+import { defaultFilters } from "../common/defaults/defaultEventFilters";
 
 export default class AuthLoadingScreen extends React.Component {
   constructor(props) {
@@ -31,9 +31,9 @@ export default class AuthLoadingScreen extends React.Component {
         first_name: user.first_name,
         last_name: user.last_name
       });
-      this.props.navigation.navigate('App');
+      this.props.navigation.navigate("App");
     } else {
-      this.props.navigation.navigate('Auth');
+      this.props.navigation.navigate("Auth");
     }
   }
 
@@ -50,8 +50,8 @@ export default class AuthLoadingScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center"
+  }
 });

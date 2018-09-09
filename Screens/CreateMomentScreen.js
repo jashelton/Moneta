@@ -1,24 +1,43 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableHighlight, Image, StyleSheet, Switch, Modal, Dimensions } from 'react-native';
-import { Icon, Button } from 'react-native-elements';
-import { TextField } from 'react-native-material-textfield';
-import { RNS3 } from 'react-native-aws3';
-import { Haptic, Constants } from 'expo';
-import { createEvent, clearErrors } from '../reducer';
-import { connect } from 'react-redux';
-import SnackBar from 'react-native-snackbar-component';
-import { authHelper, LocationHelper, commonHelper, adHelper } from '../Helpers';
-import { AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, BUCKET, BUCKET_REGION } from 'react-native-dotenv';
-import ViewToggle from '../Components/ViewToggle';
-import GooglePlacesInput from '../Components/LocationAutocomplete';
-import { DIVIDER_COLOR, PRIMARY_DARK_COLOR, TEXT_ICONS_COLOR } from '../common/styles/common-styles';
+import React from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableHighlight,
+  Image,
+  StyleSheet,
+  Switch,
+  Modal,
+  Dimensions
+} from "react-native";
+import { Icon, Button } from "react-native-elements";
+import { TextField } from "react-native-material-textfield";
+import { RNS3 } from "react-native-aws3";
+import { Haptic, Constants } from "expo";
+import { createEvent, clearErrors } from "../reducer";
+import { connect } from "react-redux";
+import SnackBar from "react-native-snackbar-component";
+import { authHelper, LocationHelper, commonHelper, adHelper } from "../Helpers";
+import {
+  AWS_ACCESS_KEY,
+  AWS_SECRET_ACCESS_KEY,
+  BUCKET,
+  BUCKET_REGION
+} from "react-native-dotenv";
+import ViewToggle from "../Components/ViewToggle";
+import GooglePlacesInput from "../Components/LocationAutocomplete";
+import {
+  DIVIDER_COLOR,
+  PRIMARY_DARK_COLOR,
+  TEXT_ICONS_COLOR
+} from "../common/styles/common-styles";
 
 const initialEvent = {
-  title: '',
-  description: '',
+  title: "",
+  description: "",
   localImage: null,
-  eventPrivacy: 'Public',
-  imageLocation: '',
+  eventPrivacy: "Public",
+  imageLocation: "",
   imageCoords: null,
   addressInfo: null,
   randomizeLocation: false
@@ -27,7 +46,7 @@ const initialEvent = {
 class CreateMomentScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
     return {
-      title: 'Create Moment',
+      title: "Create Moment",
       // headerLeft: (
       //   <Button
       //     containerStyle={styles.leftIcon}
@@ -41,18 +60,18 @@ class CreateMomentScreen extends React.Component {
         <Button
           containerStyle={styles.rightIcon}
           clear
-          title='Done'
-          titleStyle={{color: 'blue'}}
-          disabled={navigation.getParam('isDisabled')}
+          title="Done"
+          titleStyle={{ color: "blue" }}
+          disabled={navigation.getParam("isDisabled")}
           disabledTitleStyle={{ color: DIVIDER_COLOR }}
-          onPress={navigation.getParam('createEvent')}
+          onPress={navigation.getParam("createEvent")}
         />
       )
-    }
-  }
+    };
+  };
 
   options = {
-    keyPrefix: '',
+    keyPrefix: "",
     bucket: BUCKET,
     region: BUCKET_REGION,
     accessKey: AWS_ACCESS_KEY,
@@ -67,7 +86,7 @@ class CreateMomentScreen extends React.Component {
       eventForm: initialEvent,
       imageFile: null,
       visiblePlacesSearch: false,
-      isCreateDisabled: false,
+      isCreateDisabled: false
     };
 
     this.clearEvent = this.clearEvent.bind(this);
@@ -100,9 +119,9 @@ class CreateMomentScreen extends React.Component {
 
   updatePrivacySettings(val) {
     const { eventForm } = this.state;
-    eventForm.eventPrivacy = val ? 'Public' : 'Private';
+    eventForm.eventPrivacy = val ? "Public" : "Private";
 
-    this.setState({eventForm});
+    this.setState({ eventForm });
   }
 
   updateRandomizeLocationState(value) {
@@ -116,7 +135,8 @@ class CreateMomentScreen extends React.Component {
     const time = new Date();
     const now = Date.now();
 
-    return `${time.getFullYear()}-${time.getMonth() + 1}-${time.getDate()}_${now}`;
+    return `${time.getFullYear()}-${time.getMonth() +
+      1}-${time.getDate()}_${now}`;
   }
 
   // Check permission on CAMERA_ROLL and store what is needed to upload image to S3.
@@ -126,7 +146,11 @@ class CreateMomentScreen extends React.Component {
     if (!result.cancelled) {
       const { imageFile, eventForm } = this.state;
 
-      imageFile = { uri: result.uri, name: this.createDateString(), type: result.type }; // Required fields for S3 upload
+      imageFile = {
+        uri: result.uri,
+        name: this.createDateString(),
+        type: result.type
+      }; // Required fields for S3 upload
       eventForm.localImage = result; // Path to image to display to user before S3 upload
 
       this.setState({ imageFile, eventForm });
@@ -135,14 +159,15 @@ class CreateMomentScreen extends React.Component {
       if (result.exif.GPSLatitude && result.exif.GPSLongitude) {
         const imageCoords = LocationHelper.formatExifCoords(result.exif);
         const address = await LocationHelper.coordsToAddress(imageCoords);
-        const imageLocation = `${address[0].name}, ${address[0].city || null}, ${address[0].region}, ${address[0].isoCountryCode}`
+        const imageLocation = `${address[0].name}, ${address[0].city ||
+          null}, ${address[0].region}, ${address[0].isoCountryCode}`;
         const { eventForm } = this.state;
 
         eventForm.imageLocation = imageLocation;
         eventForm.imageCoords = imageCoords;
         eventForm.addressInfo = address[0];
       } else {
-        eventForm.imageLocation = '';
+        eventForm.imageLocation = "";
         eventForm.imageCoords = null;
       }
 
@@ -170,23 +195,40 @@ class CreateMomentScreen extends React.Component {
     this.setState({ isCreateDisabled: true }); // Prevent dupe insert
 
     let { imageFile, isCreateDisabled } = this.state;
-    const { title, description, eventPrivacy, imageLocation, imageCoords, addressInfo, randomizeLocation } = this.state.eventForm;
+    const {
+      title,
+      description,
+      eventPrivacy,
+      imageLocation,
+      imageCoords,
+      addressInfo,
+      randomizeLocation
+    } = this.state.eventForm;
 
     if (!isCreateDisabled) {
-      if (title === '' || description === '' || imageLocation === '' || !imageCoords || title.length > 60 || description.length > 240) {
-        alert('You must include a valid Title, Description, and Image');
+      if (
+        title === "" ||
+        description === "" ||
+        imageLocation === "" ||
+        !imageCoords ||
+        title.length > 60 ||
+        description.length > 240
+      ) {
+        alert("You must include a valid Title, Description, and Image");
         return;
       }
 
       const event = {
         title,
         description,
-        event_type: 'moment',
+        event_type: "moment",
         privacy: eventPrivacy,
         city: addressInfo.city,
         region: addressInfo.region,
         country_code: addressInfo.isoCountryCode,
-        coordinate: randomizeLocation ? LocationHelper.generateRandomPoint(imageCoords, 2500) : imageCoords
+        coordinate: randomizeLocation
+          ? LocationHelper.generateRandomPoint(imageCoords, 2500)
+          : imageCoords
       };
 
       try {
@@ -194,75 +236,92 @@ class CreateMomentScreen extends React.Component {
         event.image = s3Upload.body.postResponse;
 
         const response = await this.props.createEvent(event);
-        if (response.error) throw (response.error);
+        if (response.error) throw response.error;
 
         this.clearEvent();
 
         Haptic.notification(Haptic.NotificationTypes.Success);
         this.props.navigation.goBack();
       } catch (err) {
-        throw(err);
+        throw err;
       }
     }
-    
+
     this.setState({ isCreateDisabled: false });
   }
 
   render() {
-    const { localImage,
-            title,
-            description,
-            eventPrivacy,
-            imageLocation,
-            randomizeLocation,
-            imageCoords } = this.state.eventForm;
+    const {
+      localImage,
+      title,
+      description,
+      eventPrivacy,
+      imageLocation,
+      randomizeLocation,
+      imageCoords
+    } = this.state.eventForm;
     const { visiblePlacesSearch } = this.state;
-    return(
-      <View style={{flex: 1}}>
-        <ScrollView contentContainerStyle={{padding: 15, backgroundColor: '#fff'}}>
+    return (
+      <View style={{ flex: 1 }}>
+        <ScrollView
+          contentContainerStyle={{ padding: 15, backgroundColor: "#fff" }}
+        >
           <View style={styles.eventPrivacyContainer}>
             <Text>Create event as: {eventPrivacy}</Text>
             <Switch
-              value={eventPrivacy === 'Public' ? true : false}
-              onValueChange={(value) => this.updatePrivacySettings(value)}
+              value={eventPrivacy === "Public" ? true : false}
+              onValueChange={value => this.updatePrivacySettings(value)}
             />
           </View>
           <View style={styles.eventPrivacyContainer}>
             <Text>Randomize location within radius nearby?</Text>
             <Switch
               value={randomizeLocation ? true : false}
-              onValueChange={(value) => this.updateRandomizeLocationState(value)}
+              onValueChange={value => this.updateRandomizeLocationState(value)}
             />
           </View>
           <TextField
-            label='Title'
+            label="Title"
             value={title}
-            onChangeText={(title) => this.setState({ eventForm: { ...this.state.eventForm, title } }) }
+            onChangeText={title =>
+              this.setState({ eventForm: { ...this.state.eventForm, title } })
+            }
             characterRestriction={60}
           />
           <TextField
             value={description}
-            onChangeText={(description) => this.setState({ eventForm: { ...this.state.eventForm, description } })}
-            returnKeyType='next'
+            onChangeText={description =>
+              this.setState({
+                eventForm: { ...this.state.eventForm, description }
+              })
+            }
+            returnKeyType="next"
             multiline={true}
             blurOnSubmit={true}
-            label='Description'
+            label="Description"
             characterRestriction={240}
           />
           <ViewToggle hide={!localImage}>
             <TextField
-              label='Event Location'
-              baseColor={!imageCoords ? 'red' : 'green'}
+              label="Event Location"
+              baseColor={!imageCoords ? "red" : "green"}
               value={imageLocation}
-              onFocus={() => this.setState({visiblePlacesSearch: true})}
+              onFocus={() => this.setState({ visiblePlacesSearch: true })}
             />
           </ViewToggle>
-          <TouchableHighlight underlayColor="#eee" style={styles.imageUpload} onPress={this.prepS3Upload}>
-            { !localImage ?
+          <TouchableHighlight
+            underlayColor="#eee"
+            style={styles.imageUpload}
+            onPress={this.prepS3Upload}
+          >
+            {!localImage ? (
               <Icon style={styles.iconBtn} color="#d0d0d0" name="add-a-photo" />
-              :
-              <Image style={styles.uploadedImage} source={{uri: localImage.uri}} />
-            }
+            ) : (
+              <Image
+                style={styles.uploadedImage}
+                source={{ uri: localImage.uri }}
+              />
+            )}
           </TouchableHighlight>
           <Modal
             animationType="slide"
@@ -271,16 +330,20 @@ class CreateMomentScreen extends React.Component {
             onRequestClose={() => this.setState({ visiblePlacesSearch: false })}
           >
             <View style={styles.modalHeader}>
-              <View style={{flex: 1}}></View>
+              <View style={{ flex: 1 }} />
               <Button
                 clear
-                title='Cancel'
-                titleStyle={{color: TEXT_ICONS_COLOR}}
-                buttonStyle={{marginRight: 15}}
+                title="Cancel"
+                titleStyle={{ color: TEXT_ICONS_COLOR }}
+                buttonStyle={{ marginRight: 15 }}
                 onPress={() => this.setState({ visiblePlacesSearch: false })}
               />
             </View>
-            <GooglePlacesInput customImageLocation={(data, details) => this.customImageLocation(data, details)} />
+            <GooglePlacesInput
+              customImageLocation={(data, details) =>
+                this.customImageLocation(data, details)
+              }
+            />
           </Modal>
         </ScrollView>
 
@@ -297,31 +360,31 @@ class CreateMomentScreen extends React.Component {
 
 const styles = StyleSheet.create({
   eventPrivacyContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingVertical: 10
   },
   imageUpload: {
-    width: '100%',
-    height: Dimensions.get('window').height / 2,
-    backgroundColor: '#eee',
+    width: "100%",
+    height: Dimensions.get("window").height / 2,
+    backgroundColor: "#eee",
     marginTop: 15,
     marginBottom: 15,
     borderRadius: 3,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center"
   },
   uploadedImage: {
-    width: '100%',
-    height: Dimensions.get('window').height / 2,
+    width: "100%",
+    height: Dimensions.get("window").height / 2,
     borderRadius: 3
   },
   modalHeader: {
     backgroundColor: PRIMARY_DARK_COLOR,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingTop: Constants.statusBarHeight
   }
 });
@@ -338,4 +401,7 @@ const mapDispatchToProps = {
   clearErrors
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(CreateMomentScreen);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(CreateMomentScreen);

@@ -1,29 +1,35 @@
-import React from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, AppState } from 'react-native';
-import { Icon } from 'react-native-elements';
-import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
-import RecentActivity from '../Components/RecentActivity';
-import { permissionsHelper } from '../Helpers';
-import { listRecentActivity, loadMoreRows, clearErrors } from '../reducer'
-import { connect } from 'react-redux';
-import SnackBar from 'react-native-snackbar-component'
-import FilterRecentActivityModal from '../Components/FilterRecentActivityModal';
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  AppState
+} from "react-native";
+import { Icon } from "react-native-elements";
+import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
+import RecentActivity from "../Components/RecentActivity";
+import { permissionsHelper } from "../Helpers";
+import { listRecentActivity, loadMoreRows, clearErrors } from "../reducer";
+import { connect } from "react-redux";
+import SnackBar from "react-native-snackbar-component";
+import FilterRecentActivityModal from "../Components/FilterRecentActivityModal";
 
 class HomeScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
     return {
-      title: 'Recent Events',
+      title: "Recent Events",
       headerLeft: (
         <Icon
           containerStyle={styles.leftIcon}
           size={28}
           name="filter-list"
           color={PRIMARY_DARK_COLOR}
-          onPress={navigation.getParam('showFilterList')}
+          onPress={navigation.getParam("showFilterList")}
         />
       )
-    }
-  }
+    };
+  };
 
   constructor(props) {
     super(props);
@@ -31,7 +37,7 @@ class HomeScreen extends React.Component {
     this.state = {
       refreshing: false,
       filtersVisible: false,
-      socialSelected: 'Feed',
+      socialSelected: "Feed",
       appState: AppState.currentState
     };
 
@@ -41,7 +47,7 @@ class HomeScreen extends React.Component {
   }
 
   async componentDidMount() {
-    AppState.addEventListener('change', this._handleAppStateChange);
+    AppState.addEventListener("change", this._handleAppStateChange);
     // Get permissions from user for push notifications.
     // If agreed, user.push_token will be updated to store push token in db.
     await permissionsHelper.registerForPushNotificationsAsync();
@@ -50,20 +56,24 @@ class HomeScreen extends React.Component {
 
     this.props.navigation.setParams({
       toggleIsVisible: () => this.toggleIsVisible(),
-      showFilterList: () => this.setState({filtersVisible: !this.state.filtersVisible}),
+      showFilterList: () =>
+        this.setState({ filtersVisible: !this.state.filtersVisible })
     });
   }
 
   componentWillUnmount() {
-    AppState.removeEventListener('change', this._handleAppStateChange);
+    AppState.removeEventListener("change", this._handleAppStateChange);
   }
 
-  _handleAppStateChange = (nextAppState) => {
-    if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
+  _handleAppStateChange = nextAppState => {
+    if (
+      this.state.appState.match(/inactive|background/) &&
+      nextAppState === "active"
+    ) {
       this.getActivity();
     }
-    this.setState({appState: nextAppState});
-  }
+    this.setState({ appState: nextAppState });
+  };
 
   async getActivity() {
     const { socialSelected } = this.state;
@@ -71,11 +81,15 @@ class HomeScreen extends React.Component {
 
     try {
       // For nearby events, pass coords as second parameter
-      const response = await listRecentActivity(socialSelected || 'Feed', null, 0);
+      const response = await listRecentActivity(
+        socialSelected || "Feed",
+        null,
+        0
+      );
 
-      if (response.error) throw(response.error);
-    } catch(err) {
-      throw(err);
+      if (response.error) throw response.error;
+    } catch (err) {
+      throw err;
     }
   }
 
@@ -88,11 +102,11 @@ class HomeScreen extends React.Component {
   }
 
   toggleIsVisible() {
-    this.setState({isVisible: !this.state.isVisible});
+    this.setState({ isVisible: !this.state.isVisible });
   }
 
   updateSocialSelected(option) {
-    this.setState({socialSelected: option});
+    this.setState({ socialSelected: option });
     this.props.listRecentActivity(option, null, 0);
   }
 
@@ -108,41 +122,51 @@ class HomeScreen extends React.Component {
 
     if (loading && !filtersVisible) {
       return (
-        <View style={{ flex: 1, alignItems:'center', justifyContent: 'center' }}>
+        <View
+          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+        >
           <ActivityIndicator />
         </View>
-      )
+      );
     }
 
-    return(
+    return (
       <View style={styles.container}>
         <FilterRecentActivityModal
           filtersVisible={filtersVisible}
-          setVisibility={() => this.setState({filtersVisible: !this.state.filtersVisible})}
+          setVisibility={() =>
+            this.setState({ filtersVisible: !this.state.filtersVisible })
+          }
           socialSelected={socialSelected}
-          updateSocialSelected={(option) => this.updateSocialSelected(option)}
+          updateSocialSelected={option => this.updateSocialSelected(option)}
         />
-        { recentEvents.length ?
+        {recentEvents.length ? (
           <View>
             <RecentActivity
               refreshing={refreshing}
               navigation={navigation}
               events={recentEvents}
               handleScroll={this.handleScroll}
-              noDataMessage='There is no recent activity to display.'
+              noDataMessage="There is no recent activity to display."
               _onRefresh={this._onRefresh}
             />
           </View>
-        : loading && !recentEvents.length ?
+        ) : loading && !recentEvents.length ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator />
           </View>
-        : error ?
+        ) : error ? (
           <View style={styles.container}>
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+            <View
+              style={{
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "center"
+              }}
+            >
               <Icon
                 size={36}
-                name='refresh'
+                name="refresh"
                 color={PRIMARY_DARK_COLOR}
                 onPress={() => this.getActivity()}
               />
@@ -155,17 +179,19 @@ class HomeScreen extends React.Component {
               actionText="close"
             />
           </View>
-        :
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+        ) : (
+          <View
+            style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+          >
             <Icon
               size={36}
-              name='refresh'
+              name="refresh"
               color={PRIMARY_DARK_COLOR}
               onPress={() => this.getActivity()}
             />
             <Text>Could not find any events.</Text>
           </View>
-        }
+        )}
       </View>
     );
   }
@@ -173,15 +199,15 @@ class HomeScreen extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 1
   },
   leftIcon: {
     marginLeft: 10
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center'
+    justifyContent: "center",
+    alignItems: "center"
   }
 });
 
@@ -199,4 +225,7 @@ const mapDispatchToProps = {
   clearErrors
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(HomeScreen);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(HomeScreen);

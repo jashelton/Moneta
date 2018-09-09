@@ -1,24 +1,38 @@
-import React from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Modal, Dimensions, AppState } from 'react-native';
-import { PRIMARY_DARK_COLOR, ACCENT_COLOR, PRIMARY_LIGHT_COLOR } from '../common/styles/common-styles';
-import { Button, Divider, Icon } from 'react-native-elements';
-import { connect } from 'react-redux';
-import Carousel, { Pagination } from 'react-native-snap-carousel';
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  Modal,
+  Dimensions,
+  AppState
+} from "react-native";
+import {
+  PRIMARY_DARK_COLOR,
+  ACCENT_COLOR,
+  PRIMARY_LIGHT_COLOR
+} from "../common/styles/common-styles";
+import { Button, Divider, Icon } from "react-native-elements";
+import { connect } from "react-redux";
+import Carousel, { Pagination } from "react-native-snap-carousel";
 
-import RecentActivity from '../Components/RecentActivity';
-import { authHelper } from '../Helpers';
-import { getUserDetails,
-         updateUserDetailsFollows,
-         listRecentActivityForUser,
-         loadMoreRowsForUserActivity,
-         getUserStats,
-         clearErrors } from '../reducer';
-import UserInfo from '../Components/UserInfo';
-import UserStats from '../Components/UserStats';
-import SnackBar from 'react-native-snackbar-component'
-import EditProfileModal from '../Components/EditProfileModal';
-import FollowsModal from '../Components/FollowsModal';
-import { userService } from '../Services';
+import RecentActivity from "../Components/RecentActivity";
+import { authHelper } from "../Helpers";
+import {
+  getUserDetails,
+  updateUserDetailsFollows,
+  listRecentActivityForUser,
+  loadMoreRowsForUserActivity,
+  getUserStats,
+  clearErrors
+} from "../reducer";
+import UserInfo from "../Components/UserInfo";
+import UserStats from "../Components/UserStats";
+import SnackBar from "react-native-snackbar-component";
+import EditProfileModal from "../Components/EditProfileModal";
+import FollowsModal from "../Components/FollowsModal";
+import { userService } from "../Services";
 
 class UserDetailsScreen extends React.Component {
   // static navigationOptions = { header: null };
@@ -50,7 +64,7 @@ class UserDetailsScreen extends React.Component {
       sliderActiveSlide: 0,
       followsList: null,
       appState: AppState.currentState
-    }
+    };
 
     this.toggleOptionsModal = this.toggleOptionsModal.bind(this);
     this.toggleEditProfile = this.toggleEditProfile.bind(this);
@@ -61,8 +75,8 @@ class UserDetailsScreen extends React.Component {
   }
 
   async componentDidMount() {
-    AppState.addEventListener('change', this._handleAppStateChange);
-    const userId = this.props.navigation.getParam('userId', null);
+    AppState.addEventListener("change", this._handleAppStateChange);
+    const userId = this.props.navigation.getParam("userId", null);
     const currentUser = await authHelper.getCurrentUserId();
 
     this.setState({ currentUser, userId });
@@ -71,20 +85,23 @@ class UserDetailsScreen extends React.Component {
 
     this.props.navigation.setParams({
       toggleOptionsModal: () => this.toggleOptionsModal(),
-      getUsername: () => this.getUsername(),
+      getUsername: () => this.getUsername()
     });
   }
 
   componentWillUnmount() {
-    AppState.removeEventListener('change', this._handleAppStateChange);
+    AppState.removeEventListener("change", this._handleAppStateChange);
   }
 
-  _handleAppStateChange = (nextAppState) => {
-    if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
+  _handleAppStateChange = nextAppState => {
+    if (
+      this.state.appState.match(/inactive|background/) &&
+      nextAppState === "active"
+    ) {
       this.fetchUserDetails();
     }
-    this.setState({appState: nextAppState});
-  }
+    this.setState({ appState: nextAppState });
+  };
 
   async fetchUserDetails() {
     if (this.props.error) this.props.clearErrors();
@@ -95,11 +112,11 @@ class UserDetailsScreen extends React.Component {
       const userStats = await this.props.getUserStats(userId);
       const activity = await this.props.listRecentActivityForUser(userId, 0);
 
-      if (userDetails.error) throw(userDetails.error);
-      if (userStats.error) throw(userStats.error);
-      if (activity.error) throw(activity.error);
-    } catch(err) {
-      throw(err);
+      if (userDetails.error) throw userDetails.error;
+      if (userStats.error) throw userStats.error;
+      if (activity.error) throw activity.error;
+    } catch (err) {
+      throw err;
     }
   }
 
@@ -107,14 +124,18 @@ class UserDetailsScreen extends React.Component {
     const { userDetails } = this.props;
     if (userDetails && userDetails.name) {
       return (
-        <Text style={{color: PRIMARY_LIGHT_COLOR, fontWeight: '200', fontSize: 18}}>
+        <Text
+          style={{
+            color: PRIMARY_LIGHT_COLOR,
+            fontWeight: "200",
+            fontSize: 18
+          }}
+        >
           {this.props.userDetails.name}
         </Text>
       );
     } else {
-      return (
-        <Text></Text>
-      )
+      return <Text />;
     }
   }
 
@@ -141,7 +162,7 @@ class UserDetailsScreen extends React.Component {
   _navigateToUser(userId) {
     this.toggleFollowsModal();
     // TODO: This causes an issue with routing.
-    this.props.navigation.replace('UserDetails', { userId });
+    this.props.navigation.replace("UserDetails", { userId });
   }
 
   // Edit Profile
@@ -162,38 +183,38 @@ class UserDetailsScreen extends React.Component {
     }
   }
 
-  _renderItem ({item, index}) {
+  _renderItem({ item, index }) {
     if (index === 0) {
       return (
         <UserInfo
           userDetails={item}
           currentUser={this.state.currentUser}
           toggleEditProfile={this.toggleEditProfile}
-          toggleFollowsModal={(data) => this.toggleFollowsModal(data)}
+          toggleFollowsModal={data => this.toggleFollowsModal(data)}
           toggleFollowing={() => this.toggleFollowing()}
         />
       );
     } else if (index === 1) {
-      return (
-        <UserStats stats={item} />
-      );
+      return <UserStats stats={item} />;
     }
   }
 
   render() {
-    const { optionsModalVisible,
-            editProfileModalVisible,
-            imageFile,
-            refreshing,
-            sliderActiveSlide,
-            followsModalVisibility,
-            followsList } = this.state;
+    const {
+      optionsModalVisible,
+      editProfileModalVisible,
+      imageFile,
+      refreshing,
+      sliderActiveSlide,
+      followsModalVisibility,
+      followsList
+    } = this.state;
     const { userDetails, userStats, userActivity, loading, error } = this.props;
-    const { width } = Dimensions.get('window');
+    const { width } = Dimensions.get("window");
     const carouselElements = [userDetails, userStats];
 
     if (loading && !error) {
-      return(
+      return (
         <View>
           <ActivityIndicator />
         </View>
@@ -201,17 +222,21 @@ class UserDetailsScreen extends React.Component {
     }
 
     if (userDetails.id) {
-      return(
+      return (
         <View style={styles.container}>
-          <View style={{height: '40%'}}>
+          <View style={{ height: "40%" }}>
             <Carousel
-              ref={(c) => { this._carousel = c; }}
+              ref={c => {
+                this._carousel = c;
+              }}
               data={carouselElements}
               renderItem={this._renderItem}
               sliderWidth={width}
               itemWidth={width}
-              onSnapToItem={(index) => this.setState({ sliderActiveSlide: index })}
-              layout={'default'}
+              onSnapToItem={index =>
+                this.setState({ sliderActiveSlide: index })
+              }
+              layout={"default"}
             />
             <Pagination
               dotsLength={carouselElements.length} // TODO: don't hardcode
@@ -219,7 +244,7 @@ class UserDetailsScreen extends React.Component {
               containerStyle={styles.paginationContainer}
               dotColor={ACCENT_COLOR}
               dotStyle={styles.paginationDot}
-              inactiveDotColor='#1a1917'
+              inactiveDotColor="#1a1917"
               inactiveDotOpacity={0.4}
               inactiveDotScale={0.6}
               carouselRef={this._slider1Ref}
@@ -227,7 +252,7 @@ class UserDetailsScreen extends React.Component {
             />
           </View>
           <Divider />
-          <View style={{flex: 1}}>
+          <View style={{ flex: 1 }}>
             <RecentActivity
               events={userActivity}
               navigation={this.props.navigation}
@@ -244,10 +269,19 @@ class UserDetailsScreen extends React.Component {
             onRequestClose={this.toggleOptionsModal}
           >
             <View style={styles.modalHeader}>
-              <Button title='Cancel' titleStyle={{color: ACCENT_COLOR}} clear={true} onPress={this.toggleOptionsModal}/>
-              <Button title='Done' titleStyle={{color: ACCENT_COLOR}} clear={true}/>
+              <Button
+                title="Cancel"
+                titleStyle={{ color: ACCENT_COLOR }}
+                clear={true}
+                onPress={this.toggleOptionsModal}
+              />
+              <Button
+                title="Done"
+                titleStyle={{ color: ACCENT_COLOR }}
+                clear={true}
+              />
             </View>
-            <View style={{flexDirection: 'column', padding: 15}}>
+            <View style={{ flexDirection: "column", padding: 15 }}>
               <Text>Other options</Text>
             </View>
           </Modal>
@@ -266,7 +300,7 @@ class UserDetailsScreen extends React.Component {
             toggleFollowsModal={() => this.toggleFollowsModal()}
             followsList={followsList}
             navigation={this.props.navigation}
-            navigateToUser={(user) => this._navigateToUser(user)}
+            navigateToUser={user => this._navigateToUser(user)}
           />
 
           <SnackBar
@@ -278,12 +312,14 @@ class UserDetailsScreen extends React.Component {
         </View>
       );
     } else {
-      return(
+      return (
         <View style={styles.container}>
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+          <View
+            style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+          >
             <Icon
               size={36}
-              name='refresh'
+              name="refresh"
               color={PRIMARY_DARK_COLOR}
               onPress={() => this.fetchUserDetails()}
             />
@@ -302,7 +338,7 @@ class UserDetailsScreen extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 1
   },
   rightIcon: {
     marginRight: 15
@@ -310,14 +346,14 @@ const styles = StyleSheet.create({
   modalHeader: {
     height: 60,
     backgroundColor: PRIMARY_DARK_COLOR,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between"
   },
   editImageContainer: {
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
     padding: 25
   },
   editProfileBody: {
@@ -332,8 +368,8 @@ const styles = StyleSheet.create({
   },
   paginationContainer: {
     paddingVertical: 10,
-    backgroundColor: PRIMARY_DARK_COLOR,
-  },
+    backgroundColor: PRIMARY_DARK_COLOR
+  }
   // End Pagination
 });
 
@@ -356,4 +392,7 @@ const mapDispatchToProps = {
   clearErrors
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(UserDetailsScreen);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(UserDetailsScreen);

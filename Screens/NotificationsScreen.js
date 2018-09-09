@@ -1,29 +1,31 @@
-import React from 'react';
-import { View, Text, StyleSheet, FlatList, RefreshControl } from 'react-native';
-import { notificationService } from '../Services/notification.service';
-import { ListItem, Avatar, Icon } from 'react-native-elements';
-import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
-import SnackBar from 'react-native-snackbar-component';
-import TimeAgo from 'react-native-timeago';
+import React from "react";
+import { View, Text, StyleSheet, FlatList, RefreshControl } from "react-native";
+import { notificationService } from "../Services/notification.service";
+import { ListItem, Avatar, Icon } from "react-native-elements";
+import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
+import SnackBar from "react-native-snackbar-component";
+import TimeAgo from "react-native-timeago";
 
 export default class NotificationsScreen extends React.Component {
-  static navigationOptions = { title: 'Notifications' };
+  static navigationOptions = { title: "Notifications" };
 
   constructor(props) {
     super(props);
 
-    this.viewabilityConfigCallbackPairs = [{
-      viewabilityConfig: {
-        waitForInteraction: false,
-        itemVisiblePercentThreshold: 95,
-        minimumViewTime: 2500
-      },
-      onViewableItemsChanged: this.markViewableItemsAsViewed
-    }]
+    this.viewabilityConfigCallbackPairs = [
+      {
+        viewabilityConfig: {
+          waitForInteraction: false,
+          itemVisiblePercentThreshold: 95,
+          minimumViewTime: 2500
+        },
+        onViewableItemsChanged: this.markViewableItemsAsViewed
+      }
+    ];
 
     this.state = {
       notifications: null,
-      refreshing: false,
+      refreshing: false
     };
 
     this.getNotifications = this.getNotifications.bind(this);
@@ -40,9 +42,11 @@ export default class NotificationsScreen extends React.Component {
     try {
       const { data } = await notificationService.getNotifications(offset || 0);
       this.setState({ notifications: data });
-    } catch(err) {
-      this.setState({ error: 'There was a problem getting your notifications.' });
-      throw(err);
+    } catch (err) {
+      this.setState({
+        error: "There was a problem getting your notifications."
+      });
+      throw err;
     }
   }
 
@@ -51,9 +55,11 @@ export default class NotificationsScreen extends React.Component {
       try {
         const { data } = await notificationService.getNotifications(offset);
         this.setState({ notifications: this.state.notifications.concat(data) });
-      } catch(err) {
-        this.setState({ error: 'There was a problem getting your notifications.' });
-        throw(err);
+      } catch (err) {
+        this.setState({
+          error: "There was a problem getting your notifications."
+        });
+        throw err;
       }
     }
   }
@@ -61,19 +67,21 @@ export default class NotificationsScreen extends React.Component {
   _renderNotification({ item }) {
     const { action_type } = item;
     // TODO: action_type === comment ? Should prob navigate to CommentsScreen
-      // Right now, the problem is that the comment screen requires incrementCommentCount as a prop.
+    // Right now, the problem is that the comment screen requires incrementCommentCount as a prop.
     // const navRoute = action_type === 'like' ? 'EventDetails' : 'Comments';
 
     return (
       <ListItem
-        title={`${item.username || item.name} ${action_type === 'like' ? 'liked' : 'commented on'} your event.`}
+        title={`${item.username || item.name} ${
+          action_type === "like" ? "liked" : "commented on"
+        } your event.`}
         titleStyle={{ fontSize: 12 }}
-        subtitle={<TimeAgo time={item.created_at} style={styles.subText}/>}
+        subtitle={<TimeAgo time={item.created_at} style={styles.subText} />}
         leftAvatar={
           <Avatar
             size="small"
             source={item.profile_image ? { uri: item.profile_image } : null}
-            icon={{name: 'person', size: 20}}
+            icon={{ name: "person", size: 20 }}
             activeOpacity={0.7}
           />
         }
@@ -83,11 +91,15 @@ export default class NotificationsScreen extends React.Component {
             rounded
             source={{ uri: item.event_image }}
             source={item.event_image ? { uri: item.event_image } : null}
-            icon={{name: 'chat-bubble-outline', size: 20}}
+            icon={{ name: "chat-bubble-outline", size: 20 }}
             activeOpacity={0.7}
           />
         }
-        onPress={() => this.props.navigation.navigate('EventDetails', { eventId: item.event_id })}
+        onPress={() =>
+          this.props.navigation.navigate("EventDetails", {
+            eventId: item.event_id
+          })
+        }
         chevron
       />
     );
@@ -102,12 +114,14 @@ export default class NotificationsScreen extends React.Component {
     const { notifications, refreshing, error } = this.state;
 
     if (error) {
-      return(
-        <View style={{flex: 1}}>
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+      return (
+        <View style={{ flex: 1 }}>
+          <View
+            style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+          >
             <Icon
               size={36}
-              name='refresh'
+              name="refresh"
               color={PRIMARY_DARK_COLOR}
               onPress={() => this.getNotifications()}
             />
@@ -122,14 +136,14 @@ export default class NotificationsScreen extends React.Component {
       );
     }
 
-    return(
+    return (
       <View style={styles.constainer}>
-        { notifications && notifications.length ?
+        {notifications && notifications.length ? (
           <FlatList
             keyExtractor={(item, index) => index.toString()}
             data={notifications}
             renderItem={this._renderNotification.bind(this)}
-            onEndReached={ () => this.handleScroll(notifications.length)}
+            onEndReached={() => this.handleScroll(notifications.length)}
             onEndReachedThreshold={0}
             viewabilityConfigCallbackPairs={this.viewabilityConfigCallbackPairs}
             refreshControl={
@@ -139,16 +153,19 @@ export default class NotificationsScreen extends React.Component {
               />
             }
           />
-        : 
-          <Text style={{alignSelf: 'center'}}> There are no notifcations to display. </Text>
-        }   
+        ) : (
+          <Text style={{ alignSelf: "center" }}>
+            {" "}
+            There are no notifcations to display.{" "}
+          </Text>
+        )}
       </View>
-    )
+    );
   }
 }
 
 const styles = StyleSheet.create({
   constainer: {
-    flex: 1,
+    flex: 1
   }
 });

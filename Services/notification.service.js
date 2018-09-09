@@ -1,6 +1,6 @@
-import axios from 'axios';
-import { ENDPOINT } from 'react-native-dotenv';
-import { authHelper } from '../Helpers';
+import axios from "axios";
+import { ENDPOINT } from "react-native-dotenv";
+import { authHelper } from "../Helpers";
 
 export const notificationService = {
   insertPushToken,
@@ -18,18 +18,25 @@ async function insertPushToken(token) {
 
 async function sendPushNotification(userId, title, body) {
   const headers = await authHelper.authHeaders();
-  const { data } = await axios.get(`${ENDPOINT}/users/${userId}/push-token`, headers);
+  const { data } = await axios.get(
+    `${ENDPOINT}/users/${userId}/push-token`,
+    headers
+  );
   if (data.push_token) {
     const notifyData = { to: data.push_token, title, body };
     const options = {
       headers: {
-        'content-type': 'application/json',
-        'accept': 'application/json',
-        'accept-encoding': 'gzip, deflate'
+        "content-type": "application/json",
+        accept: "application/json",
+        "accept-encoding": "gzip, deflate"
       }
     };
 
-    const push = await axios.post('https://exp.host/--/api/v2/push/send', notifyData, options);
+    const push = await axios.post(
+      "https://exp.host/--/api/v2/push/send",
+      notifyData,
+      options
+    );
     return push;
   }
 
@@ -48,7 +55,7 @@ async function deleteNotification(event_id, user_id, type) {
 
   return axios.delete(`${ENDPOINT}/users/:id/notifications`, {
     params: {
-      data,
+      data
     },
     headers
   });
@@ -66,5 +73,9 @@ async function getNotifications(offset) {
 
 async function markNotificationsViewed(notificationIds) {
   const headers = await authHelper.authHeaders();
-  return axios.put(`${ENDPOINT}/users/:id/notifications/viewed`, { notificationIds }, headers);
+  return axios.put(
+    `${ENDPOINT}/users/:id/notifications/viewed`,
+    { notificationIds },
+    headers
+  );
 }

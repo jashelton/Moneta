@@ -1,46 +1,54 @@
-import React from 'react';
-import { ScrollView, View, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
-import { SearchBar, ListItem, Avatar } from 'react-native-elements';
-import { Constants } from 'expo';
-import { connect } from 'react-redux';
-import { getUsersSearch, clearUserSearch } from '../reducer';
+import React from "react";
+import {
+  ScrollView,
+  View,
+  StyleSheet,
+  FlatList,
+  ActivityIndicator
+} from "react-native";
+import { SearchBar, ListItem, Avatar } from "react-native-elements";
+import { Constants } from "expo";
+import { connect } from "react-redux";
+import { getUsersSearch, clearUserSearch } from "../reducer";
 
 class SearchScreen extends React.Component {
   static navigationOptions = { header: null };
 
   state = {
-    query: ''
-  }
+    query: ""
+  };
 
   async searchQuery(value) {
     const { clearUserSearch, getUsersSearch } = this.props;
     this.setState({ query: value });
 
     if (!value.length) {
-      this.setState({ query: '' });
+      this.setState({ query: "" });
 
-      return clearUserSearch()
-    };
+      return clearUserSearch();
+    }
 
     getUsersSearch(value);
   }
 
-  _renderUser({item}) {
+  _renderUser({ item }) {
     return (
       <ListItem
         leftAvatar={
           <Avatar
             size="small"
             rounded
-            source={item.profile_image ? {uri: item.profile_image} : null}
-            icon={{name: 'person', size: 20}}
+            source={item.profile_image ? { uri: item.profile_image } : null}
+            icon={{ name: "person", size: 20 }}
             activeOpacity={0.7}
           />
         }
         title={item.name}
         chevron
         bottomDivider
-        onPress={() => this.props.navigation.navigate('UserDetails', {userId: item.id})}
+        onPress={() =>
+          this.props.navigation.navigate("UserDetails", { userId: item.id })
+        }
       />
     );
   }
@@ -48,24 +56,31 @@ class SearchScreen extends React.Component {
   render() {
     const { userList, loading } = this.props;
 
-    return(
+    return (
       <View style={styles.container}>
         <SearchBar
           showLoading={loading}
           platform="ios"
           cancelButtonTitle="Cancel"
-          placeholder='Search for user'
+          placeholder="Search for user"
           onChangeText={val => this.searchQuery(val)}
           onClear={() => this.props.clearUserSearch()}
-          onCancel={() => this.searchQuery('')}
+          onCancel={() => this.searchQuery("")}
           value={this.state.query}
-          containerStyle={{ backgroundColor: '#fff', borderBottomColor: '#eee', borderBottomWidth: 1 }} />
+          containerStyle={{
+            backgroundColor: "#fff",
+            borderBottomColor: "#eee",
+            borderBottomWidth: 1
+          }}
+        />
 
-        { loading ?
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        {loading ? (
+          <View
+            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+          >
             <ActivityIndicator />
           </View>
-        :
+        ) : (
           <ScrollView>
             <FlatList
               keyExtractor={(item, index) => index.toString()}
@@ -74,7 +89,7 @@ class SearchScreen extends React.Component {
               renderItem={this._renderUser.bind(this)}
             />
           </ScrollView>
-        }
+        )}
       </View>
     );
   }
@@ -83,7 +98,7 @@ class SearchScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     paddingTop: Constants.statusBarHeight
   }
 });
@@ -101,4 +116,7 @@ const mapDispatchToProps = {
   clearUserSearch
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(SearchScreen);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(SearchScreen);

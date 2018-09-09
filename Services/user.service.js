@@ -1,12 +1,12 @@
-import axios from 'axios';
-import { ENDPOINT } from 'react-native-dotenv';
-import { authHelper } from '../Helpers';
+import axios from "axios";
+import { ENDPOINT } from "react-native-dotenv";
+import { authHelper } from "../Helpers";
 
 export const userService = {
   getUserDetails,
   updateUserDetails,
   getFollows
-}
+};
 
 async function getUserDetails(userId) {
   const headers = await authHelper.authHeaders();
@@ -15,7 +15,7 @@ async function getUserDetails(userId) {
 
 async function updateUserDetails(user) {
   const headers = await authHelper.authHeaders();
-  return axios.put(`${ENDPOINT}/users/${user.id}/update`, { user }, headers)
+  return axios.put(`${ENDPOINT}/users/${user.id}/update`, { user }, headers);
 }
 
 async function getFollows(userId, type) {

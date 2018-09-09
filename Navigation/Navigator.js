@@ -1,21 +1,31 @@
-import React, { Component } from 'react';
-import { createStackNavigator, createSwitchNavigator, createBottomTabNavigator, NavigationActions } from 'react-navigation';
-import { PRIMARY_DARK_COLOR, ACCENT_COLOR, PRIMARY_LIGHT_COLOR, TEXT_ICONS_COLOR } from '../common/styles/common-styles';
-import { Icon } from 'react-native-elements';
+import React, { Component } from "react";
+import {
+  createStackNavigator,
+  createSwitchNavigator,
+  createBottomTabNavigator,
+  NavigationActions
+} from "react-navigation";
+import {
+  PRIMARY_DARK_COLOR,
+  ACCENT_COLOR,
+  PRIMARY_LIGHT_COLOR,
+  TEXT_ICONS_COLOR
+} from "../common/styles/common-styles";
+import { Icon } from "react-native-elements";
 
-import HomeScreen from '../Screens/HomeScreen';
-import MapScreen from '../Screens/MapScreen';
-import EventDetailsScreen from '../Screens/EventDetailsScreen';
-import AuthLoadingScreen from '../Screens/AuthLoadingScreen';
-import LoginScreen from '../Screens/LoginScreen';
-import UserDetailsScreen from '../Screens/UserDetailsScreen';
-import NotificationsScreen from '../Screens/NotificationsScreen';
-import MyProfileScreen from '../Screens/MyProfileScreen';
-import CreateEventScreen from '../Screens/CreateEventScreen';
-import CreateVibeScreen from '../Screens/CreateVibeScreen';
-import CreateMomentScreen from '../Screens/CreateMomentScreen';
-import SearchScreen from '../Screens/SearchScreen';
-import LikeScreen from '../Screens/LikeScreen';
+import HomeScreen from "../Screens/HomeScreen";
+import MapScreen from "../Screens/MapScreen";
+import EventDetailsScreen from "../Screens/EventDetailsScreen";
+import AuthLoadingScreen from "../Screens/AuthLoadingScreen";
+import LoginScreen from "../Screens/LoginScreen";
+import UserDetailsScreen from "../Screens/UserDetailsScreen";
+import NotificationsScreen from "../Screens/NotificationsScreen";
+import MyProfileScreen from "../Screens/MyProfileScreen";
+import CreateEventScreen from "../Screens/CreateEventScreen";
+import CreateVibeScreen from "../Screens/CreateVibeScreen";
+import CreateMomentScreen from "../Screens/CreateMomentScreen";
+import SearchScreen from "../Screens/SearchScreen";
+import LikeScreen from "../Screens/LikeScreen";
 
 // Header shows up on Events screen because the events stack is inside the tab navigator
 
@@ -33,10 +43,10 @@ const recentActivityStack = createStackNavigator(
   {
     navigationOptions: {
       headerTitleStyle: {
-        fontWeight: '200',
+        fontWeight: "200",
         fontSize: 16
       }
-    } 
+    }
   }
 );
 const eventsStack = createStackNavigator(
@@ -49,7 +59,7 @@ const eventsStack = createStackNavigator(
   {
     navigationOptions: {
       headerTitleStyle: {
-        fontWeight: '200'
+        fontWeight: "200"
       }
     }
   }
@@ -62,9 +72,9 @@ const newEventStack = createStackNavigator(
   },
   {
     navigationOptions: {
-      title: 'Create Event',
+      title: "Create Event",
       headerTitleStyle: {
-        fontWeight: '200',
+        fontWeight: "200",
         fontSize: 16
       }
     }
@@ -79,7 +89,7 @@ const notificationsStack = createStackNavigator(
   {
     navigationOptions: {
       headerTitleStyle: {
-        fontWeight: '200'
+        fontWeight: "200"
       }
     }
   }
@@ -94,20 +104,18 @@ const profileStack = createStackNavigator(
   {
     navigationOptions: {
       headerTitleStyle: {
-        fontWeight: '200'
+        fontWeight: "200"
       }
     }
   }
 );
 
-const searchStack = createStackNavigator(
-  {
-    Search: SearchScreen,
-    EventDetails: EventDetailsScreen,
-    UserDetails: UserDetailsScreen,
-    Likes: LikeScreen
-  }
-);
+const searchStack = createStackNavigator({
+  Search: SearchScreen,
+  EventDetails: EventDetailsScreen,
+  UserDetails: UserDetailsScreen,
+  Likes: LikeScreen
+});
 
 const AppStack = createBottomTabNavigator(
   {
@@ -119,33 +127,33 @@ const AppStack = createBottomTabNavigator(
     Profile: profileStack
   },
   {
-    initialRouteName: 'Recent',
-    navigationOptions: ({navigation}) => ({
-      tabBarIcon: ({focused, tintColor}) => {
-        const {routeName} = navigation.state;
+    initialRouteName: "Recent",
+    navigationOptions: ({ navigation }) => ({
+      tabBarIcon: ({ focused, tintColor }) => {
+        const { routeName } = navigation.state;
         let iconName;
-        if (routeName === 'Recent') {
-          iconName = 'access-time'
-        } else if (routeName === 'Map') {
-          iconName = 'pin-drop'
-        } else if (routeName === 'Search') {
-          iconName = 'search'
-        } else if (routeName === 'New') {
-          iconName = 'add'
-        } else if (routeName === 'Profile') {
-          iconName = 'person'
-        } else if (routeName === 'Notifications') {
-          iconName = 'notifications'
+        if (routeName === "Recent") {
+          iconName = "access-time";
+        } else if (routeName === "Map") {
+          iconName = "pin-drop";
+        } else if (routeName === "Search") {
+          iconName = "search";
+        } else if (routeName === "New") {
+          iconName = "add";
+        } else if (routeName === "Profile") {
+          iconName = "person";
+        } else if (routeName === "Notifications") {
+          iconName = "notifications";
         }
 
-        return <Icon name={iconName} size={25} color={tintColor} />
-      },
+        return <Icon name={iconName} size={25} color={tintColor} />;
+      }
     }),
     tabBarOptions: {
       activeTintColor: PRIMARY_DARK_COLOR,
-      inactiveTintColor: PRIMARY_LIGHT_COLOR,
+      inactiveTintColor: PRIMARY_LIGHT_COLOR
       // tabStyle: { backgroundColor: }
-    },
+    }
   }
 );
 
@@ -155,19 +163,17 @@ export const Navigator = createSwitchNavigator(
   {
     AuthLoading: AuthLoadingScreen,
     App: AppStack,
-    Auth: AuthStack,
+    Auth: AuthStack
   },
   {
-    initialRouteName: 'AuthLoading',
+    initialRouteName: "AuthLoading"
   }
 );
 
 class Nav extends Component {
   render() {
-    return(
-      <Navigator />
-    );
+    return <Navigator />;
   }
 }
 
-export default Nav
+export default Nav;

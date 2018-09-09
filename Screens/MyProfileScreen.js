@@ -1,23 +1,35 @@
-import React from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Dimensions, AppState } from 'react-native';
-import { PRIMARY_DARK_COLOR, ACCENT_COLOR } from '../common/styles/common-styles';
-import { connect } from 'react-redux';
-import Carousel, { Pagination } from 'react-native-snap-carousel';
-import { Icon } from 'react-native-elements';
-import RecentActivity from '../Components/RecentActivity';
-import { authHelper } from '../Helpers';
-import UserInfo from '../Components/UserInfo';
-import UserStats from '../Components/UserStats';
-import { clearErrors,
-         createError,
-         getCurrentUserDetails,
-         getCurrentUserStats,
-         listRecentActivityForCurrentUser,
-         loadMoreRowsForCurrentUserActivity } from '../reducer';
-import SnackBar from 'react-native-snackbar-component'
-import EditProfileModal from '../Components/EditProfileModal';
-import FollowsModal from '../Components/FollowsModal';
-import { userService } from '../Services';
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  Dimensions,
+  AppState
+} from "react-native";
+import {
+  PRIMARY_DARK_COLOR,
+  ACCENT_COLOR
+} from "../common/styles/common-styles";
+import { connect } from "react-redux";
+import Carousel, { Pagination } from "react-native-snap-carousel";
+import { Icon } from "react-native-elements";
+import RecentActivity from "../Components/RecentActivity";
+import { authHelper } from "../Helpers";
+import UserInfo from "../Components/UserInfo";
+import UserStats from "../Components/UserStats";
+import {
+  clearErrors,
+  createError,
+  getCurrentUserDetails,
+  getCurrentUserStats,
+  listRecentActivityForCurrentUser,
+  loadMoreRowsForCurrentUserActivity
+} from "../reducer";
+import SnackBar from "react-native-snackbar-component";
+import EditProfileModal from "../Components/EditProfileModal";
+import FollowsModal from "../Components/FollowsModal";
+import { userService } from "../Services";
 
 class MyProfileScreen extends React.Component {
   // static navigationOptions = { title: 'My Profile' };
@@ -34,7 +46,7 @@ class MyProfileScreen extends React.Component {
       followsModalVisibility: false,
       followsList: null,
       appState: AppState.currentState
-    }
+    };
 
     this.toggleEditProfile = this.toggleEditProfile.bind(this);
     this._onRefresh = this._onRefresh.bind(this);
@@ -45,7 +57,7 @@ class MyProfileScreen extends React.Component {
   }
 
   async componentDidMount() {
-    AppState.addEventListener('change', this._handleAppStateChange);
+    AppState.addEventListener("change", this._handleAppStateChange);
     const currentUser = await authHelper.getCurrentUserId();
     this.setState({ currentUser });
 
@@ -53,15 +65,18 @@ class MyProfileScreen extends React.Component {
   }
 
   componentWillUnmount() {
-    AppState.removeEventListener('change', this._handleAppStateChange);
+    AppState.removeEventListener("change", this._handleAppStateChange);
   }
 
-  _handleAppStateChange = (nextAppState) => {
-    if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
+  _handleAppStateChange = nextAppState => {
+    if (
+      this.state.appState.match(/inactive|background/) &&
+      nextAppState === "active"
+    ) {
       this.fetchUserDetails();
     }
-    this.setState({appState: nextAppState});
-  }
+    this.setState({ appState: nextAppState });
+  };
 
   async fetchUserDetails() {
     if (this.props.error) this.props.clearErrors();
@@ -70,14 +85,16 @@ class MyProfileScreen extends React.Component {
     try {
       const userDetails = await this.props.getCurrentUserDetails(currentUser);
       const userStats = await this.props.getCurrentUserStats(currentUser);
-      const activity = await this.props.listRecentActivityForCurrentUser(currentUser, 0);
+      const activity = await this.props.listRecentActivityForCurrentUser(
+        currentUser,
+        0
+      );
 
-      if (userDetails.error) throw(userDetails.error);
-      if (userStats.error) throw(userStats.error);
-      if (activity.error) throw(activity.error);
-
-    } catch(err) {
-      throw(err);
+      if (userDetails.error) throw userDetails.error;
+      if (userStats.error) throw userStats.error;
+      if (activity.error) throw activity.error;
+    } catch (err) {
+      throw err;
     }
   }
 
@@ -89,12 +106,15 @@ class MyProfileScreen extends React.Component {
   async toggleFollowsModal(type) {
     if (type) {
       try {
-        const { data } = await userService.getFollows(this.state.currentUser, type);
+        const { data } = await userService.getFollows(
+          this.state.currentUser,
+          type
+        );
         this.setState({ followsList: data });
-      } catch(err) {
+      } catch (err) {
         this.setState({ followsModalVisibility: false });
-        this.props.createError('Something went wrong trying to fetch users.');
-        throw(err);
+        this.props.createError("Something went wrong trying to fetch users.");
+        throw err;
       }
     }
     const { followsModalVisibility } = this.state;
@@ -105,7 +125,7 @@ class MyProfileScreen extends React.Component {
   _navigateToUser(userId) {
     this.toggleFollowsModal();
     // TODO: This causes an issue with routing.
-    this.props.navigation.navigate('UserDetails', { userId });
+    this.props.navigation.navigate("UserDetails", { userId });
   }
 
   async _onRefresh() {
@@ -116,11 +136,14 @@ class MyProfileScreen extends React.Component {
 
   handleScroll(offset) {
     if (!this.props.loading && offset >= 10) {
-      this.props.loadMoreRowsForCurrentUserActivity(this.state.currentUser, offset);
+      this.props.loadMoreRowsForCurrentUserActivity(
+        this.state.currentUser,
+        offset
+      );
     }
   }
 
-  _renderItem ({item, index}) {
+  _renderItem({ item, index }) {
     if (index === 0) {
       return (
         <UserInfo
@@ -128,28 +151,34 @@ class MyProfileScreen extends React.Component {
           currentUser={this.state.currentUser}
           toggleEditProfile={this.toggleEditProfile}
           toggleFollowing={() => this.toggleFollowing()}
-          toggleFollowsModal={(data) => this.toggleFollowsModal(data)}
+          toggleFollowsModal={data => this.toggleFollowsModal(data)}
         />
       );
     } else if (index === 1) {
-      return (
-        <UserStats stats={item} />
-      );
+      return <UserStats stats={item} />;
     }
   }
 
   render() {
-    const { currentUserDetails, currentUserStats, currentUserActivity, loading, error } = this.props;
-    const { editProfileModalVisible,
-            refreshing,
-            sliderActiveSlide,
-            followsModalVisibility,
-            followsList } = this.state;
-    const { width } = Dimensions.get('window');
+    const {
+      currentUserDetails,
+      currentUserStats,
+      currentUserActivity,
+      loading,
+      error
+    } = this.props;
+    const {
+      editProfileModalVisible,
+      refreshing,
+      sliderActiveSlide,
+      followsModalVisibility,
+      followsList
+    } = this.state;
+    const { width } = Dimensions.get("window");
     const carouselElements = [currentUserDetails, currentUserStats];
 
     if (loading && !error) {
-      return(
+      return (
         <View>
           <Text>Hi</Text>
           <ActivityIndicator />
@@ -158,17 +187,21 @@ class MyProfileScreen extends React.Component {
     }
 
     if (currentUserDetails.id) {
-      return(
+      return (
         <View style={styles.container}>
-          <View style={{height: '40%'}}>
+          <View style={{ height: "40%" }}>
             <Carousel
-              ref={(c) => { this._carousel = c; }}
+              ref={c => {
+                this._carousel = c;
+              }}
               data={carouselElements}
               renderItem={this._renderItem}
               sliderWidth={width}
               itemWidth={width}
-              onSnapToItem={(index) => this.setState({ sliderActiveSlide: index })}
-              layout={'default'}
+              onSnapToItem={index =>
+                this.setState({ sliderActiveSlide: index })
+              }
+              layout={"default"}
             />
             <Pagination
               dotsLength={carouselElements.length}
@@ -176,7 +209,7 @@ class MyProfileScreen extends React.Component {
               containerStyle={styles.paginationContainer}
               dotColor={ACCENT_COLOR}
               dotStyle={styles.paginationDot}
-              inactiveDotColor='#1a1917'
+              inactiveDotColor="#1a1917"
               inactiveDotOpacity={0.4}
               inactiveDotScale={0.6}
               carouselRef={this._slider1Ref}
@@ -205,7 +238,7 @@ class MyProfileScreen extends React.Component {
             isVisible={followsModalVisibility}
             toggleFollowsModal={() => this.toggleFollowsModal()}
             followsList={followsList}
-            navigateToUser={(userId) => this._navigateToUser(userId)}
+            navigateToUser={userId => this._navigateToUser(userId)}
           />
 
           <SnackBar
@@ -217,13 +250,15 @@ class MyProfileScreen extends React.Component {
         </View>
       );
     } else {
-      return(
+      return (
         <View style={styles.container}>
           <Text>Hello</Text>
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+          <View
+            style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+          >
             <Icon
               size={36}
-              name='refresh'
+              name="refresh"
               color={PRIMARY_DARK_COLOR}
               onPress={() => this.fetchUserDetails()}
             />
@@ -235,19 +270,19 @@ class MyProfileScreen extends React.Component {
             actionText="close"
           />
         </View>
-      )
+      );
     }
   }
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 1
   },
   userInfoContainer: {
-    height: Dimensions.get('window').height * 0.6,
-    alignItems: 'center',
-    justifyContent: 'center'
+    height: Dimensions.get("window").height * 0.6,
+    alignItems: "center",
+    justifyContent: "center"
   },
   // Pagination
   paginationDot: {
@@ -258,8 +293,8 @@ const styles = StyleSheet.create({
   },
   paginationContainer: {
     paddingVertical: 10,
-    backgroundColor: PRIMARY_DARK_COLOR,
-  },
+    backgroundColor: PRIMARY_DARK_COLOR
+  }
   // End Pagination
 });
 
@@ -282,4 +317,7 @@ const mapDispatchToProps = {
   createError
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(MyProfileScreen);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(MyProfileScreen);

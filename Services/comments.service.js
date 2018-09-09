@@ -1,11 +1,11 @@
-import axios from 'axios';
-import { ENDPOINT } from 'react-native-dotenv';
-import { authHelper } from '../Helpers';
+import axios from "axios";
+import { ENDPOINT } from "react-native-dotenv";
+import { authHelper } from "../Helpers";
 
 export const commentsService = {
   getComments,
-  createComment,
-}
+  createComment
+};
 
 async function getComments(eventId) {
   const headers = await authHelper.authHeaders();
@@ -14,5 +14,9 @@ async function getComments(eventId) {
 
 async function createComment(eventId, text) {
   const headers = await authHelper.authHeaders();
-  return axios.post( `${ENDPOINT}/events/${eventId}/comments`, { text }, headers);
+  return axios.post(
+    `${ENDPOINT}/events/${eventId}/comments`,
+    { text },
+    headers
+  );
 }

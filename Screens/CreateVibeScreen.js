@@ -1,38 +1,38 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Button } from 'react-native-elements';
-import { TextField } from 'react-native-material-textfield';
-import { connect } from 'react-redux';
-import { createEvent, clearErrors } from '../reducer';
-import { DIVIDER_COLOR } from '../common/styles/common-styles';
-import SnackBar from 'react-native-snackbar-component';
-import { Haptic } from 'expo';
-import { adHelper } from '../Helpers';
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
+import { Button } from "react-native-elements";
+import { TextField } from "react-native-material-textfield";
+import { connect } from "react-redux";
+import { createEvent, clearErrors } from "../reducer";
+import { DIVIDER_COLOR } from "../common/styles/common-styles";
+import SnackBar from "react-native-snackbar-component";
+import { Haptic } from "expo";
+import { adHelper } from "../Helpers";
 
 class CreateVibeScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
     return {
-      title: 'Create Vibe',
+      title: "Create Vibe",
       headerRight: (
         <Button
           containerStyle={styles.rightIcon}
           clear
-          title='Done'
-          titleStyle={{color: 'blue'}}
-          disabled={navigation.getParam('isDisabled')}
+          title="Done"
+          titleStyle={{ color: "blue" }}
+          disabled={navigation.getParam("isDisabled")}
           disabledTitleStyle={{ color: DIVIDER_COLOR }}
-          onPress={navigation.getParam('createVibe')}
+          onPress={navigation.getParam("createVibe")}
         />
       )
-    }
-  }
+    };
+  };
 
   constructor(props) {
     super(props);
 
     this.state = {
-      vibeText: '',
-      privacy: 'Public',
+      vibeText: "",
+      privacy: "Public",
       isCreateDisabled: false
     };
 
@@ -48,8 +48,8 @@ class CreateVibeScreen extends React.Component {
 
   clearVibe() {
     let { vibeText, privacy } = this.state;
-    vibeText = '';
-    privacy = 'Public';
+    vibeText = "";
+    privacy = "Public";
 
     this.setState({ vibeText, privacy });
   }
@@ -60,26 +60,26 @@ class CreateVibeScreen extends React.Component {
     const { vibeText } = this.state;
 
     if (vibeText.length > 240 || vibeText < 1) {
-      alert('You must provide a valid status.');
+      alert("You must provide a valid status.");
       return;
     }
 
     const vibe = {
-      event_type: 'vibe',
+      event_type: "vibe",
       description: this.state.vibeText,
       privacy: this.state.privacy
     };
 
     try {
       const response = await this.props.createEvent(vibe);
-      if (response.error) throw(response.error);
+      if (response.error) throw response.error;
 
       this.clearVibe();
-      
+
       Haptic.notification(Haptic.NotificationTypes.Success);
       this.props.navigation.goBack();
-    } catch(err) {
-      throw(err);
+    } catch (err) {
+      throw err;
     }
 
     this.setState({ isCreateDisabled: false });
@@ -90,7 +90,7 @@ class CreateVibeScreen extends React.Component {
     const { error } = this.props;
 
     if (error) {
-      return(
+      return (
         <View style={styles.container}>
           <SnackBar
             visible={error ? true : false}
@@ -102,17 +102,17 @@ class CreateVibeScreen extends React.Component {
       );
     }
 
-    return(
+    return (
       <View style={styles.container}>
         <TextField
           label="What's going on?"
           value={vibeText}
-          onChangeText={(content) => this.setState({ vibeText: content }) }
+          onChangeText={content => this.setState({ vibeText: content })}
           characterRestriction={240}
           multiline={true}
         />
       </View>
-    )
+    );
   }
 }
 
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
-    backgroundColor: '#fff'
+    backgroundColor: "#fff"
   }
 });
 
@@ -133,4 +133,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = { createEvent, clearErrors };
 
-export default connect(mapStateToProps, mapDispatchToProps)(CreateVibeScreen);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(CreateVibeScreen);
