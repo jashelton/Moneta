@@ -13,7 +13,7 @@ import { ScrollView,
          Keyboard,
          Modal } from 'react-native';
 import { Icon, ListItem, Avatar, Input, Button } from 'react-native-elements';
-import { authHelper, LocationHelper, adHelper } from '../Helpers';
+import { authHelper, LocationHelper } from '../Helpers';
 import { PRIMARY_DARK_COLOR, DIVIDER_COLOR, ACCENT_COLOR, WARNING_RED } from '../common/styles/common-styles';
 import { connect } from 'react-redux';
 import { updateEventDetailsLikes,
