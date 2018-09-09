@@ -40,6 +40,9 @@ export const UPDATE_EVENT_RATING_FAIL = 'moneta/events/UPDATE_EVENT_RATING_FAIL'
 export const UPDATE_EVENT_DETAILS_RATING = 'moneta/events/UPDATE_EVENT_DETAILS_RATING';
 export const UPDATE_EVENT_DETAILS_RATING_SUCCESS = 'moneta/events/UPDATE_EVENT_DETAILS_RATING_SUCCESS';
 export const UPDATE_EVENT_DETAILS_RATING_FAIL = 'moneta/events/UPDATE_EVENT_DETAILS_RATING_FAIL';
+export const GET_LIKES_FOR_EVENT = 'moneta/events/GET_LIKES_FOR_EVENT';
+export const GET_LIKES_FOR_EVENT_SUCCESS = 'moneta/events/GET_LIKES_FOR_EVENT_SUCCESS';
+export const GET_LIKES_FOR_EVENT_FAIL = 'moneta/events/GET_LIKES_FOR_EVENT_FAIL';
 
 export const USER_SEARCH = 'moneta/search/USER_SEARCH';
 export const USER_SEARCH_SUCCESS = 'moneta/search/USER_SEARCH_SUCCESS';
@@ -86,7 +89,8 @@ const initialState = {
   currentUserStats: {},
   userActivity: [],
   currentUserActivity: [],
-  userList: []
+  userList: [],
+  likesList: []
 };
 
 export default function reducer(state = initialState, action) {
@@ -280,6 +284,16 @@ export default function reducer(state = initialState, action) {
         ...state,
         loading: false,
         error: 'There was a problem rating the event.'
+      }
+    case GET_LIKES_FOR_EVENT:
+      return { ...state, loading: true };
+    case GET_LIKES_FOR_EVENT_SUCCESS:
+      return { ...state, loading: false, likesList: action.payload.data };
+    case GET_LIKES_FOR_EVENT_FAIL:
+      return {
+        ...state,
+        loading: false,
+        error: 'There was a problem fetching the likes for this event.'
       }
 
     // Users
@@ -588,6 +602,18 @@ export function detailsUpdateRating(eventId, rating) {
         url: `/events/${eventId}/rating`,
         method,
         data: rating
+      }
+    }
+  }
+}
+
+export function getLikesForEvent(eventId) {
+  return {
+    type: GET_LIKES_FOR_EVENT,
+    payload: {
+      request: {
+        url: `/events/${eventId}/likes`,
+        method: 'GET'
       }
     }
   }
