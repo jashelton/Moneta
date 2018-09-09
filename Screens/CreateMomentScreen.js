@@ -136,8 +136,8 @@ class CreateMomentScreen extends React.Component {
         const imageCoords = LocationHelper.formatExifCoords(result.exif);
         const address = await LocationHelper.coordsToAddress(imageCoords);
         const imageLocation = `${address[0].name}, ${address[0].city || null}, ${address[0].region}, ${address[0].isoCountryCode}`
-
         const { eventForm } = this.state;
+
         eventForm.imageLocation = imageLocation;
         eventForm.imageCoords = imageCoords;
         eventForm.addressInfo = address[0];
