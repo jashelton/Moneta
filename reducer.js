@@ -39,6 +39,9 @@ export const MARK_EVENT_VIEWED_FAIL = "monesta/markers/MARK_EVENT_VIEWED_FAIL";
 export const DELETE_EVENT = "moneta/events/DELETE_EVENT";
 export const DELETE_EVENT_SUCCESS = "moneta/events/DELETE_EVENT_SUCCESS";
 export const DELETE_EVENT_FAIL = "moneta/events/DELETE_EVENT_FAIL";
+export const REPORT_EVENT = "moneta/events/REPORT_EVENT";
+export const REPORT_EVENT_SUCCESS = "moneta/events/REPORT_EVENT_SUCCESS";
+export const REPORT_EVENT_FAIL = "moneta/events/REPORT_EVENT_FAIL";
 export const CREATE_EVENT = "moneta/events/CREATE_EVENT";
 export const CREATE_EVENT_SUCCESS = "moneta/events/CREATE_EVENT_SUCCESS";
 export const CREATE_EVENT_FAIL = "moneta/events/CREATE_EVENT_FAIL";
@@ -281,6 +284,24 @@ export default function reducer(state = initialState, action) {
         ...state,
         loading: false,
         error: "There was a problem deleting the event."
+      };
+    case REPORT_EVENT:
+      return { ...state };
+    case REPORT_EVENT_SUCCESS:
+      const reportedEventId = action.payload.data.event_id;
+      const reportedEventIndex = state.recentEvents.findIndex(
+        m => m.id === parseInt(reportedEventId)
+      );
+      const eventsWithoutReported = update(state.recentEvents, {
+        $splice: [[reportedEventIndex, 1]]
+      });
+
+      return { ...state, loading: false, recentEvents: eventsWithoutReported };
+    case REPORT_EVENT_FAIL:
+      return {
+        ...state,
+        loading: false,
+        error: "There was a problem reporting the event."
       };
     case CREATE_EVENT:
       return { ...state, loading: true };
@@ -652,6 +673,19 @@ export function deleteEvent(eventId) {
       request: {
         url: `/events/${eventId}/delete`,
         method: "PUT"
+      }
+    }
+  };
+}
+
+export function reportEvent(eventId, reason) {
+  return {
+    type: REPORT_EVENT,
+    payload: {
+      request: {
+        url: `/events/${eventId}/report`,
+        method: "POST",
+        data: { reason }
       }
     }
   };

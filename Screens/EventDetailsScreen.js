@@ -14,24 +14,23 @@ import {
   Keyboard,
   Modal
 } from "react-native";
-import { Icon, ListItem, Avatar, Input, Button } from "react-native-elements";
-import { authHelper, LocationHelper } from "../Helpers";
-import {
-  PRIMARY_DARK_COLOR,
-  DIVIDER_COLOR,
-  ACCENT_COLOR,
-  WARNING_RED
-} from "../common/styles/common-styles";
-import { connect } from "react-redux";
 import {
   updateEventDetailsLikes,
   deleteEvent,
+  reportEvent,
   markEventViewed,
   getEventDetails,
   clearErrors,
   addCommentToEvent,
   detailsUpdateRating
 } from "../reducer";
+import {
+  PRIMARY_DARK_COLOR,
+  DIVIDER_COLOR
+} from "../common/styles/common-styles";
+import { Icon, ListItem, Avatar, Input } from "react-native-elements";
+import { authHelper, LocationHelper } from "../Helpers";
+import { connect } from "react-redux";
 import { notificationService } from "../Services/notification.service";
 import ImageViewer from "react-native-image-zoom-viewer";
 import SnackBar from "react-native-snackbar-component";
@@ -179,23 +178,108 @@ class EventDetailsScreen extends React.Component {
 
   _onOpenActionSheet = () => {
     const actions = {
-      options: ["Report", "Cancel"],
-      cancelButtonIndex: 1
+      options: ["Cancel"]
     };
 
     if (this.props.event.user_id === this.state.currentUserId) {
       actions.options.push("Delete");
-      actions.destructiveButtonIndex = actions.options.length - 1;
+    } else {
+      actions.options.push("Report");
     }
+
+    actions.destructiveButtonIndex = actions.options.findIndex(
+      option => option === "Delete"
+    );
+    actions.cancelButtonIndex = actions.options.findIndex(
+      option => option === "Cancel"
+    );
 
     this.props.showActionSheetWithOptions(actions, buttonIndex => {
       const { options } = actions;
 
       if (options[buttonIndex] === "Delete") {
         this.verifyDeleteEvent();
+      } else if (options[buttonIndex] === "Report") {
+        this.selectReportReason();
       }
     });
   };
+
+  selectReportReason = () => {
+    const actions = {
+      options: ["Spam", "Inappropriate", "Cancel"],
+      cancelButtonIndex: 2
+    };
+
+    this.props.showActionSheetWithOptions(actions, buttonIndex => {
+      const { options } = actions;
+      if (options[buttonIndex] === "Cancel") return;
+      this.verifyReportEvent(options[buttonIndex]);
+    });
+  };
+
+  verifyReportEvent = reason => {
+    Alert.alert(
+      "Report",
+      `Are you sure you want to report this ${
+        this.props.event.event_type
+      } for ${reason}?`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Report",
+          onPress: () => this.reportEvent(reason)
+        }
+      ]
+    );
+  };
+
+  reportEvent = async reason => {
+    const { event, reportEvent, navigation } = this.props;
+
+    try {
+      const response = await reportEvent(event.id, reason.toLowerCase());
+      if (response.error) throw response.error;
+
+      navigation.goBack();
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  verifyDeleteEvent() {
+    Alert.alert(
+      "Delete",
+      `Are you sure you want to delete this ${this.props.event.event_type}?`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Delete",
+          onPress: () => this.deleteEvent()
+        }
+      ]
+    );
+  }
+
+  async deleteEvent() {
+    const { event, navigation, deleteEvent } = this.props;
+    this.setState({ eventOptionsModalVisible: false });
+
+    try {
+      const response = await deleteEvent(event.id);
+      if (response.error) throw response.error;
+
+      navigation.goBack();
+    } catch (err) {
+      throw err;
+    }
+  }
 
   async markEventAsViewed() {
     const { event } = this.props;
@@ -231,37 +315,6 @@ class EventDetailsScreen extends React.Component {
       event.title
     );
     notificationService.createNotification(event.id, event.user_id, "like");
-  }
-
-  verifyDeleteEvent() {
-    Alert.alert(
-      "Delete Event",
-      `Are you sure you want to delete this ${this.props.event.event_type}?`,
-      [
-        {
-          text: "Cancel",
-          style: "cancel"
-        },
-        {
-          text: "Delete",
-          onPress: () => this.deleteEvent()
-        }
-      ]
-    );
-  }
-
-  async deleteEvent() {
-    const { event, navigation, deleteEvent } = this.props;
-    this.setState({ eventOptionsModalVisible: false });
-
-    try {
-      const response = await deleteEvent(event.id);
-      if (response.error) throw response.error;
-
-      navigation.goBack();
-    } catch (err) {
-      throw err;
-    }
   }
 
   submitComment() {
@@ -561,6 +614,7 @@ const mapStateToProps = state => {
 const mapDispatchToProps = {
   updateEventDetailsLikes,
   deleteEvent,
+  reportEvent,
   markEventViewed,
   getEventDetails,
   clearErrors,
