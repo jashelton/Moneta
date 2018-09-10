@@ -40,6 +40,7 @@ import ViewToggle from "../Components/ViewToggle";
 import CommentsComponent from "../Components/CommentsComponent";
 import TimeAgo from "react-native-timeago";
 import { AirbnbRating } from "react-native-ratings";
+import { connectActionSheet } from "@expo/react-native-action-sheet";
 
 export class EventDetailsHeader extends React.Component {
   render() {
@@ -69,6 +70,7 @@ export class EventDetailsHeader extends React.Component {
   }
 }
 
+@connectActionSheet
 class EventDetailsScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
     return {
@@ -78,7 +80,7 @@ class EventDetailsScreen extends React.Component {
           size={28}
           name="more-horiz"
           color={PRIMARY_DARK_COLOR}
-          onPress={navigation.getParam("toggleEventOptionsModal")}
+          onPress={navigation.getParam("onOpenActionSheet")}
         />
       )
     };
@@ -100,7 +102,6 @@ class EventDetailsScreen extends React.Component {
     this.verifyDeleteEvent = this.verifyDeleteEvent.bind(this);
     this._keyboardDidShow = this._keyboardDidShow.bind(this);
     this._keyboardDidHide = this._keyboardDidHide.bind(this);
-    this.toggleEventOptionsModal = this.toggleEventOptionsModal.bind(this);
   }
 
   async componentDidMount() {
@@ -115,7 +116,7 @@ class EventDetailsScreen extends React.Component {
     );
 
     this.props.navigation.setParams({
-      toggleEventOptionsModal: () => this.toggleEventOptionsModal()
+      onOpenActionSheet: () => this._onOpenActionSheet()
     });
 
     const currentUserId = await authHelper.getCurrentUserId();
@@ -176,11 +177,25 @@ class EventDetailsScreen extends React.Component {
     }
   }
 
-  toggleEventOptionsModal() {
-    this.setState({
-      eventOptionsModalVisible: !this.state.eventOptionsModalVisible
+  _onOpenActionSheet = () => {
+    const actions = {
+      options: ["Report", "Cancel"],
+      cancelButtonIndex: 1
+    };
+
+    if (this.props.event.user_id === this.state.currentUserId) {
+      actions.options.push("Delete");
+      actions.destructiveButtonIndex = actions.options.length - 1;
+    }
+
+    this.props.showActionSheetWithOptions(actions, buttonIndex => {
+      const { options } = actions;
+
+      if (options[buttonIndex] === "Delete") {
+        this.verifyDeleteEvent();
+      }
     });
-  }
+  };
 
   async markEventAsViewed() {
     const { event } = this.props;
@@ -431,47 +446,6 @@ class EventDetailsScreen extends React.Component {
                   </TouchableHighlight>
                 )}
               />
-            </Modal>
-
-            {/* Event Options Modal */}
-            <Modal
-              visible={eventOptionsModalVisible}
-              animationType="slide"
-              onRequestClose={() =>
-                this.setState({ eventOptionsModalVisible: false })
-              }
-            >
-              <View style={styles.modalHeader}>
-                <Button
-                  title="Cancel"
-                  titleStyle={{ color: ACCENT_COLOR }}
-                  clear={true}
-                  onPress={this.toggleEventOptionsModal}
-                />
-                <Button
-                  title="Done"
-                  titleStyle={{ color: ACCENT_COLOR }}
-                  clear={true}
-                />
-              </View>
-              {event.user_id &&
-                event.user_id === currentUserId && (
-                  <View
-                    style={{
-                      position: "absolute",
-                      bottom: 0,
-                      width: "100%",
-                      padding: 5,
-                      backgroundColor: WARNING_RED
-                    }}
-                  >
-                    <Button
-                      title="Delete Event"
-                      clear={true}
-                      onPress={this.verifyDeleteEvent}
-                    />
-                  </View>
-                )}
             </Modal>
           </ScrollView>
           <KeyboardAvoidingView alwaysVisible={true} behavior="padding">

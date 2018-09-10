@@ -9,8 +9,8 @@ import { local_env } from "./environment.js";
 import { authHelper } from "./Helpers";
 import { StatusBar, View } from "react-native";
 import Sentry from "sentry-expo";
-
 import reducer from "./reducer";
+import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 
 // Sentry.enableInExpoDevelopment = true;
 Sentry.config(SENTRY_DNS).install();
@@ -37,10 +37,12 @@ export default class App extends React.Component {
   render() {
     return (
       <Provider store={store}>
-        <View style={{ flex: 1 }}>
-          <StatusBar barStyle={"dark-content"} />
-          <Nav />
-        </View>
+        <ActionSheetProvider>
+          <View style={{ flex: 1 }}>
+            <StatusBar barStyle={"dark-content"} />
+            <Nav />
+          </View>
+        </ActionSheetProvider>
       </Provider>
     );
   }
