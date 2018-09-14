@@ -47,7 +47,7 @@ export default class MomentComponent extends React.Component {
             </Text>
             <AirbnbRating
               count={5}
-              defaultRating={moment.user_rating || 0}
+              defaultRating={moment.current_user_rating || 0}
               size={22}
               showRating={false}
               onFinishRating={value => this.submitRating(value)}
@@ -55,8 +55,8 @@ export default class MomentComponent extends React.Component {
             <Text
               style={{ alignSelf: "center", fontSize: 14, fontWeight: "200" }}
             >
-              {moment.user_rating
-                ? `My Rating: ${moment.user_rating}`
+              {moment.current_user_rating
+                ? `My Rating: ${moment.current_user_rating}`
                 : "Rate Anonymously"}
             </Text>
           </View>

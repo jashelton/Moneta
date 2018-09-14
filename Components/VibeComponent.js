@@ -39,7 +39,7 @@ export default class VibeComponent extends React.Component {
             </Text>
             <AirbnbRating
               count={5}
-              defaultRating={vibe.user_rating || 0}
+              defaultRating={vibe.current_user_rating || 0}
               size={22}
               showRating={false}
               onFinishRating={value => this.submitRating(value)}
@@ -47,8 +47,8 @@ export default class VibeComponent extends React.Component {
             <Text
               style={{ alignSelf: "center", fontSize: 14, fontWeight: "200" }}
             >
-              {vibe.user_rating
-                ? `My Rating: ${vibe.user_rating}`
+              {vibe.current_user_rating
+                ? `My Rating: ${vibe.current_user_rating}`
                 : "Rate Anonymously"}
             </Text>
           </View>

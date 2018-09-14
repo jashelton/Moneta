@@ -16,6 +16,7 @@ const ALL_EVENTS_QUERY = gql`
       image
       comments_count
       avg_rating
+      current_user_rating
       event_type
       created_at
       user {
