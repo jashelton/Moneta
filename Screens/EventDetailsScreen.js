@@ -15,62 +15,23 @@ import {
   Modal
 } from "react-native";
 import {
-  updateEventDetailsLikes,
-  deleteEvent,
-  reportEvent,
-  markEventViewed,
-  getEventDetails,
-  clearErrors,
-  addCommentToEvent,
-  detailsUpdateRating
-} from "../reducer";
-import {
   PRIMARY_DARK_COLOR,
   DIVIDER_COLOR
 } from "../common/styles/common-styles";
-import { Icon, ListItem, Avatar, Input } from "react-native-elements";
+import { Icon, Input } from "react-native-elements";
 import { authHelper, LocationHelper } from "../Helpers";
-import { connect } from "react-redux";
 import { notificationService } from "../Services/notification.service";
 import ImageViewer from "react-native-image-zoom-viewer";
 import SnackBar from "react-native-snackbar-component";
 import SocialComponent from "../Components/SocialComponent";
 import ViewToggle from "../Components/ViewToggle";
 import CommentsComponent from "../Components/CommentsComponent";
-import TimeAgo from "react-native-timeago";
 import { AirbnbRating } from "react-native-ratings";
 import { connectActionSheet } from "@expo/react-native-action-sheet";
-
-export class EventDetailsHeader extends React.Component {
-  render() {
-    return (
-      <ListItem
-        leftAvatar={
-          <Avatar
-            size="small"
-            rounded
-            source={this.props.image ? { uri: this.props.image } : null}
-            icon={{ name: "person", size: 20 }}
-            activeOpacity={0.7}
-          />
-        }
-        title={this.props.username || this.props.name}
-        titleStyle={{ color: PRIMARY_DARK_COLOR }}
-        subtitle={new Date(this.props.date).toISOString().substring(0, 10)}
-        subtitleStyle={styles.subText}
-        chevron
-        onPress={() =>
-          this.props.navigation.navigate("UserDetails", {
-            userId: this.props.creator
-          })
-        }
-      />
-    );
-  }
-}
+import UserHeaderComponent from "../Components/UserHeaderComponent";
 
 @connectActionSheet
-class EventDetailsScreen extends React.Component {
+export default class EventDetailsScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
     return {
       headerRight: (
@@ -351,12 +312,7 @@ class EventDetailsScreen extends React.Component {
   }
 
   render() {
-    const {
-      isImageZoomed,
-      commentValue,
-      eventOptionsModalVisible,
-      currentUserId
-    } = this.state;
+    const { isImageZoomed, commentValue } = this.state;
     const { event, navigation } = this.props;
 
     if (this.props.loading) {
@@ -373,27 +329,9 @@ class EventDetailsScreen extends React.Component {
       return (
         <View style={{ flex: 1 }}>
           <ScrollView>
-            <ListItem
-              leftAvatar={
-                <Avatar
-                  size="small"
-                  rounded
-                  source={
-                    event.profile_image ? { uri: event.profile_image } : null
-                  }
-                  icon={{ name: "person", size: 20 }}
-                  activeOpacity={0.7}
-                />
-              }
-              title={event.name}
-              titleStyle={{ color: PRIMARY_DARK_COLOR }}
-              subtitle={
-                <TimeAgo time={event.created_at} style={styles.subText} />
-              }
-              chevron
-              onPress={() =>
-                navigation.navigate("UserDetails", { userId: event.user_id })
-              }
+            <UserHeaderComponent
+              user={event.user}
+              createdAt={event.created_at}
             />
             <View style={styles.eventSection}>
               <View
@@ -602,27 +540,3 @@ const styles = StyleSheet.create({
     justifyContent: "space-between"
   }
 });
-
-const mapStateToProps = state => {
-  return {
-    event: state.event,
-    loading: state.loading,
-    error: state.error
-  };
-};
-
-const mapDispatchToProps = {
-  updateEventDetailsLikes,
-  deleteEvent,
-  reportEvent,
-  markEventViewed,
-  getEventDetails,
-  clearErrors,
-  addCommentToEvent,
-  detailsUpdateRating
-};
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(EventDetailsScreen);

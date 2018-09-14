@@ -6,11 +6,9 @@ import {
   TouchableHighlight,
   Image
 } from "react-native";
-import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
-import { ListItem, Avatar } from "react-native-elements";
 import { AirbnbRating } from "react-native-ratings";
 import SocialComponent from "./SocialComponent";
-import TimeAgo from "react-native-timeago";
+import UserHeaderComponent from "../Components/UserHeaderComponent";
 
 export default class MomentComponent extends React.Component {
   submitRating(value) {
@@ -30,37 +28,8 @@ export default class MomentComponent extends React.Component {
     const { moment, navigation, height, handleLike } = this.props;
 
     return (
-      <View
-        style={{
-          flex: 1,
-          flexDirection: "column",
-          margin: 5,
-          backgroundColor: "#fff"
-        }}
-      >
-        <ListItem
-          leftAvatar={
-            <Avatar
-              size="small"
-              rounded
-              source={
-                moment.user.profile_image
-                  ? { uri: moment.user.profile_image }
-                  : null
-              }
-              icon={{ name: "person", size: 20 }}
-              activeOpacity={0.7}
-            />
-          }
-          title={`${moment.user.first_name} ${moment.user.last_name}`}
-          titleStyle={{ color: PRIMARY_DARK_COLOR }}
-          subtitle={<TimeAgo time={moment.created_at} style={styles.subText} />}
-          chevron
-          onPress={() =>
-            navigation.navigate("UserDetails", { userId: moment.user_id })
-          }
-        />
-
+      <View style={styles.container}>
+        <UserHeaderComponent user={moment.user} createdAt={moment.created_at} />
         <View
           style={{
             alignItems: "flex-end",
@@ -130,6 +99,12 @@ export default class MomentComponent extends React.Component {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    flexDirection: "column",
+    margin: 5,
+    backgroundColor: "#fff"
+  },
   imageTouch: {
     width: "100%",
     padding: 2
@@ -148,10 +123,5 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center"
-  },
-  subText: {
-    fontWeight: "200",
-    color: "grey",
-    fontSize: 12
   }
 });

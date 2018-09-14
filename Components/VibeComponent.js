@@ -1,10 +1,8 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
-import { ListItem, Avatar, Rating } from "react-native-elements";
 import { AirbnbRating } from "react-native-ratings";
 import SocialComponent from "../Components/SocialComponent";
-import TimeAgo from "react-native-timeago";
+import UserHeaderComponent from "../Components/UserHeaderComponent";
 
 export default class VibeComponent extends React.Component {
   submitRating(value) {
@@ -25,28 +23,7 @@ export default class VibeComponent extends React.Component {
 
     return (
       <View style={[styles.container]}>
-        <ListItem
-          leftAvatar={
-            <Avatar
-              size="small"
-              rounded
-              source={
-                vibe.user.profile_image
-                  ? { uri: vibe.user.profile_image }
-                  : null
-              }
-              icon={{ name: "person", size: 20 }}
-              activeOpacity={0.7}
-            />
-          }
-          title={`${vibe.user.first_name} ${vibe.user.last_name}`}
-          titleStyle={{ color: PRIMARY_DARK_COLOR }}
-          subtitle={<TimeAgo time={vibe.created_at} style={styles.subText} />}
-          chevron
-          onPress={() =>
-            navigation.navigate("UserDetails", { userId: vibe.user_id })
-          }
-        />
+        <UserHeaderComponent user={vibe.user} createdAt={vibe.created_at} />
         <View
           style={{
             alignItems: "flex-end",
@@ -101,10 +78,5 @@ const styles = StyleSheet.create({
     margin: 5,
     flex: 1,
     flexDirection: "column"
-  },
-  subText: {
-    fontWeight: "200",
-    color: "grey",
-    fontSize: 12
   }
 });

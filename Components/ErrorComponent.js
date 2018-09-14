@@ -27,11 +27,11 @@ const ErrorComponent = props => {
 };
 
 ErrorComponent.propTypes = {
-  iconName: PropTypes.string,
-  refetchData: PropTypes.func,
-  errorMessage: PropTypes.string,
-  isSnackBarVisible: PropTypes.bool,
-  snackBarActionText: PropTypes.string
+  iconName: PropTypes.string.isRequired,
+  refetchData: PropTypes.func.isRequired,
+  errorMessage: PropTypes.string.isRequired,
+  isSnackBarVisible: PropTypes.bool.isRequired,
+  snackBarActionText: PropTypes.string.isRequired
 };
 
 const styles = StyleSheet.create({
