@@ -8,15 +8,12 @@ import {
   Dimensions,
   FlatList
 } from "react-native";
-import PropTypes from "prop-types";
-import { connect } from "react-redux";
 import MomentComponent from "../Components/MomentComponent";
 import VibeComponent from "../Components/VibeComponent";
 import { adHelper, authHelper } from "../Helpers";
-import { updateEventDetailsLikes, updateRating } from "../reducer";
 import { notificationService } from "../Services";
 
-class RecentActivity extends React.Component {
+export default class RecentActivity extends React.Component {
   height = Dimensions.get("window").height / 2;
   state = {
     canRate: true
@@ -145,25 +142,3 @@ class RecentActivity extends React.Component {
     }
   }
 }
-
-RecentActivity.propTypes = {
-  events: PropTypes.array.isRequired,
-  refreshing: PropTypes.bool.isRequired,
-  _onRefresh: PropTypes.func.isRequired
-};
-
-const mapStateToProps = state => {
-  return {
-    loading: state.loading
-  };
-};
-
-const mapDispatchToProps = {
-  updateEventDetailsLikes,
-  updateRating
-};
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(RecentActivity);

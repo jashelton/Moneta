@@ -1,31 +1,50 @@
 import axios from "axios";
 import { ENDPOINT } from "react-native-dotenv";
 
+import { client } from "../App";
+import gql from "graphql-tag";
+
 export const authService = {
   fbLogin,
   fbUserData,
   getUser,
   createUser,
-  handleUser
+  handleUser,
+  user
 };
+
+function user(fbId) {
+  return client.query({
+    query: gql`
+      {
+        facebookUser(id: ${fbId}) {
+          id
+          first_name
+          last_name
+          jwt
+        }
+      }
+    `
+  });
+}
 
 async function fbLogin(token) {
   const userLogin = await axios.get(
     `https://graph.facebook.com/me?access_token=${token}`
   );
-  const { user } = await this.handleUser(userLogin.data, token);
-  user.facebook_token = token;
+  const { facebookUser } = await this.handleUser(userLogin.data, token);
+  facebookUser.facebook_token = token;
 
-  return user;
+  return facebookUser;
 }
 
 // Get Facebook data
 // Check if user exists in DB, if not, create user
 async function handleUser(userData, userToken) {
   const facebookUser = await this.getUser(userData.id); // name, facebook_id
-  const facebookUserData = await this.fbUserData(userData.id, userToken); // fname, lname, email, fbId, picture
 
-  if (!facebookUser.user) {
+  if (!facebookUser) {
+    const facebookUserData = await this.fbUserData(userData.id, userToken); // fname, lname, email, fbId, picture
     await this.createUser(facebookUserData);
   } else {
     // User already exists
@@ -37,8 +56,8 @@ async function handleUser(userData, userToken) {
 }
 
 // Get user from database
-async function getUser(user_id) {
-  const { data } = await axios.get(`${ENDPOINT}/users/${user_id}`);
+async function getUser(facebook_id) {
+  const { data } = await this.user(facebook_id);
   return data;
 }
 

@@ -10,12 +10,35 @@ import { Icon } from "react-native-elements";
 import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
 import RecentActivity from "../Components/RecentActivity";
 import { permissionsHelper } from "../Helpers";
-import { listRecentActivity, loadMoreRows, clearErrors } from "../reducer";
-import { connect } from "react-redux";
 import SnackBar from "react-native-snackbar-component";
-import FilterRecentActivityModal from "../Components/FilterRecentActivityModal";
 
-class HomeScreen extends React.Component {
+// Apollo
+import gql from "graphql-tag";
+import { Query } from "react-apollo";
+
+const EVENTS_QUERY = gql`
+  query Events($offset: Int!) {
+    allEvents(offset: $offset) {
+      id
+      title
+      description
+      likes_count
+      image
+      comments_count
+      avg_rating
+      event_type
+      created_at
+      user {
+        id
+        first_name
+        last_name
+        profile_image
+      }
+    }
+  }
+`;
+
+export default class HomeScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
     return {
       title: "Recent Events",
@@ -35,30 +58,16 @@ class HomeScreen extends React.Component {
     super(props);
 
     this.state = {
-      refreshing: false,
-      filtersVisible: false,
-      socialSelected: "Feed",
       appState: AppState.currentState
     };
-
-    this._onRefresh = this._onRefresh.bind(this);
-    this.handleScroll = this.handleScroll.bind(this);
-    this.updateSocialSelected = this.updateSocialSelected.bind(this);
   }
 
   async componentDidMount() {
     AppState.addEventListener("change", this._handleAppStateChange);
+    console.log(this.$apollo);
     // Get permissions from user for push notifications.
     // If agreed, user.push_token will be updated to store push token in db.
-    await permissionsHelper.registerForPushNotificationsAsync();
-
-    this.getActivity();
-
-    this.props.navigation.setParams({
-      toggleIsVisible: () => this.toggleIsVisible(),
-      showFilterList: () =>
-        this.setState({ filtersVisible: !this.state.filtersVisible })
-    });
+    // await permissionsHelper.registerForPushNotificationsAsync();
   }
 
   componentWillUnmount() {
@@ -70,129 +79,78 @@ class HomeScreen extends React.Component {
       this.state.appState.match(/inactive|background/) &&
       nextAppState === "active"
     ) {
-      this.getActivity();
+      // this.getActivity();
+      this.$apollo.queries.EVENTS_QUERY.refetch();
     }
     this.setState({ appState: nextAppState });
   };
 
-  async getActivity() {
-    const { socialSelected } = this.state;
-    const { listRecentActivity } = this.props;
-
-    try {
-      // For nearby events, pass coords as second parameter
-      const response = await listRecentActivity(
-        socialSelected || "Feed",
-        null,
-        0
-      );
-
-      if (response.error) throw response.error;
-    } catch (err) {
-      throw err;
-    }
-  }
-
-  // Should be changed... if a user has already loaded more posts, its bad to clear that out.
-  // Refresh should check if there are any events newer that the most recent event.
-  _onRefresh() {
-    this.setState({ refreshing: true });
-    this.getActivity();
-    this.setState({ refreshing: false });
-  }
-
-  toggleIsVisible() {
-    this.setState({ isVisible: !this.state.isVisible });
-  }
-
-  updateSocialSelected(option) {
-    this.setState({ socialSelected: option });
-    this.props.listRecentActivity(option, null, 0);
-  }
-
-  handleScroll(offset) {
-    if (!this.props.loading && offset >= 10) {
-      this.props.loadMoreRows(this.state.socialSelected, null, offset);
-    }
-  }
-
   render() {
-    const { navigation, recentEvents, loading, error } = this.props;
-    const { filtersVisible, socialSelected, refreshing } = this.state;
-
-    if (loading && !filtersVisible) {
-      return (
-        <View
-          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-        >
-          <ActivityIndicator />
-        </View>
-      );
-    }
-
     return (
-      <View style={styles.container}>
-        <FilterRecentActivityModal
-          filtersVisible={filtersVisible}
-          setVisibility={() =>
-            this.setState({ filtersVisible: !this.state.filtersVisible })
-          }
-          socialSelected={socialSelected}
-          updateSocialSelected={option => this.updateSocialSelected(option)}
-        />
-        {recentEvents.length ? (
-          <View>
-            <RecentActivity
-              refreshing={refreshing}
-              navigation={navigation}
-              events={recentEvents}
-              handleScroll={this.handleScroll}
-              noDataMessage="There is no recent activity to display."
-              _onRefresh={this._onRefresh}
-            />
-          </View>
-        ) : loading && !recentEvents.length ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator />
-          </View>
-        ) : error ? (
-          <View style={styles.container}>
-            <View
-              style={{
-                flex: 1,
-                alignItems: "center",
-                justifyContent: "center"
-              }}
-            >
-              <Icon
-                size={36}
-                name="refresh"
-                color={PRIMARY_DARK_COLOR}
-                onPress={() => this.getActivity()}
-              />
-              <Text>Could not find any events.</Text>
+      <Query query={EVENTS_QUERY} variables={{ offset: 0 }}>
+        {({ loading, error, data, refetch, fetchMore }) => {
+          if (loading && !this.state.filtersVisible)
+            return (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator />
+              </View>
+            );
+          if (error)
+            return (
+              <View style={styles.container}>
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}
+                >
+                  <Icon
+                    size={36}
+                    name="refresh"
+                    color={PRIMARY_DARK_COLOR}
+                    onPress={() => this.getActivity()}
+                  />
+                  <Text>Could not find any events.</Text>
+                </View>
+                <SnackBar
+                  visible={this.props.error ? true : false}
+                  textMessage={this.props.error}
+                  actionHandler={() => this.props.clearErrors()}
+                  actionText="close"
+                />
+              </View>
+            );
+
+          return (
+            <View style={styles.container}>
+              <View>
+                <RecentActivity
+                  refreshing={loading}
+                  navigation={this.props.navigation}
+                  events={data.allEvents}
+                  handleScroll={() =>
+                    fetchMore({
+                      variables: { offset: data.allEvents.length },
+                      updateQuery: (prev, { fetchMoreResult }) => {
+                        if (!fetchMoreResult) return prev;
+                        return Object.assign({}, prev, {
+                          allEvents: [
+                            ...prev.allEvents,
+                            ...fetchMoreResult.allEvents
+                          ]
+                        });
+                      }
+                    })
+                  }
+                  noDataMessage="There is no recent activity to display."
+                  _onRefresh={refetch}
+                />
+              </View>
             </View>
-            <SnackBar
-              visible={this.props.error ? true : false}
-              textMessage={this.props.error}
-              actionHandler={() => this.props.clearErrors()}
-              actionText="close"
-            />
-          </View>
-        ) : (
-          <View
-            style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-          >
-            <Icon
-              size={36}
-              name="refresh"
-              color={PRIMARY_DARK_COLOR}
-              onPress={() => this.getActivity()}
-            />
-            <Text>Could not find any events.</Text>
-          </View>
-        )}
-      </View>
+          );
+        }}
+      </Query>
     );
   }
 }
@@ -210,22 +168,3 @@ const styles = StyleSheet.create({
     alignItems: "center"
   }
 });
-
-const mapStateToProps = state => {
-  return {
-    recentEvents: state.recentEvents,
-    loading: state.loading,
-    error: state.error
-  };
-};
-
-const mapDispatchToProps = {
-  listRecentActivity,
-  loadMoreRows,
-  clearErrors
-};
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(HomeScreen);

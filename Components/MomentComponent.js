@@ -16,9 +16,9 @@ export default class MomentComponent extends React.Component {
   submitRating(value) {
     const { moment, canRate } = this.props;
 
-    if (moment.rating.user_rating !== value && canRate) {
+    if (moment.user_rating !== value && canRate) {
       const rating = {
-        previousRating: moment.rating.user_rating || null,
+        previousRating: moment.user_rating || null,
         newRating: value
       };
 
@@ -44,13 +44,15 @@ export default class MomentComponent extends React.Component {
               size="small"
               rounded
               source={
-                moment.profile_image ? { uri: moment.profile_image } : null
+                moment.user.profile_image
+                  ? { uri: moment.user.profile_image }
+                  : null
               }
               icon={{ name: "person", size: 20 }}
               activeOpacity={0.7}
             />
           }
-          title={moment.name}
+          title={`${moment.user.first_name} ${moment.user.last_name}`}
           titleStyle={{ color: PRIMARY_DARK_COLOR }}
           subtitle={<TimeAgo time={moment.created_at} style={styles.subText} />}
           chevron
@@ -70,13 +72,13 @@ export default class MomentComponent extends React.Component {
             <Text
               style={{ alignSelf: "center", fontSize: 14, fontWeight: "200" }}
             >
-              {moment.rating.avg_rating
-                ? `Avg: ${moment.rating.avg_rating}`
+              {moment.avg_rating
+                ? `Avg: ${moment.avg_rating}`
                 : "No ratings yet."}
             </Text>
             <AirbnbRating
               count={5}
-              defaultRating={moment.rating.user_rating || 0}
+              defaultRating={moment.user_rating || 0}
               size={22}
               showRating={false}
               onFinishRating={value => this.submitRating(value)}
@@ -84,8 +86,8 @@ export default class MomentComponent extends React.Component {
             <Text
               style={{ alignSelf: "center", fontSize: 14, fontWeight: "200" }}
             >
-              {moment.rating.user_rating
-                ? `My Rating: ${moment.rating.user_rating}`
+              {moment.user_rating
+                ? `My Rating: ${moment.user_rating}`
                 : "Rate Anonymously"}
             </Text>
           </View>

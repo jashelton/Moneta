@@ -10,9 +10,9 @@ export default class VibeComponent extends React.Component {
   submitRating(value) {
     const { vibe, canRate } = this.props;
 
-    if (vibe.rating.user_rating !== value && canRate) {
+    if (vibe.user_rating !== value && canRate) {
       const rating = {
-        previousRating: vibe.rating.user_rating || null,
+        previousRating: vibe.user_rating || null,
         newRating: value
       };
 
@@ -30,12 +30,16 @@ export default class VibeComponent extends React.Component {
             <Avatar
               size="small"
               rounded
-              source={vibe.profile_image ? { uri: vibe.profile_image } : null}
+              source={
+                vibe.user.profile_image
+                  ? { uri: vibe.user.profile_image }
+                  : null
+              }
               icon={{ name: "person", size: 20 }}
               activeOpacity={0.7}
             />
           }
-          title={vibe.name}
+          title={`${vibe.user.first_name} ${vibe.user.last_name}`}
           titleStyle={{ color: PRIMARY_DARK_COLOR }}
           subtitle={<TimeAgo time={vibe.created_at} style={styles.subText} />}
           chevron
@@ -54,13 +58,11 @@ export default class VibeComponent extends React.Component {
             <Text
               style={{ alignSelf: "center", fontSize: 14, fontWeight: "200" }}
             >
-              {vibe.rating.avg_rating
-                ? `Avg: ${vibe.rating.avg_rating}`
-                : "No ratings yet."}
+              {vibe.avg_rating ? `Avg: ${vibe.avg_rating}` : "No ratings yet."}
             </Text>
             <AirbnbRating
               count={5}
-              defaultRating={vibe.rating.user_rating || 0}
+              defaultRating={vibe.user_rating || 0}
               size={22}
               showRating={false}
               onFinishRating={value => this.submitRating(value)}
@@ -68,8 +70,8 @@ export default class VibeComponent extends React.Component {
             <Text
               style={{ alignSelf: "center", fontSize: 14, fontWeight: "200" }}
             >
-              {vibe.rating.user_rating
-                ? `My Rating: ${vibe.rating.user_rating}`
+              {vibe.user_rating
+                ? `My Rating: ${vibe.user_rating}`
                 : "Rate Anonymously"}
             </Text>
           </View>
