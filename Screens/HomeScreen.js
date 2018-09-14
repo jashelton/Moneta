@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  AppState
-} from "react-native";
+import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import { Icon } from "react-native-elements";
 import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
 import RecentActivity from "../Components/RecentActivity";
@@ -16,7 +10,7 @@ import SnackBar from "react-native-snackbar-component";
 import gql from "graphql-tag";
 import { Query } from "react-apollo";
 
-const EVENTS_QUERY = gql`
+const ALL_EVENTS_QUERY = gql`
   query Events($offset: Int!) {
     allEvents(offset: $offset) {
       id
@@ -39,57 +33,17 @@ const EVENTS_QUERY = gql`
 `;
 
 export default class HomeScreen extends React.Component {
-  static navigationOptions = ({ navigation }) => {
-    return {
-      title: "Recent Events",
-      headerLeft: (
-        <Icon
-          containerStyle={styles.leftIcon}
-          size={28}
-          name="filter-list"
-          color={PRIMARY_DARK_COLOR}
-          onPress={navigation.getParam("showFilterList")}
-        />
-      )
-    };
-  };
-
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      appState: AppState.currentState
-    };
-  }
-
   async componentDidMount() {
-    AppState.addEventListener("change", this._handleAppStateChange);
-    console.log(this.$apollo);
     // Get permissions from user for push notifications.
     // If agreed, user.push_token will be updated to store push token in db.
     // await permissionsHelper.registerForPushNotificationsAsync();
   }
 
-  componentWillUnmount() {
-    AppState.removeEventListener("change", this._handleAppStateChange);
-  }
-
-  _handleAppStateChange = nextAppState => {
-    if (
-      this.state.appState.match(/inactive|background/) &&
-      nextAppState === "active"
-    ) {
-      // this.getActivity();
-      this.$apollo.queries.EVENTS_QUERY.refetch();
-    }
-    this.setState({ appState: nextAppState });
-  };
-
   render() {
     return (
-      <Query query={EVENTS_QUERY} variables={{ offset: 0 }}>
+      <Query query={ALL_EVENTS_QUERY} variables={{ offset: 0 }}>
         {({ loading, error, data, refetch, fetchMore }) => {
-          if (loading && !this.state.filtersVisible)
+          if (loading)
             return (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator />
@@ -144,7 +98,7 @@ export default class HomeScreen extends React.Component {
                     })
                   }
                   noDataMessage="There is no recent activity to display."
-                  _onRefresh={refetch}
+                  onRefresh={refetch}
                 />
               </View>
             </View>

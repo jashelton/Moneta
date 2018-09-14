@@ -116,7 +116,7 @@ export default class RecentActivity extends React.Component {
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
-                onRefresh={this.props._onRefresh}
+                onRefresh={this.props.onRefresh}
               />
             }
           />
