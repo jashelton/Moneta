@@ -1,14 +1,10 @@
 import React from "react";
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
-import { Icon } from "react-native-elements";
-import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
-import RecentActivity from "../Components/RecentActivity";
-import { permissionsHelper } from "../Helpers";
-import SnackBar from "react-native-snackbar-component";
-
-// Apollo
-import gql from "graphql-tag";
 import { Query } from "react-apollo";
+import gql from "graphql-tag";
+import { View, StyleSheet, ActivityIndicator } from "react-native";
+import { permissionsHelper } from "../Helpers";
+import RecentActivity from "../Components/RecentActivity";
+import ErrorComponent from "../Components/ErrorComponent";
 
 const ALL_EVENTS_QUERY = gql`
   query Events($offset: Int!) {
@@ -41,7 +37,11 @@ export default class HomeScreen extends React.Component {
 
   render() {
     return (
-      <Query query={ALL_EVENTS_QUERY} variables={{ offset: 0 }}>
+      <Query
+        query={ALL_EVENTS_QUERY}
+        variables={{ offset: 0 }}
+        errorPolicy="all"
+      >
         {({ loading, error, data, refetch, fetchMore }) => {
           if (loading)
             return (
@@ -51,29 +51,13 @@ export default class HomeScreen extends React.Component {
             );
           if (error)
             return (
-              <View style={styles.container}>
-                <View
-                  style={{
-                    flex: 1,
-                    alignItems: "center",
-                    justifyContent: "center"
-                  }}
-                >
-                  <Icon
-                    size={36}
-                    name="refresh"
-                    color={PRIMARY_DARK_COLOR}
-                    onPress={() => this.getActivity()}
-                  />
-                  <Text>Could not find any events.</Text>
-                </View>
-                <SnackBar
-                  visible={this.props.error ? true : false}
-                  textMessage={this.props.error}
-                  actionHandler={() => this.props.clearErrors()}
-                  actionText="close"
-                />
-              </View>
+              <ErrorComponent
+                iconName="error"
+                refetchData={refetch}
+                errorMessage={error.message}
+                isSnackBarVisible={error ? true : false}
+                snackBarActionText="Retry"
+              />
             );
 
           return (
