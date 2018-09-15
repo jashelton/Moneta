@@ -14,7 +14,7 @@ export default class CommentsComponent extends React.Component {
               <Avatar
                 size="small"
                 rounded
-                source={{ uri: comment.profile_image }}
+                source={{ uri: comment.comment_user.profile_image }}
                 activeOpacity={0.7}
               />
             </View>
@@ -28,7 +28,8 @@ export default class CommentsComponent extends React.Component {
               }}
             >
               <Text style={{ fontWeight: "500", fontSize: 14 }}>
-                {comment.name}
+                {comment.comment_user.first_name}{" "}
+                {comment.comment_user.last_name}
               </Text>
               <Text style={{ fontWeight: "200" }}>{comment.text}</Text>
             </View>

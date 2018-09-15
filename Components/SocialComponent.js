@@ -44,7 +44,7 @@ export default class SocialComponent extends React.Component {
           </View>
           {showCommentIcon && (
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Text>{event.comment_count}</Text>
+              <Text>{event.comments_count}</Text>
               <Icon
                 color="#fb3958"
                 name="comment"

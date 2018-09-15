@@ -19,6 +19,7 @@ const ALL_EVENTS_QUERY = gql`
       current_user_rating
       event_type
       created_at
+      # TODO: Need to know if current user has liked event
       user {
         id
         first_name
