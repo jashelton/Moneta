@@ -19,7 +19,7 @@ export default class VibeComponent extends React.Component {
   }
 
   render() {
-    const { vibe, navigation, handleLike } = this.props;
+    const { vibe, navigation } = this.props;
 
     return (
       <View style={[styles.container]}>
@@ -61,7 +61,6 @@ export default class VibeComponent extends React.Component {
         <SocialComponent
           event={vibe}
           navigation={navigation}
-          onLikePress={() => handleLike()}
           onCommentPress={() =>
             navigation.navigate("EventDetails", { eventId: vibe.id })
           }

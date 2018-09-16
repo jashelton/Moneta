@@ -65,6 +65,22 @@ const EVENT_QUERY = gql`
     }
   }
 `;
+// TODO: Look into fragments considering eventComments and createComment returns the same thing.
+const CREATE_COMMENT = gql`
+  mutation Comment($event_id: ID!) {
+    createComment(event_id: $event_id) {
+      id
+      text
+      created_at
+      comment_user {
+        id
+        first_name
+        last_name
+        profile_image
+      }
+    }
+  }
+`;
 
 @connectActionSheet
 export default class EventDetailsScreen extends React.Component {
@@ -252,8 +268,6 @@ export default class EventDetailsScreen extends React.Component {
     const { event } = this.props;
     const { currentUserId } = this.state;
 
-    await this.props.updateEventDetailsLikes(event.id, event.liked, "details");
-
     // If event has been disliked... needs to change for readability.
     if (event.liked) {
       notificationService.deleteNotification(event.id, event.user_id, "like");
@@ -262,13 +276,11 @@ export default class EventDetailsScreen extends React.Component {
 
     // If event has been liked and the creator isn't the current user, send necessary notifications.
     if (!event.liked && event.user_id !== currentUserId) {
-      this.notify();
+      this.notify(event);
     }
   }
 
-  async notify() {
-    const { event } = this.props;
-
+  async notify(event) {
     await notificationService.sendPushNotification(
       event.user_id,
       "Someone liked your event!",

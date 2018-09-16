@@ -15,58 +15,55 @@ const SOCIAL_QUERY = gql`
 `;
 
 export default class SocialComponent extends React.Component {
-  render() {
-    const { event, onCommentPress, onLikePress, navigation } = this.props;
-
+  // Component for Like with Mutation
+  LikeComponent = (event, navigation) => {
     return (
       <Mutation mutation={SOCIAL_QUERY}>
-        {(createLike, { data }) => (
-          <View style={styles.container}>
-            <Divider />
-            <View
-              style={{
-                padding: 10,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between"
-              }}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Icon
-                  color="#fb3958"
-                  name={!event.liked ? "favorite-border" : "favorite"}
-                  iconStyle={{ padding: 5 }}
-                  // onPress={() => onLikePress()}
-                  onPress={() =>
-                    createLike({ variables: { event_id: event.id } })
-                  }
-                />
-                {event.likes_count && (
-                  <Text
-                    onPress={() =>
-                      navigation.navigate("Likes", { eventId: event.id })
-                    }
-                    style={{ paddingHorizontal: 5, color: PRIMARY_DARK_COLOR }}
-                  >
-                    {event.likes_count}{" "}
-                    {event.likes_count === 1 ? "like" : "likes"}
-                  </Text>
-                )}
-              </View>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Text>{event.comments_count}</Text>
-                <Icon
-                  color="#fb3958"
-                  name="comment"
-                  iconStyle={{ padding: 5 }}
-                  onPress={() => onCommentPress()}
-                />
-              </View>
-            </View>
-            <Divider />
+        {createLike => (
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Icon
+              color="#fb3958"
+              name={!event.liked ? "favorite-border" : "favorite"}
+              iconStyle={{ padding: 5 }}
+              onPress={() => createLike({ variables: { event_id: event.id } })}
+            />
+            {event.likes_count && (
+              <Text
+                onPress={() =>
+                  navigation.navigate("Likes", { eventId: event.id })
+                }
+                style={{ paddingHorizontal: 5, color: PRIMARY_DARK_COLOR }}
+              >
+                {event.likes_count} {event.likes_count === 1 ? "like" : "likes"}
+              </Text>
+            )}
           </View>
         )}
       </Mutation>
+    );
+  };
+
+  render() {
+    const { event, onCommentPress } = this.props;
+
+    return (
+      <View style={styles.container}>
+        <Divider />
+        <View style={styles.socialWrapper}>
+          {this.LikeComponent(event)}
+
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Text>{event.comments_count}</Text>
+            <Icon
+              color="#fb3958"
+              name="comment"
+              iconStyle={{ padding: 5 }}
+              onPress={() => onCommentPress()}
+            />
+          </View>
+        </View>
+        <Divider />
+      </View>
     );
   }
 }
@@ -74,5 +71,11 @@ export default class SocialComponent extends React.Component {
 const styles = StyleSheet.create({
   container: {
     marginTop: 10
+  },
+  socialWrapper: {
+    padding: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between"
   }
 });

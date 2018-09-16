@@ -19,24 +19,13 @@ export default class RecentActivity extends React.Component {
     canRate: true
   };
 
+  // TODO: Need to handle notifications after mutation
   async handleEventLike(event) {
-    const { updateEventDetailsLikes } = this.props;
     const currentUserId = await authHelper.getCurrentUserId();
 
     // If event has been disliked... needs to change for readability.
     if (event.liked) {
       notificationService.deleteNotification(event.id, event.user_id, "like");
-    }
-
-    try {
-      const response = await updateEventDetailsLikes(
-        event.id,
-        event.liked,
-        "activity"
-      );
-      if (response.error) throw response.error;
-    } catch (err) {
-      throw err;
     }
 
     // If event has been liked and the creator isn't the current user, send necessary notifications.
@@ -69,7 +58,6 @@ export default class RecentActivity extends React.Component {
           moment={item}
           navigation={this.props.navigation}
           height={this.height}
-          handleLike={() => this.handleEventLike(item)}
           submitRating={(eventId, value) => this.submitRating(eventId, value)}
           canRate={this.state.canRate}
         />
@@ -82,7 +70,6 @@ export default class RecentActivity extends React.Component {
           vibe={item}
           navigation={this.props.navigation}
           height={this.height}
-          handleLike={() => this.handleEventLike(item)}
           submitRating={(eventId, value) => this.submitRating(eventId, value)}
           canRate={this.state.canRate}
         />

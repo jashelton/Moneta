@@ -87,7 +87,6 @@ export default class MomentComponent extends React.Component {
         <SocialComponent
           event={moment}
           navigation={navigation}
-          onLikePress={() => handleLike()}
           onCommentPress={() =>
             navigation.navigate("EventDetails", { eventId: moment.id })
           }
