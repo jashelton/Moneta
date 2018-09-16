@@ -1,13 +1,19 @@
 import React from "react";
-import { ActivityIndicator, StyleSheet, View, Text } from "react-native";
+import {
+  ActivityIndicator,
+  AsyncStorage,
+  StyleSheet,
+  View,
+  Text
+} from "react-native";
 import { authHelper } from "../Helpers";
 import Sentry from "sentry-expo";
 
 export default class AuthLoadingScreen extends React.Component {
   constructor(props) {
     super(props);
-    // AsyncStorage.removeItem('user_data');
-    // AsyncStorage.removeItem('user_filters');
+    // AsyncStorage.removeItem("user_data");
+    // AsyncStorage.removeItem("user_filters");
     this.getUser();
   }
 

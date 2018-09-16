@@ -416,7 +416,6 @@ export default class EventDetailsScreen extends React.Component {
                   <SocialComponent
                     event={event}
                     navigation={navigation}
-                    showCommentIcon={true}
                     onLikePress={() => this.favoriteEvent()}
                     onCommentPress={() => this.commentInputField.focus()}
                   />

@@ -61,7 +61,6 @@ export default class VibeComponent extends React.Component {
         <SocialComponent
           event={vibe}
           navigation={navigation}
-          showCommentIcon={true}
           onLikePress={() => handleLike()}
           onCommentPress={() =>
             navigation.navigate("EventDetails", { eventId: vibe.id })
