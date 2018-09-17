@@ -446,6 +446,9 @@ export default class EventDetailsScreen extends React.Component {
               <Mutation
                 mutation={CREATE_COMMENT}
                 variables={{ eventId, text: commentValue }}
+                refetchQueries={[
+                  { query: EVENT_QUERY, variables: { eventId } }
+                ]}
                 update={(store, { data: { createComment } }) => {
                   const data = store.readQuery({
                     query: EVENT_COMMENTS,

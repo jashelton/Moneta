@@ -13,8 +13,6 @@ import UserHeaderComponent from "../Components/UserHeaderComponent";
 export default class MomentComponent extends React.Component {
   submitRating(value) {
     const { moment, canRate } = this.props;
-    console.log("MOMENT");
-    console.log(moment);
 
     if (moment.user_rating !== value && canRate) {
       const rating = {
