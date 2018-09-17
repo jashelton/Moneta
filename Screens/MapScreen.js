@@ -103,11 +103,7 @@ export default class MapScreen extends React.Component {
                           <MapView.Marker
                             key={i}
                             pinColor={
-                              m.user_id === currentUser
-                                ? PRIMARY_COLOR
-                                : m.viewed_id !== null
-                                  ? DIVIDER_COLOR
-                                  : "red"
+                              m.user.id === currentUser ? PRIMARY_COLOR : "red"
                             }
                             onPress={() =>
                               this.props.navigation.navigate("EventDetails", {

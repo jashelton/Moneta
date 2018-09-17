@@ -103,14 +103,62 @@ export const CREATE_VIBE = gql`
   }
 `;
 
+export const CREATE_MOMENT = gql`
+  mutation CreateMoment(
+    $description: String!
+    $latitude: Float!
+    $longitude: Float!
+    $title: String!
+    $image: String!
+    $city: String!
+    $country_code: String!
+    $region: String!
+  ) {
+    createMoment(
+      description: $description
+      latitude: $latitude
+      longitude: $longitude
+      title: $title
+      image: $image
+      city: $city
+      country_code: $country_code
+      region: $region
+    ) {
+      id
+      title
+      description
+      likes_count
+      image
+      comments_count
+      avg_rating
+      current_user_rating
+      coordinate {
+        longitude
+        latitude
+      }
+      event_type
+      created_at
+      # TODO: Need to know if current user has liked event
+      user {
+        id
+        first_name
+        last_name
+        profile_image
+      }
+    }
+  }
+`;
+
 export const MAP_MARKERS = gql`
   query allEvents($type: String!) {
     allEvents(event_type: $type) {
       id
-      user_id
       coordinate {
         longitude
         latitude
+      }
+      user {
+        id
       }
     }
   }

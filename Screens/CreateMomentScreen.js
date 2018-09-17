@@ -14,8 +14,6 @@ import { Icon, Button } from "react-native-elements";
 import { TextField } from "react-native-material-textfield";
 import { RNS3 } from "react-native-aws3";
 import { Haptic, Constants } from "expo";
-import { createEvent, clearErrors } from "../reducer";
-import { connect } from "react-redux";
 import SnackBar from "react-native-snackbar-component";
 import { authHelper, LocationHelper, commonHelper, adHelper } from "../Helpers";
 import {
@@ -31,12 +29,17 @@ import {
   PRIMARY_DARK_COLOR,
   TEXT_ICONS_COLOR
 } from "../common/styles/common-styles";
+import { graphql } from "react-apollo";
+import {
+  CREATE_MOMENT,
+  ALL_EVENTS_QUERY,
+  MAP_MARKERS
+} from "../graphql/queries";
 
 const initialEvent = {
   title: "",
   description: "",
   localImage: null,
-  eventPrivacy: "Public",
   imageLocation: "",
   imageCoords: null,
   addressInfo: null,
@@ -117,13 +120,6 @@ class CreateMomentScreen extends React.Component {
     this.setState({ eventForm, imageFile: null });
   }
 
-  updatePrivacySettings(val) {
-    const { eventForm } = this.state;
-    eventForm.eventPrivacy = val ? "Public" : "Private";
-
-    this.setState({ eventForm });
-  }
-
   updateRandomizeLocationState(value) {
     let { eventForm } = this.state;
 
@@ -190,6 +186,42 @@ class CreateMomentScreen extends React.Component {
     this.setState({ eventForm, visiblePlacesSearch: false });
   }
 
+  updateCache = (store, { data: { createMoment } }) => {
+    try {
+      const { allEvents } = store.readQuery({
+        query: ALL_EVENTS_QUERY,
+        variables: { offset: 0 }
+      });
+
+      store.writeQuery({
+        query: ALL_EVENTS_QUERY,
+        variables: { offset: 0 },
+        data: {
+          allEvents: [createMoment, ...allEvents]
+        }
+      });
+    } catch (err) {
+      throw new Error(err);
+    }
+
+    try {
+      const { allEvents } = store.readQuery({
+        query: MAP_MARKERS,
+        variables: { type: "moment" }
+      });
+
+      store.writeQuery({
+        query: MAP_MARKERS,
+        variables: { type: "moment" },
+        data: {
+          allEvents: [createMoment, ...allEvents]
+        }
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   async createEvent() {
     this.checkLocation();
     this.setState({ isCreateDisabled: true }); // Prevent dupe insert
@@ -198,7 +230,6 @@ class CreateMomentScreen extends React.Component {
     const {
       title,
       description,
-      eventPrivacy,
       imageLocation,
       imageCoords,
       addressInfo,
@@ -207,36 +238,38 @@ class CreateMomentScreen extends React.Component {
 
     if (!isCreateDisabled) {
       if (
-        title === "" ||
         description === "" ||
         imageLocation === "" ||
         !imageCoords ||
-        title.length > 60 ||
-        description.length > 240
+        title.length > 60
       ) {
-        alert("You must include a valid Title, Description, and Image");
+        alert("You must include a valid Description, and Image");
         return;
       }
+
+      const { latitude, longitude } = randomizeLocation
+        ? LocationHelper.generateRandomPoint(imageCoords, 2500)
+        : imageCoords;
 
       const event = {
         title,
         description,
-        event_type: "moment",
-        privacy: eventPrivacy,
         city: addressInfo.city,
         region: addressInfo.region,
         country_code: addressInfo.isoCountryCode,
-        coordinate: randomizeLocation
-          ? LocationHelper.generateRandomPoint(imageCoords, 2500)
-          : imageCoords
+        latitude,
+        longitude
       };
 
       try {
         const s3Upload = await RNS3.put(imageFile, this.options);
-        event.image = s3Upload.body.postResponse;
+        event.image = s3Upload.body.postResponse.location;
 
-        const response = await this.props.createEvent(event);
-        if (response.error) throw response.error;
+        await this.props.mutate({
+          CREATE_MOMENT,
+          variables: { ...event },
+          update: this.updateCache
+        });
 
         this.clearEvent();
 
@@ -255,7 +288,6 @@ class CreateMomentScreen extends React.Component {
       localImage,
       title,
       description,
-      eventPrivacy,
       imageLocation,
       randomizeLocation,
       imageCoords
@@ -266,14 +298,7 @@ class CreateMomentScreen extends React.Component {
         <ScrollView
           contentContainerStyle={{ padding: 15, backgroundColor: "#fff" }}
         >
-          <View style={styles.eventPrivacyContainer}>
-            <Text>Create event as: {eventPrivacy}</Text>
-            <Switch
-              value={eventPrivacy === "Public" ? true : false}
-              onValueChange={value => this.updatePrivacySettings(value)}
-            />
-          </View>
-          <View style={styles.eventPrivacyContainer}>
+          <View style={styles.sliderContainer}>
             <Text>Randomize location within radius nearby?</Text>
             <Switch
               value={randomizeLocation ? true : false}
@@ -281,7 +306,7 @@ class CreateMomentScreen extends React.Component {
             />
           </View>
           <TextField
-            label="Title"
+            label="Title (optional)"
             value={title}
             onChangeText={title =>
               this.setState({ eventForm: { ...this.state.eventForm, title } })
@@ -299,7 +324,6 @@ class CreateMomentScreen extends React.Component {
             multiline={true}
             blurOnSubmit={true}
             label="Description"
-            characterRestriction={240}
           />
           <ViewToggle hide={!localImage}>
             <TextField
@@ -359,7 +383,7 @@ class CreateMomentScreen extends React.Component {
 }
 
 const styles = StyleSheet.create({
-  eventPrivacyContainer: {
+  sliderContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -389,19 +413,4 @@ const styles = StyleSheet.create({
   }
 });
 
-const mapStateToProps = state => {
-  return {
-    loading: state.loading,
-    error: state.error
-  };
-};
-
-const mapDispatchToProps = {
-  createEvent,
-  clearErrors
-};
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(CreateMomentScreen);
+export default graphql(CREATE_MOMENT)(CreateMomentScreen);
