@@ -1,7 +1,7 @@
 import gql from "graphql-tag";
 
 export const ALL_EVENTS_QUERY = gql`
-  query Events($offset: Int!) {
+  query AllEvents($offset: Int) {
     allEvents(offset: $offset) {
       id
       title
@@ -25,7 +25,7 @@ export const ALL_EVENTS_QUERY = gql`
 `;
 
 export const EVENT_QUERY = gql`
-  query Event($eventId: ID!) {
+  query GetEvent($eventId: ID!) {
     getEvent(id: $eventId) {
       id
       title
@@ -64,7 +64,7 @@ export const EVENT_COMMENTS = gql`
 
 // TODO: Look into fragments considering eventComments and createComment returns the same thing.
 export const CREATE_COMMENT = gql`
-  mutation Comment($eventId: ID!, $text: String!) {
+  mutation CreateComment($eventId: ID!, $text: String!) {
     createComment(event_id: $eventId, text: $text) {
       id
       text
@@ -80,8 +80,8 @@ export const CREATE_COMMENT = gql`
 `;
 
 export const CREATE_VIBE = gql`
-  mutation NewVibe($desc: String!) {
-    createVibe(description: $desc) {
+  mutation CreateVibe($desc: String!, $type: String!) {
+    createVibe(description: $desc, event_type: $type) {
       id
       title
       description
@@ -104,7 +104,7 @@ export const CREATE_VIBE = gql`
 `;
 
 export const MAP_MARKERS = gql`
-  query MapMarkers($type: String!) {
+  query allEvents($type: String!) {
     allEvents(event_type: $type) {
       id
       user_id

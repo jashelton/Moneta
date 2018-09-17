@@ -1,13 +1,13 @@
 import React from "react";
-import { Mutation } from "react-apollo";
-import { CREATE_VIBE } from "../graphql/queries";
+import { graphql } from "react-apollo";
+import { CREATE_VIBE, ALL_EVENTS_QUERY } from "../graphql/queries";
 import { View, StyleSheet } from "react-native";
 import { Button } from "react-native-elements";
 import { TextField } from "react-native-material-textfield";
 import { DIVIDER_COLOR } from "../common/styles/common-styles";
 import { Haptic } from "expo";
 
-export default class CreateVibeScreen extends React.Component {
+class CreateVibeScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
     return {
       title: "Create Vibe",
@@ -17,7 +17,7 @@ export default class CreateVibeScreen extends React.Component {
           clear
           title="Done"
           titleStyle={{ color: "blue" }}
-          disabled={navigation.getParam("isDisabled")}
+          disabled={navigation.getParam("isCreateDisabled")}
           disabledTitleStyle={{ color: DIVIDER_COLOR }}
           onPress={navigation.getParam("createVibe")}
         />
@@ -25,81 +25,70 @@ export default class CreateVibeScreen extends React.Component {
     };
   };
 
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      desc: "",
-      privacy: "Public",
-      isCreateDisabled: false
-    };
-
-    this.createVibe = this.createVibe.bind(this);
-  }
+  state = {
+    desc: "",
+    isCreateDisabled: false
+  };
 
   componentDidMount() {
     this.props.navigation.setParams({
       createVibe: () => this.createVibe(),
-      isDisabled: this.state.isCreateDisabled
+      isCreateDisabled: this.state.isCreateDisabled
     });
   }
 
-  clearVibe() {
-    let { desc, privacy } = this.state;
-    desc = "";
-    privacy = "Public";
+  updateCache = (store, { data: { createVibe } }) => {
+    const data = store.readQuery({
+      query: ALL_EVENTS_QUERY,
+      variables: { offset: 0 }
+    });
 
-    this.setState({ desc, privacy });
-  }
+    store.writeQuery({
+      query: ALL_EVENTS_QUERY,
+      variables: { offset: 0 },
+      data: {
+        allEvents: [createVibe, ...data.allEvents]
+      }
+    });
+  };
 
   async createVibe() {
     this.setState({ isCreateDisabled: true });
-
     const { desc } = this.state;
+    const vibe = { type: "vibe", desc };
 
-    if (desc.length > 240 || desc < 1) {
+    if (desc < 1) {
       alert("You must provide a valid status.");
       return;
     }
 
-    const vibe = {
-      event_type: "vibe",
-      description: this.state.desc,
-      privacy: this.state.privacy
-    };
-
     try {
-      const response = await this.props.createEvent(vibe);
-      if (response.error) throw response.error;
+      await this.props.mutate({
+        CREATE_VIBE,
+        variables: vibe,
+        update: this.updateCache
+      });
 
-      this.clearVibe();
-
+      this.setState({ desc: "" });
       Haptic.notification(Haptic.NotificationTypes.Success);
       this.props.navigation.goBack();
     } catch (err) {
-      throw err;
+      throw new Error(err);
     }
 
     this.setState({ isCreateDisabled: false });
   }
 
   render() {
-    const { desc } = this.state;
-
     return (
-      <Mutation mutation={CREATE_VIBE} variables={{ desc }}>
-        {createVibe => (
-          <View style={styles.container}>
-            <TextField
-              label="What's going on?"
-              value={desc}
-              onChangeText={content => this.setState({ desc: content })}
-              characterRestriction={240}
-              multiline={true}
-            />
-          </View>
-        )}
-      </Mutation>
+      <View style={styles.container}>
+        <TextField
+          label="What's going on?"
+          value={this.state.desc}
+          onChangeText={content => this.setState({ desc: content })}
+          multiline={true}
+        />
+      </View>
     );
   }
 }
@@ -111,3 +100,5 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff"
   }
 });
+
+export default graphql(CREATE_VIBE)(CreateVibeScreen);
