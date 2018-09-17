@@ -163,3 +163,14 @@ export const MAP_MARKERS = gql`
     }
   }
 `;
+
+export const USER_SEARCH = gql`
+  query AllUsers($name: String) {
+    allUsers(name: $name) {
+      id
+      first_name
+      last_name
+      profile_image
+    }
+  }
+`;
