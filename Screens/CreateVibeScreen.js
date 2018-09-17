@@ -1,15 +1,13 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { Mutation } from "react-apollo";
+import { CREATE_VIBE } from "../graphql/queries";
+import { View, StyleSheet } from "react-native";
 import { Button } from "react-native-elements";
 import { TextField } from "react-native-material-textfield";
-import { connect } from "react-redux";
-import { createEvent, clearErrors } from "../reducer";
 import { DIVIDER_COLOR } from "../common/styles/common-styles";
-import SnackBar from "react-native-snackbar-component";
 import { Haptic } from "expo";
-import { adHelper } from "../Helpers";
 
-class CreateVibeScreen extends React.Component {
+export default class CreateVibeScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
     return {
       title: "Create Vibe",
@@ -31,7 +29,7 @@ class CreateVibeScreen extends React.Component {
     super(props);
 
     this.state = {
-      vibeText: "",
+      desc: "",
       privacy: "Public",
       isCreateDisabled: false
     };
@@ -47,26 +45,26 @@ class CreateVibeScreen extends React.Component {
   }
 
   clearVibe() {
-    let { vibeText, privacy } = this.state;
-    vibeText = "";
+    let { desc, privacy } = this.state;
+    desc = "";
     privacy = "Public";
 
-    this.setState({ vibeText, privacy });
+    this.setState({ desc, privacy });
   }
 
   async createVibe() {
     this.setState({ isCreateDisabled: true });
 
-    const { vibeText } = this.state;
+    const { desc } = this.state;
 
-    if (vibeText.length > 240 || vibeText < 1) {
+    if (desc.length > 240 || desc < 1) {
       alert("You must provide a valid status.");
       return;
     }
 
     const vibe = {
       event_type: "vibe",
-      description: this.state.vibeText,
+      description: this.state.desc,
       privacy: this.state.privacy
     };
 
@@ -86,32 +84,22 @@ class CreateVibeScreen extends React.Component {
   }
 
   render() {
-    const { vibeText } = this.state;
-    const { error } = this.props;
-
-    if (error) {
-      return (
-        <View style={styles.container}>
-          <SnackBar
-            visible={error ? true : false}
-            textMessage={error}
-            actionHandler={() => this.props.clearErrors()}
-            actionText="close"
-          />
-        </View>
-      );
-    }
+    const { desc } = this.state;
 
     return (
-      <View style={styles.container}>
-        <TextField
-          label="What's going on?"
-          value={vibeText}
-          onChangeText={content => this.setState({ vibeText: content })}
-          characterRestriction={240}
-          multiline={true}
-        />
-      </View>
+      <Mutation mutation={CREATE_VIBE} variables={{ desc }}>
+        {createVibe => (
+          <View style={styles.container}>
+            <TextField
+              label="What's going on?"
+              value={desc}
+              onChangeText={content => this.setState({ desc: content })}
+              characterRestriction={240}
+              multiline={true}
+            />
+          </View>
+        )}
+      </Mutation>
     );
   }
 }
@@ -123,17 +111,3 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff"
   }
 });
-
-const mapStateToProps = state => {
-  return {
-    loading: state.loading,
-    error: state.error
-  };
-};
-
-const mapDispatchToProps = { createEvent, clearErrors };
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(CreateVibeScreen);

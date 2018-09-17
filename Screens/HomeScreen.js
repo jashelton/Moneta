@@ -1,36 +1,13 @@
 import React from "react";
 import { Query } from "react-apollo";
-import gql from "graphql-tag";
 import { View, StyleSheet, ActivityIndicator } from "react-native";
 import { permissionsHelper } from "../Helpers";
 import RecentActivity from "../Components/RecentActivity";
 import ErrorComponent from "../Components/ErrorComponent";
-
-const ALL_EVENTS_QUERY = gql`
-  query Events($offset: Int!) {
-    allEvents(offset: $offset) {
-      id
-      title
-      description
-      likes_count
-      image
-      comments_count
-      avg_rating
-      current_user_rating
-      event_type
-      created_at
-      # TODO: Need to know if current user has liked event
-      user {
-        id
-        first_name
-        last_name
-        profile_image
-      }
-    }
-  }
-`;
+import { ALL_EVENTS_QUERY } from "../graphql/queries";
 
 export default class HomeScreen extends React.Component {
+  static navigationOptions = { headerTitle: "Recent Activity" };
   async componentDidMount() {
     // Get permissions from user for push notifications.
     // If agreed, user.push_token will be updated to store push token in db.

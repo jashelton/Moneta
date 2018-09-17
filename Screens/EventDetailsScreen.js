@@ -1,6 +1,10 @@
 import React from "react";
 import { Query, Mutation } from "react-apollo";
-import gql from "graphql-tag";
+import {
+  EVENT_QUERY,
+  EVENT_COMMENTS,
+  CREATE_COMMENT
+} from "../graphql/queries";
 import {
   ScrollView,
   View,
@@ -29,61 +33,6 @@ import { connectActionSheet } from "@expo/react-native-action-sheet";
 import UserHeaderComponent from "../Components/UserHeaderComponent";
 import ErrorComponent from "../Components/ErrorComponent";
 import ImageViewerComponent from "../Components/ImageViewerComponent";
-
-const EVENT_QUERY = gql`
-  query Event($eventId: ID!) {
-    getEvent(id: $eventId) {
-      id
-      title
-      description
-      image
-      avg_rating
-      current_user_rating
-      likes_count
-      comments_count
-      created_at
-      user {
-        id
-        first_name
-        last_name
-        profile_image
-      }
-    }
-  }
-`;
-
-const EVENT_COMMENTS = gql`
-  query EventComments($eventId: ID!) {
-    eventComments(event_id: $eventId) {
-      id
-      text
-      created_at
-      comment_user {
-        id
-        first_name
-        last_name
-        profile_image
-      }
-    }
-  }
-`;
-
-// TODO: Look into fragments considering eventComments and createComment returns the same thing.
-const CREATE_COMMENT = gql`
-  mutation Comment($eventId: ID!, $text: String!) {
-    createComment(event_id: $eventId, text: $text) {
-      id
-      text
-      created_at
-      comment_user {
-        id
-        first_name
-        last_name
-        profile_image
-      }
-    }
-  }
-`;
 
 @connectActionSheet
 export default class EventDetailsScreen extends React.Component {
@@ -136,10 +85,6 @@ export default class EventDetailsScreen extends React.Component {
     const eventId = this.props.navigation.getParam("eventId", null);
 
     this.setState({ currentUserId, eventId });
-
-    // if (!this.props.event.viewed_id) {
-    //   this.markEventAsViewed();
-    // }
   }
 
   componentWillUnmount() {
@@ -257,13 +202,6 @@ export default class EventDetailsScreen extends React.Component {
       navigation.goBack();
     } catch (err) {
       throw err;
-    }
-  }
-
-  async markEventAsViewed() {
-    const { event } = this.props;
-    if (!event.viewed_id) {
-      await this.props.markEventViewed(event.id);
     }
   }
 

@@ -1,6 +1,6 @@
 import React from "react";
 import { Query } from "react-apollo";
-import gql from "graphql-tag";
+import { MAP_MARKERS } from "../graphql/queries";
 import MapView from "react-native-maps";
 import { View, StyleSheet, ActivityIndicator } from "react-native";
 import { Icon } from "react-native-elements";
@@ -10,19 +10,6 @@ import {
   PRIMARY_COLOR,
   DIVIDER_COLOR
 } from "../common/styles/common-styles";
-
-const MAP_MARKERS = gql`
-  query MapMarkers($type: String!) {
-    allEvents(event_type: $type) {
-      id
-      user_id
-      coordinate {
-        longitude
-        latitude
-      }
-    }
-  }
-`;
 
 export default class MapScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
