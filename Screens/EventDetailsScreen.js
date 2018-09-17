@@ -1,6 +1,7 @@
 import React from "react";
 import { Query } from "react-apollo";
 import gql from "graphql-tag";
+import { Mutation } from "react-apollo";
 import {
   ScrollView,
   View,
@@ -24,7 +25,6 @@ import { Icon, Input } from "react-native-elements";
 import { authHelper, LocationHelper } from "../Helpers";
 import { notificationService } from "../Services/notification.service";
 import ImageViewer from "react-native-image-zoom-viewer";
-import SnackBar from "react-native-snackbar-component";
 import SocialComponent from "../Components/SocialComponent";
 import ViewToggle from "../Components/ViewToggle";
 import CommentsComponent from "../Components/CommentsComponent";
@@ -32,6 +32,7 @@ import { AirbnbRating } from "react-native-ratings";
 import { connectActionSheet } from "@expo/react-native-action-sheet";
 import UserHeaderComponent from "../Components/UserHeaderComponent";
 import ErrorComponent from "../Components/ErrorComponent";
+import ImageViewerComponent from "../Components/ImageViewerComponent";
 
 const EVENT_QUERY = gql`
   query Event($eventId: ID!) {
@@ -52,6 +53,11 @@ const EVENT_QUERY = gql`
         profile_image
       }
     }
+  }
+`;
+
+const EVENT_COMMENTS = gql`
+  query EventComments($eventId: ID!) {
     eventComments(event_id: $eventId) {
       id
       text
@@ -65,10 +71,11 @@ const EVENT_QUERY = gql`
     }
   }
 `;
+
 // TODO: Look into fragments considering eventComments and createComment returns the same thing.
 const CREATE_COMMENT = gql`
-  mutation Comment($event_id: ID!) {
-    createComment(event_id: $event_id) {
+  mutation Comment($eventId: ID!, $text: String!) {
+    createComment(event_id: $eventId, text: $text) {
       id
       text
       created_at
@@ -290,18 +297,8 @@ export default class EventDetailsScreen extends React.Component {
   }
 
   submitComment() {
-    let { commentValue } = this.state;
-    const { event, addCommentToEvent } = this.props;
-
-    try {
-      const { data } = addCommentToEvent(event.id, commentValue);
-      Keyboard.dismiss();
-    } catch (err) {
-      throw err;
-    }
-
-    commentValue = "";
-    this.setState({ commentValue, inputFocused: false });
+    Keyboard.dismiss();
+    this.setState({ commentValue: "", inputFocused: false });
   }
 
   async submitRating(value) {
@@ -330,7 +327,6 @@ export default class EventDetailsScreen extends React.Component {
       <Query query={EVENT_QUERY} variables={{ eventId }} errorPolicy="all">
         {({ loading, error, data, refetch }) => {
           const event = data.getEvent;
-          const comments = data.eventComments;
 
           if (loading)
             return (
@@ -433,81 +429,99 @@ export default class EventDetailsScreen extends React.Component {
                   />
                 </View>
 
-                <CommentsComponent comments={comments} />
+                <Query query={EVENT_COMMENTS} variables={{ eventId }}>
+                  {({ loading, error, data, refetch }) => {
+                    return (
+                      <CommentsComponent
+                        loading={loading}
+                        error={error}
+                        comments={data.eventComments}
+                      />
+                    );
+                  }}
+                </Query>
 
-                {/* Modal to display full screen image with zoom */}
-                <Modal
+                <ImageViewerComponent
                   visible={isImageZoomed}
-                  transparent={true}
-                  onRequestClose={() => this.setState({ isImageZoomed: false })}
-                >
-                  <ImageViewer
-                    imageUrls={[{ url: event.image }]}
-                    index={0}
-                    onSwipeDown={() => this.setState({ isImageZoomed: false })}
-                    enableSwipeDown={true}
-                    renderIndicator={() => null}
-                    saveToLocalByLongPress={false}
-                    renderHeader={() => (
-                      <TouchableHighlight
-                        style={{
-                          position: "absolute",
-                          width: "100%",
-                          padding: 15,
-                          alignItems: "flex-end",
-                          zIndex: 10000
-                        }}
-                        onPress={() => this.setState({ isImageZoomed: false })}
-                      >
-                        <Icon name="close" size={38} color="#fff" />
-                      </TouchableHighlight>
-                    )}
-                  />
-                </Modal>
-              </ScrollView>
-              <KeyboardAvoidingView alwaysVisible={true} behavior="padding">
-                <View style={styles.commentInput}>
-                  <Input
-                    ref={input => (this.commentInputField = input)}
-                    placeholder="Comment"
-                    containerStyle={{ backgroundColor: "#eee" }}
-                    inputContainerStyle={{ borderBottomWidth: 0 }}
-                    inputStyle={{ paddingTop: 8 }}
-                    value={commentValue}
-                    onChangeText={value =>
-                      this.setState({ commentValue: value })
-                    }
-                    multiline={true}
-                    shake={true}
-                    onFocus={() => this.setState({ inputFocused: true })}
-                    onBlur={() => this.setState({ inputFocused: false })}
-                    leftIcon={
-                      <Icon name="comment" size={22} color={DIVIDER_COLOR} />
-                    }
-                  />
-                  <View
-                    style={{
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexGrow: 1
-                    }}
-                  >
-                    <Icon
-                      name="send"
-                      size={24}
-                      color={
-                        commentValue.length ? PRIMARY_DARK_COLOR : DIVIDER_COLOR
-                      }
-                      disabled={!commentValue.length}
-                      onPress={this.submitComment.bind(this)}
-                    />
-                  </View>
-                </View>
-                <ViewToggle
-                  hide={!this.state.inputFocused}
-                  style={{ height: 65 }}
+                  onClose={() => this.setState({ isImageZoomed: false })}
+                  image={event.image}
                 />
-              </KeyboardAvoidingView>
+              </ScrollView>
+              <Mutation
+                mutation={CREATE_COMMENT}
+                variables={{ eventId, text: commentValue }}
+                update={(store, { data: { createComment } }) => {
+                  const data = store.readQuery({
+                    query: EVENT_COMMENTS,
+                    variables: { eventId }
+                  });
+
+                  store.writeQuery({
+                    query: EVENT_COMMENTS,
+                    variables: { eventId },
+                    data: {
+                      eventComments: [...data.eventComments, createComment],
+                      getEvent: { comments_count: 100 }
+                    }
+                  });
+
+                  console.log(store);
+                }}
+              >
+                {createComment => (
+                  <KeyboardAvoidingView alwaysVisible={true} behavior="padding">
+                    <View style={styles.commentInput}>
+                      <Input
+                        ref={input => (this.commentInputField = input)}
+                        placeholder="Comment"
+                        containerStyle={{ backgroundColor: "#eee" }}
+                        inputContainerStyle={{ borderBottomWidth: 0 }}
+                        inputStyle={{ paddingTop: 8 }}
+                        value={commentValue}
+                        onChangeText={value =>
+                          this.setState({ commentValue: value })
+                        }
+                        multiline={true}
+                        shake={true}
+                        onFocus={() => this.setState({ inputFocused: true })}
+                        onBlur={() => this.setState({ inputFocused: false })}
+                        leftIcon={
+                          <Icon
+                            name="comment"
+                            size={22}
+                            color={DIVIDER_COLOR}
+                          />
+                        }
+                      />
+                      <View
+                        style={{
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexGrow: 1
+                        }}
+                      >
+                        <Icon
+                          name="send"
+                          size={24}
+                          color={
+                            commentValue.length
+                              ? PRIMARY_DARK_COLOR
+                              : DIVIDER_COLOR
+                          }
+                          disabled={!commentValue.length}
+                          onPress={() =>
+                            createComment().then(this.submitComment())
+                          }
+                        />
+                      </View>
+                    </View>
+                    <ViewToggle
+                      hide={!this.state.inputFocused}
+                      style={{ height: 65 }}
+                    />
+                  </KeyboardAvoidingView>
+                )}
+              </Mutation>
             </View>
           );
         }}

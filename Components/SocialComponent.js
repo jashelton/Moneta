@@ -15,7 +15,6 @@ const SOCIAL_QUERY = gql`
 `;
 
 export default class SocialComponent extends React.Component {
-  // Component for Like with Mutation
   LikeComponent = (event, navigation) => {
     return (
       <Mutation mutation={SOCIAL_QUERY}>

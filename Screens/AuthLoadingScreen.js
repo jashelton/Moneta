@@ -19,6 +19,7 @@ export default class AuthLoadingScreen extends React.Component {
 
   async getUser() {
     const user = await authHelper.getParsedUserData();
+    console.log(user.jwt);
 
     if (user && user.jwt) {
       Sentry.setUserContext({
