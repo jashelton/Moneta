@@ -55,7 +55,6 @@ class CreateVibeScreen extends React.Component {
   async createVibe() {
     this.setState({ isCreateDisabled: true });
     const { desc } = this.state;
-    const vibe = { type: "vibe", desc };
 
     if (desc < 1) {
       alert("You must provide a valid status.");
@@ -65,7 +64,7 @@ class CreateVibeScreen extends React.Component {
     try {
       await this.props.mutate({
         CREATE_VIBE,
-        variables: vibe,
+        variables: { desc },
         update: this.updateCache
       });
 

@@ -80,8 +80,8 @@ export const CREATE_COMMENT = gql`
 `;
 
 export const CREATE_VIBE = gql`
-  mutation CreateVibe($desc: String!, $type: String!) {
-    createVibe(description: $desc, event_type: $type) {
+  mutation CreateVibe($desc: String!) {
+    createVibe(description: $desc) {
       id
       title
       description
