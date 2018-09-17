@@ -1,7 +1,6 @@
 import React from "react";
-import { Query } from "react-apollo";
+import { Query, Mutation } from "react-apollo";
 import gql from "graphql-tag";
-import { Mutation } from "react-apollo";
 import {
   ScrollView,
   View,
@@ -12,19 +11,16 @@ import {
   KeyboardAvoidingView,
   Alert,
   Image,
-  AppState,
   Dimensions,
-  Keyboard,
-  Modal
+  Keyboard
 } from "react-native";
 import {
   PRIMARY_DARK_COLOR,
   DIVIDER_COLOR
 } from "../common/styles/common-styles";
 import { Icon, Input } from "react-native-elements";
-import { authHelper, LocationHelper } from "../Helpers";
+import { authHelper } from "../Helpers";
 import { notificationService } from "../Services/notification.service";
-import ImageViewer from "react-native-image-zoom-viewer";
 import SocialComponent from "../Components/SocialComponent";
 import ViewToggle from "../Components/ViewToggle";
 import CommentsComponent from "../Components/CommentsComponent";
@@ -460,12 +456,9 @@ export default class EventDetailsScreen extends React.Component {
                     query: EVENT_COMMENTS,
                     variables: { eventId },
                     data: {
-                      eventComments: [...data.eventComments, createComment],
-                      getEvent: { comments_count: 100 }
+                      eventComments: [...data.eventComments, createComment]
                     }
                   });
-
-                  console.log(store);
                 }}
               >
                 {createComment => (
@@ -510,7 +503,7 @@ export default class EventDetailsScreen extends React.Component {
                           }
                           disabled={!commentValue.length}
                           onPress={() =>
-                            createComment().then(this.submitComment())
+                            createComment().then(() => this.submitComment())
                           }
                         />
                       </View>
@@ -554,12 +547,5 @@ const styles = StyleSheet.create({
     fontWeight: "200",
     color: "grey",
     fontSize: 12
-  },
-  modalHeader: {
-    height: 60,
-    backgroundColor: PRIMARY_DARK_COLOR,
-    flexDirection: "row",
-    alignItems: "flex-end",
-    justifyContent: "space-between"
   }
 });
