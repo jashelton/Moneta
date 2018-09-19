@@ -1,6 +1,6 @@
 import React from "react";
 import { Constants } from "expo";
-import { View, Text, Modal, StyleSheet, FlatList } from "react-native";
+import { View, Modal, StyleSheet, FlatList } from "react-native";
 import { Button, ListItem, Avatar } from "react-native-elements";
 
 import {
@@ -19,7 +19,7 @@ export default class FollowsModal extends React.Component {
   _renderFollow({ item }) {
     return (
       <ListItem
-        title={item.username || item.name}
+        title={`${item.first_name} ${item.last_name}`}
         titleStyle={{ fontSize: 12 }}
         leftAvatar={
           <Avatar

@@ -66,8 +66,8 @@ export default class RecentActivity extends React.Component {
             numColumns={1}
             data={events}
             renderItem={this._renderImage.bind(this)}
-            onEndReached={() => this.props.handleScroll(events.length)}
-            onEndReachedThreshold={0}
+            // onEndReached={() => this.props.handleScroll(events.length)}
+            // onEndReachedThreshold={0}
             refreshControl={
               <RefreshControl
                 refreshing={loading}

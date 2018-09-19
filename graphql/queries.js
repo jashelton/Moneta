@@ -1,8 +1,8 @@
 import gql from "graphql-tag";
 
 export const ALL_EVENTS_QUERY = gql`
-  query AllEvents($offset: Int) {
-    allEvents(offset: $offset) {
+  query AllEvents($offset: Int, $type: String, $userId: Int) {
+    allEvents(offset: $offset, event_type: $type, user_id: $userId) {
       id
       title
       description
@@ -192,6 +192,52 @@ export const NOTIFICATIONS = gql`
           profile_image
         }
       }
+    }
+  }
+`;
+
+export const GET_USER = gql`
+  query GetUser($id: ID!) {
+    getUser(id: $id) {
+      id
+      first_name
+      last_name
+      profile_image
+      following_count
+      followers_count
+    }
+  }
+`;
+
+export const USER_FOLLOWING = gql`
+  query UserFollowing($id: ID!) {
+    userFollowing(id: $id) {
+      id
+      first_name
+      last_name
+      profile_image
+    }
+  }
+`;
+
+export const USER_FOLLOWERS = gql`
+  query UserFollowers($id: ID!) {
+    userFollowers(id: $id) {
+      id
+      first_name
+      last_name
+      profile_image
+    }
+  }
+`;
+
+export const USER_MUTUAL = gql`
+  query UserMutual($id: ID!) {
+    userMutual(id: $id) {
+      id
+      first_name
+      last_name
+      profile_image
     }
   }
 `;

@@ -4,22 +4,24 @@ import {
   Text,
   StyleSheet,
   TouchableHighlight,
-  Dimensions
+  Dimensions,
+  ActivityIndicator
 } from "react-native";
-import { Avatar, Button } from "react-native-elements";
-import TimeAgo from "react-native-timeago";
 import {
   PRIMARY_DARK_COLOR,
   TEXT_ICONS_COLOR,
   ACCENT_COLOR,
   LIGHT_PRIMARY_COLOR
 } from "../common/styles/common-styles";
+import { Avatar, Button } from "react-native-elements";
+import TimeAgo from "react-native-timeago";
 
 export default class UserInfo extends React.Component {
   _getInitials() {
-    const { userDetails } = this.props;
-    if (userDetails.name) {
-      return userDetails.name
+    const { first_name, last_name } = this.props.userDetails;
+    const name = first_name.concat(" ", last_name);
+    if (name) {
+      return name
         .split(" ")
         .map((n, i, a) => (i === 0 || i + 1 === a.length ? n[0] : null))
         .join("");
@@ -32,8 +34,17 @@ export default class UserInfo extends React.Component {
       currentUser,
       toggleEditProfile,
       toggleFollowing,
-      toggleFollowsModal
+      toggleFollowsModal,
+      loading
     } = this.props;
+
+    if (loading)
+      return (
+        <View style={styles.userInfoContainer}>
+          <ActivityIndicator />
+        </View>
+      );
+
     return (
       <View style={styles.userInfoContainer}>
         <View
@@ -69,7 +80,7 @@ export default class UserInfo extends React.Component {
           >
             <View style={{ flexDirection: "column" }}>
               <Text style={{ fontSize: 18, color: "#fff", fontWeight: "200" }}>
-                {userDetails.name}
+                {userDetails.first_name} {userDetails.last_name}
               </Text>
               <Text
                 style={{
@@ -112,12 +123,12 @@ export default class UserInfo extends React.Component {
         >
           <TouchableHighlight onPress={() => toggleFollowsModal("followers")}>
             <Text style={styles.socialText}>
-              {userDetails.followers} Followers
+              {userDetails.followers_count} Followers
             </Text>
           </TouchableHighlight>
           <TouchableHighlight onPress={() => toggleFollowsModal("following")}>
             <Text style={styles.socialText}>
-              {userDetails.following} Following
+              {userDetails.following_count} Following
             </Text>
           </TouchableHighlight>
           <TouchableHighlight onPress={() => toggleFollowsModal("mutual")}>
