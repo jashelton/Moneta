@@ -1,21 +1,12 @@
 import React from "react";
-import gql from "graphql-tag";
 import { Mutation } from "react-apollo";
+import { SOCIAL_QUERY } from "../graphql/queries";
 import { View, Text, StyleSheet } from "react-native";
 import { Icon, Divider } from "react-native-elements";
 import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
 
-const SOCIAL_QUERY = gql`
-  mutation SocialMutation($event_id: ID!) {
-    createLike(event_id: $event_id) {
-      id
-      likes_count
-    }
-  }
-`;
-
 export default class SocialComponent extends React.Component {
-  LikeComponent = (event, navigation) => {
+  LikeComponent = event => {
     return (
       <Mutation mutation={SOCIAL_QUERY}>
         {createLike => (
@@ -29,7 +20,7 @@ export default class SocialComponent extends React.Component {
             {event.likes_count && (
               <Text
                 onPress={() =>
-                  navigation.navigate("Likes", { eventId: event.id })
+                  this.props.navigation.navigate("Likes", { eventId: event.id })
                 }
                 style={{ paddingHorizontal: 5, color: PRIMARY_DARK_COLOR }}
               >
@@ -50,7 +41,6 @@ export default class SocialComponent extends React.Component {
         <Divider />
         <View style={styles.socialWrapper}>
           {this.LikeComponent(event)}
-
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <Text>{event.comments_count}</Text>
             <Icon

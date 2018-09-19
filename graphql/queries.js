@@ -243,3 +243,23 @@ export const USER_MUTUAL = gql`
     }
   }
 `;
+
+export const GET_EVENT_LIKES = gql`
+  query EventLikes($event_id: ID!) {
+    eventLikes(event_id: $event_id) {
+      id
+      first_name
+      last_name
+      profile_image
+    }
+  }
+`;
+
+export const SOCIAL_QUERY = gql`
+  mutation SocialMutation($event_id: ID!) {
+    createLike(event_id: $event_id) {
+      id
+      likes_count
+    }
+  }
+`;

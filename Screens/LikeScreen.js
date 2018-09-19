@@ -1,18 +1,21 @@
 import React from "react";
-import { ScrollView, FlatList, StyleSheet } from "react-native";
+import {
+  ScrollView,
+  View,
+  FlatList,
+  StyleSheet,
+  ActivityIndicator
+} from "react-native";
 import { ListItem, Avatar } from "react-native-elements";
+import { Query } from "react-apollo";
+import { GET_EVENT_LIKES } from "../graphql/queries";
 
 export default class LikeScreen extends React.Component {
-  async componentDidMount() {
-    const { getLikesForEvent, navigation } = this.props;
-    const eventId = navigation.getParam("eventId");
+  state = { event_id: null };
 
-    try {
-      const response = await getLikesForEvent(eventId);
-      if (response.error) throw response.error;
-    } catch (err) {
-      throw err;
-    }
+  async componentDidMount() {
+    const event_id = this.props.navigation.getParam("eventId");
+    this.setState({ event_id });
   }
 
   _renderItem({ item }) {
@@ -27,12 +30,12 @@ export default class LikeScreen extends React.Component {
             activeOpacity={0.7}
           />
         }
-        title={item.name}
+        title={`${item.first_name} ${item.last_name}`}
         chevron
         bottomDivider
         onPress={() =>
           this.props.navigation.navigate("UserDetails", {
-            userId: item.user_id
+            userId: item.id
           })
         }
       />
@@ -40,16 +43,28 @@ export default class LikeScreen extends React.Component {
   }
 
   render() {
-    const { likesList } = this.props;
+    const { event_id } = this.state;
 
     return (
       <ScrollView style={styles.container}>
-        <FlatList
-          keyExtractor={(item, index) => index.toString()}
-          numColumns={1}
-          data={likesList}
-          renderItem={this._renderItem.bind(this)}
-        />
+        <Query query={GET_EVENT_LIKES} variables={{ event_id }}>
+          {({ loading, error, data, refetch, fetchMore }) => {
+            if (loading)
+              return (
+                <View>
+                  <ActivityIndicator />
+                </View>
+              );
+            return (
+              <FlatList
+                keyExtractor={(item, index) => index.toString()}
+                numColumns={1}
+                data={data.eventLikes}
+                renderItem={this._renderItem.bind(this)}
+              />
+            );
+          }}
+        </Query>
       </ScrollView>
     );
   }

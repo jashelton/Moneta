@@ -27,7 +27,10 @@ async function getCurrentUserId() {
 
 async function getToken() {
   let data = await AsyncStorage.getItem("user_data");
-  data = JSON.parse(data);
+  if (!data) {
+    return null;
+  }
 
+  data = JSON.parse(data);
   return data.jwt;
 }
