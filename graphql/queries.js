@@ -256,12 +256,24 @@ export const GET_EVENT_LIKES = gql`
   }
 `;
 
-export const SOCIAL_QUERY = gql`
-  mutation SocialMutation($event_id: ID!) {
+export const TOGGLE_LIKE = gql`
+  mutation ToggleLike($event_id: ID!) {
     toggleLike(event_id: $event_id) {
       id
       likes_count
       has_liked
+    }
+  }
+`;
+
+export const TOGGLE_FOLLOING = gql`
+  mutation ToggleFollowing($forUserId: ID!) {
+    toggleFollowing(forUserId: $forUserId) {
+      id
+      following_count
+      followers_count
+      mutual_count
+      isFollowing
     }
   }
 `;

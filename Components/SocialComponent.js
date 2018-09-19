@@ -1,6 +1,6 @@
 import React from "react";
 import { Mutation } from "react-apollo";
-import { SOCIAL_QUERY } from "../graphql/queries";
+import { TOGGLE_LIKE } from "../graphql/queries";
 import { View, Text, StyleSheet } from "react-native";
 import { Icon, Divider } from "react-native-elements";
 import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
@@ -8,7 +8,7 @@ import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
 export default class SocialComponent extends React.Component {
   LikeComponent = event => {
     return (
-      <Mutation mutation={SOCIAL_QUERY}>
+      <Mutation mutation={TOGGLE_LIKE}>
         {toggleLike => (
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <Icon

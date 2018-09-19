@@ -1,4 +1,6 @@
 import React from "react";
+import { Mutation } from "react-apollo";
+import { TOGGLE_FOLLOING } from "../graphql/queries";
 import {
   View,
   Text,
@@ -33,7 +35,6 @@ export default class UserInfo extends React.Component {
       userDetails,
       currentUser,
       toggleEditProfile,
-      toggleFollowing,
       toggleFollowsModal,
       loading
     } = this.props;
@@ -98,12 +99,20 @@ export default class UserInfo extends React.Component {
               </Text>
             </View>
             {currentUser !== userDetails.id ? (
-              <Button
-                title={userDetails.isFollowing ? "Unfollow" : "Follow"}
-                buttonStyle={styles.mainBtn}
-                titleStyle={{ color: TEXT_ICONS_COLOR, fontWeight: "200" }}
-                onPress={toggleFollowing}
-              />
+              <Mutation mutation={TOGGLE_FOLLOING}>
+                {toggleFollowing => (
+                  <Button
+                    title={userDetails.isFollowing ? "Unfollow" : "Follow"}
+                    buttonStyle={styles.mainBtn}
+                    titleStyle={{ color: TEXT_ICONS_COLOR, fontWeight: "200" }}
+                    onPress={() =>
+                      toggleFollowing({
+                        variables: { forUserId: userDetails.id }
+                      })
+                    }
+                  />
+                )}
+              </Mutation>
             ) : (
               <Button
                 title="Edit Profile"
