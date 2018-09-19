@@ -41,29 +41,27 @@ export default class HomeScreen extends React.Component {
 
           return (
             <View style={styles.container}>
-              <View>
-                <RecentActivity
-                  refreshing={loading}
-                  navigation={this.props.navigation}
-                  events={data.allEvents}
-                  handleScroll={() =>
-                    fetchMore({
-                      variables: { offset: data.allEvents.length },
-                      updateQuery: (prev, { fetchMoreResult }) => {
-                        if (!fetchMoreResult) return prev;
-                        return Object.assign({}, prev, {
-                          allEvents: [
-                            ...prev.allEvents,
-                            ...fetchMoreResult.allEvents
-                          ]
-                        });
-                      }
-                    })
-                  }
-                  noDataMessage="There is no recent activity to display."
-                  onRefresh={refetch}
-                />
-              </View>
+              <RecentActivity
+                loading={loading}
+                navigation={this.props.navigation}
+                events={data.allEvents}
+                handleScroll={() =>
+                  fetchMore({
+                    variables: { offset: data.allEvents.length },
+                    updateQuery: (prev, { fetchMoreResult }) => {
+                      if (!fetchMoreResult) return prev;
+                      return Object.assign({}, prev, {
+                        allEvents: [
+                          ...prev.allEvents,
+                          ...fetchMoreResult.allEvents
+                        ]
+                      });
+                    }
+                  })
+                }
+                noDataMessage="There is no recent activity to display."
+                onRefresh={refetch}
+              />
             </View>
           );
         }}

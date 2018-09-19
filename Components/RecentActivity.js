@@ -11,45 +11,15 @@ import {
 import MomentComponent from "../Components/MomentComponent";
 import VibeComponent from "../Components/VibeComponent";
 import { adHelper, authHelper } from "../Helpers";
-import { notificationService } from "../Services";
 
 export default class RecentActivity extends React.Component {
   height = Dimensions.get("window").height / 2;
-  state = {
-    canRate: true
+
+  submitRating = () => {
+    // TODO:
+    // prevent dupe rating
+    // submit the rating
   };
-
-  // TODO: Need to handle notifications after mutation
-  async handleEventLike(event) {
-    const currentUserId = await authHelper.getCurrentUserId();
-
-    // If event has been disliked... needs to change for readability.
-    if (event.liked) {
-      notificationService.deleteNotification(event.id, event.user_id, "like");
-    }
-
-    // If event has been liked and the creator isn't the current user, send necessary notifications.
-    if (!event.liked && event.user_id !== currentUserId) {
-      this.notify(event);
-    }
-  }
-
-  async notify(event) {
-    await notificationService.sendPushNotification(
-      event.user_id,
-      `Someone liked your ${event.event_type}!`,
-      event.title || event.description
-    );
-    notificationService.createNotification(event.id, event.user_id, "like");
-  }
-
-  async submitRating(eventId, value) {
-    this.setState({ canRate: false });
-
-    await this.props.updateRating(eventId, value);
-
-    this.setState({ canRate: true });
-  }
 
   _renderImage({ item, index }) {
     return item.event_type === "moment" ? (
@@ -59,7 +29,6 @@ export default class RecentActivity extends React.Component {
           navigation={this.props.navigation}
           height={this.height}
           submitRating={(eventId, value) => this.submitRating(eventId, value)}
-          canRate={this.state.canRate}
         />
 
         {index % 5 === 0 && adHelper.displayPublisherBanner()}
@@ -71,7 +40,6 @@ export default class RecentActivity extends React.Component {
           navigation={this.props.navigation}
           height={this.height}
           submitRating={(eventId, value) => this.submitRating(eventId, value)}
-          canRate={this.state.canRate}
         />
 
         {index % 5 === 0 && adHelper.displayPublisherBanner()}
@@ -80,7 +48,7 @@ export default class RecentActivity extends React.Component {
   }
 
   render() {
-    const { events, noDataMessage, refreshing, loading } = this.props;
+    const { events, noDataMessage, loading } = this.props;
 
     if (loading) {
       return (
@@ -102,7 +70,7 @@ export default class RecentActivity extends React.Component {
             onEndReachedThreshold={0}
             refreshControl={
               <RefreshControl
-                refreshing={refreshing}
+                refreshing={loading}
                 onRefresh={this.props.onRefresh}
               />
             }

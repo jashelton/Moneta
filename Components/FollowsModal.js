@@ -62,14 +62,6 @@ export default class FollowsModal extends React.Component {
             keyExtractor={(item, index) => index.toString()}
             data={followsList}
             renderItem={this._renderFollow.bind(this)}
-            // onEndReached={ () => this.handleScroll(notifications.length)}
-            // onEndReachedThreshold={0}
-            // refreshControl={
-            //   <RefreshControl
-            //     refreshing={refreshing}
-            //     onRefresh={this.getNotifications}
-            //   />
-            // }
           />
         </View>
       </Modal>
