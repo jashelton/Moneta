@@ -174,3 +174,24 @@ export const USER_SEARCH = gql`
     }
   }
 `;
+
+export const NOTIFICATIONS = gql`
+  query UserNotifications($offset: Int) {
+    userNotifications(offset: $offset) {
+      id
+      action_type
+      created_at
+      event {
+        id
+        image
+        event_type
+        user {
+          id
+          first_name
+          last_name
+          profile_image
+        }
+      }
+    }
+  }
+`;
