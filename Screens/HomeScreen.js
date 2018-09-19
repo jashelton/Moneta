@@ -1,7 +1,7 @@
 import React from "react";
 import { Query } from "react-apollo";
 import { View, StyleSheet, ActivityIndicator } from "react-native";
-import { permissionsHelper } from "../Helpers";
+import { permissionsHelper, adHelper } from "../Helpers";
 import RecentActivity from "../Components/RecentActivity";
 import ErrorComponent from "../Components/ErrorComponent";
 import { ALL_EVENTS_QUERY } from "../graphql/queries";
@@ -41,27 +41,32 @@ export default class HomeScreen extends React.Component {
 
           return (
             <View style={styles.container}>
-              <RecentActivity
-                loading={loading}
-                navigation={this.props.navigation}
-                events={data.allEvents}
-                handleScroll={() =>
-                  fetchMore({
-                    variables: { offset: data.allEvents.length },
-                    updateQuery: (prev, { fetchMoreResult }) => {
-                      if (!fetchMoreResult) return prev;
-                      return Object.assign({}, prev, {
-                        allEvents: [
-                          ...prev.allEvents,
-                          ...fetchMoreResult.allEvents
-                        ]
-                      });
-                    }
-                  })
-                }
-                noDataMessage="There is no recent activity to display."
-                onRefresh={refetch}
-              />
+              <View>
+                <RecentActivity
+                  loading={loading}
+                  navigation={this.props.navigation}
+                  events={data.allEvents}
+                  handleScroll={() =>
+                    fetchMore({
+                      variables: { offset: data.allEvents.length },
+                      updateQuery: (prev, { fetchMoreResult }) => {
+                        if (!fetchMoreResult) return prev;
+                        return Object.assign({}, prev, {
+                          allEvents: [
+                            ...prev.allEvents,
+                            ...fetchMoreResult.allEvents
+                          ]
+                        });
+                      }
+                    })
+                  }
+                  noDataMessage="There is no recent activity to display."
+                  onRefresh={refetch}
+                />
+              </View>
+              <View style={{ position: "absolute", bottom: 0 }}>
+                {adHelper.displayPublisherBanner()}
+              </View>
             </View>
           );
         }}
@@ -72,7 +77,8 @@ export default class HomeScreen extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
+    paddingBottom: 50
   },
   leftIcon: {
     marginLeft: 10

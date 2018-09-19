@@ -21,7 +21,7 @@ export default class RecentActivity extends React.Component {
     // submit the rating
   };
 
-  _renderImage({ item, index }) {
+  _renderImage({ item }) {
     return item.event_type === "moment" ? (
       <View>
         <MomentComponent
@@ -30,8 +30,6 @@ export default class RecentActivity extends React.Component {
           height={this.height}
           submitRating={(eventId, value) => this.submitRating(eventId, value)}
         />
-
-        {index % 5 === 0 && adHelper.displayPublisherBanner()}
       </View>
     ) : (
       <View>
@@ -41,8 +39,6 @@ export default class RecentActivity extends React.Component {
           height={this.height}
           submitRating={(eventId, value) => this.submitRating(eventId, value)}
         />
-
-        {index % 5 === 0 && adHelper.displayPublisherBanner()}
       </View>
     );
   }
