@@ -23,7 +23,11 @@ export default class VibeComponent extends React.Component {
 
     return (
       <View style={[styles.container]}>
-        <UserHeaderComponent user={vibe.user} createdAt={vibe.created_at} />
+        <UserHeaderComponent
+          user={vibe.user}
+          createdAt={vibe.created_at}
+          navigation={navigation}
+        />
         <View
           style={{
             alignItems: "flex-end",

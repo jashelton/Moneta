@@ -6,7 +6,7 @@ import { ListItem, Avatar } from "react-native-elements";
 import TimeAgo from "react-native-timeago";
 
 const UserHeaderComponent = props => {
-  const { user, createdAt } = props;
+  const { user, createdAt, navigation } = props;
 
   return (
     <ListItem

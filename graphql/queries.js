@@ -205,6 +205,8 @@ export const GET_USER = gql`
       profile_image
       following_count
       followers_count
+      mutual_count
+      isFollowing
     }
   }
 `;

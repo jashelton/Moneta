@@ -1,4 +1,5 @@
 import React from "react";
+import { Query } from "react-apollo";
 import { View, StyleSheet, ActivityIndicator, Dimensions } from "react-native";
 import {
   PRIMARY_DARK_COLOR,
@@ -11,7 +12,6 @@ import UserInfo from "../Components/UserInfo";
 import UserStats from "../Components/UserStats";
 import EditProfileModal from "../Components/EditProfileModal";
 import FollowsModal from "../Components/FollowsModal";
-import { Query } from "react-apollo";
 import {
   ALL_EVENTS_QUERY,
   GET_USER,
@@ -123,12 +123,6 @@ export default class MyProfileScreen extends React.Component {
         variables={{ offset: 0, userId: currentUser }}
       >
         {({ loading, error, data, refetch, fetchMore }) => {
-          if (loading)
-            return (
-              <View>
-                <ActivityIndicator />
-              </View>
-            );
           return (
             <RecentActivity
               loading={loading}

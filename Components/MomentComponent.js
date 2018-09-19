@@ -29,7 +29,11 @@ export default class MomentComponent extends React.Component {
 
     return (
       <View style={styles.container}>
-        <UserHeaderComponent user={moment.user} createdAt={moment.created_at} />
+        <UserHeaderComponent
+          user={moment.user}
+          createdAt={moment.created_at}
+          navigation={navigation}
+        />
         <View
           style={{
             alignItems: "flex-end",

@@ -118,7 +118,8 @@ export default class UserInfo extends React.Component {
           style={{
             flexDirection: "row",
             justifyContent: "space-evenly",
-            alignItems: "flex-end"
+            alignItems: "flex-end",
+            paddingVertical: 10
           }}
         >
           <TouchableHighlight onPress={() => toggleFollowsModal("followers")}>
@@ -132,7 +133,9 @@ export default class UserInfo extends React.Component {
             </Text>
           </TouchableHighlight>
           <TouchableHighlight onPress={() => toggleFollowsModal("mutual")}>
-            <Text style={styles.socialText}>{userDetails.mutual} Mutual</Text>
+            <Text style={styles.socialText}>
+              {userDetails.mutual_count} Mutual
+            </Text>
           </TouchableHighlight>
         </View>
       </View>
