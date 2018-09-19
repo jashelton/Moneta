@@ -49,9 +49,6 @@
     "react-native-tab-view": "^1.0.2",
     "react-native-timeago": "^0.4.0",
     "react-navigation": "^2.9.3",
-    "react-redux": "^5.0.7",
-    "redux": "^4.0.0",
-    "redux-axios-middleware": "^4.0.0",
     "sentry-expo": "^1.9.0"
   }
 }

@@ -2,7 +2,6 @@ import React from "react";
 import { View, Modal, StyleSheet } from "react-native";
 import {
   PRIMARY_DARK_COLOR,
-  ACCENT_COLOR,
   TEXT_ICONS_COLOR
 } from "../common/styles/common-styles";
 import { Avatar, Button, Divider } from "react-native-elements";
@@ -15,10 +14,8 @@ import {
   BUCKET_REGION
 } from "react-native-dotenv";
 import { commonHelper } from "../Helpers";
-import { connect } from "react-redux";
-import { updateCurrentUserDetails } from "../reducer";
 
-class EditProfileModal extends React.Component {
+export default class EditProfileModal extends React.Component {
   options = {
     keyPrefix: "",
     bucket: BUCKET,
@@ -176,18 +173,3 @@ const styles = StyleSheet.create({
     padding: 15
   }
 });
-
-const mapStateToProps = state => {
-  return {
-    loading: state.loading
-  };
-};
-
-const mapDispatchToProps = {
-  updateCurrentUserDetails
-};
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(EditProfileModal);

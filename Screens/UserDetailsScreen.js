@@ -17,14 +17,6 @@ import { Divider } from "react-native-elements";
 
 import RecentActivity from "../Components/RecentActivity";
 import { authHelper } from "../Helpers";
-import {
-  getUserDetails,
-  updateUserDetailsFollows,
-  listRecentActivityForUser,
-  loadMoreRowsForUserActivity,
-  getUserStats,
-  clearErrors
-} from "../reducer";
 import UserInfo from "../Components/UserInfo";
 import UserStats from "../Components/UserStats";
 import EditProfileModal from "../Components/EditProfileModal";

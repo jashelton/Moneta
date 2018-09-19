@@ -1,10 +1,8 @@
 import React from "react";
 import { ScrollView, FlatList, StyleSheet } from "react-native";
 import { ListItem, Avatar } from "react-native-elements";
-import { connect } from "react-redux";
-import { getLikesForEvent, clearErrors } from "../reducer";
 
-class LikeScreen extends React.Component {
+export default class LikeScreen extends React.Component {
   async componentDidMount() {
     const { getLikesForEvent, navigation } = this.props;
     const eventId = navigation.getParam("eventId");
@@ -63,21 +61,3 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff"
   }
 });
-
-const mapStateToProps = state => {
-  return {
-    loading: state.loading,
-    error: state.error,
-    likesList: state.likesList
-  };
-};
-
-const mapDispatchToProps = {
-  getLikesForEvent,
-  clearErrors
-};
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(LikeScreen);
