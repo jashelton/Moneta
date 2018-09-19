@@ -13,7 +13,7 @@ export const ALL_EVENTS_QUERY = gql`
       current_user_rating
       event_type
       created_at
-      # TODO: Need to know if current user has liked event
+      has_liked
       user {
         id
         first_name
@@ -34,6 +34,7 @@ export const EVENT_QUERY = gql`
       avg_rating
       current_user_rating
       likes_count
+      has_liked
       comments_count
       created_at
       user {
@@ -92,7 +93,7 @@ export const CREATE_VIBE = gql`
       current_user_rating
       event_type
       created_at
-      # TODO: Need to know if current user has liked event
+      has_liked
       user {
         id
         first_name
@@ -138,7 +139,7 @@ export const CREATE_MOMENT = gql`
       }
       event_type
       created_at
-      # TODO: Need to know if current user has liked event
+      has_liked
       user {
         id
         first_name
@@ -257,9 +258,10 @@ export const GET_EVENT_LIKES = gql`
 
 export const SOCIAL_QUERY = gql`
   mutation SocialMutation($event_id: ID!) {
-    createLike(event_id: $event_id) {
+    toggleLike(event_id: $event_id) {
       id
       likes_count
+      has_liked
     }
   }
 `;

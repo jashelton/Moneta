@@ -9,13 +9,17 @@ export default class SocialComponent extends React.Component {
   LikeComponent = event => {
     return (
       <Mutation mutation={SOCIAL_QUERY}>
-        {createLike => (
+        {toggleLike => (
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <Icon
               color="#fb3958"
-              name={!event.liked ? "favorite-border" : "favorite"}
+              name={!event.has_liked ? "favorite-border" : "favorite"}
               iconStyle={{ padding: 5 }}
-              onPress={() => createLike({ variables: { event_id: event.id } })}
+              onPress={() =>
+                toggleLike({
+                  variables: { event_id: event.id }
+                })
+              }
             />
             {event.likes_count && (
               <Text

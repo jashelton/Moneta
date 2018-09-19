@@ -28,17 +28,9 @@ export default class VibeComponent extends React.Component {
           createdAt={vibe.created_at}
           navigation={navigation}
         />
-        <View
-          style={{
-            alignItems: "flex-end",
-            justifyContent: "center",
-            marginRight: 15
-          }}
-        >
+        <View style={styles.ratingsWrapper}>
           <View>
-            <Text
-              style={{ alignSelf: "center", fontSize: 14, fontWeight: "200" }}
-            >
+            <Text style={styles.text}>
               {vibe.avg_rating ? `Avg: ${vibe.avg_rating}` : "No ratings yet."}
             </Text>
             <AirbnbRating
@@ -48,9 +40,7 @@ export default class VibeComponent extends React.Component {
               showRating={false}
               onFinishRating={value => this.submitRating(value)}
             />
-            <Text
-              style={{ alignSelf: "center", fontSize: 14, fontWeight: "200" }}
-            >
+            <Text style={styles.text}>
               {vibe.current_user_rating
                 ? `My Rating: ${vibe.current_user_rating}`
                 : "Rate Anonymously"}
@@ -80,5 +70,15 @@ const styles = StyleSheet.create({
     margin: 5,
     flex: 1,
     flexDirection: "column"
+  },
+  ratingsWrapper: {
+    alignItems: "flex-end",
+    justifyContent: "center",
+    marginRight: 15
+  },
+  text: {
+    alignSelf: "center",
+    fontSize: 14,
+    fontWeight: "200"
   }
 });
