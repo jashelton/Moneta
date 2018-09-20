@@ -1,21 +1,18 @@
 import React from "react";
-import { Query, Mutation } from "react-apollo";
+import { Query, Mutation, graphql } from "react-apollo";
 import {
   EVENT_QUERY,
   EVENT_COMMENTS,
-  CREATE_COMMENT
+  CREATE_COMMENT,
+  DELETE_EVENT
 } from "../graphql/queries";
 import {
   ScrollView,
   View,
-  Text,
   StyleSheet,
   ActivityIndicator,
-  TouchableHighlight,
   KeyboardAvoidingView,
   Alert,
-  Image,
-  Dimensions,
   Keyboard
 } from "react-native";
 import {
@@ -24,18 +21,16 @@ import {
 } from "../common/styles/common-styles";
 import { Icon, Input } from "react-native-elements";
 import { authHelper } from "../Helpers";
-import { notificationService } from "../Services/notification.service";
-import SocialComponent from "../Components/SocialComponent";
+import { connectActionSheet } from "@expo/react-native-action-sheet";
 import ViewToggle from "../Components/ViewToggle";
 import CommentsComponent from "../Components/CommentsComponent";
-import { connectActionSheet } from "@expo/react-native-action-sheet";
 import UserHeaderComponent from "../Components/UserHeaderComponent";
 import ErrorComponent from "../Components/ErrorComponent";
 import ImageViewerComponent from "../Components/ImageViewerComponent";
-import RatingComponent from "../Components/RatingComponent";
+import EventInfoComponent from "../Components/EventInfoComponent";
 
 @connectActionSheet
-export default class EventDetailsScreen extends React.Component {
+class EventDetailsScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
     return {
       headerRight: (
@@ -55,14 +50,12 @@ export default class EventDetailsScreen extends React.Component {
     this.state = {
       currentUserId: null,
       eventId: null,
+      userId: null,
       isImageZoomed: false,
       commentValue: "",
-      inputFocused: false,
-      eventOptionsModalVisible: false,
-      canRate: true
+      inputFocused: false
     };
 
-    this.verifyDeleteEvent = this.verifyDeleteEvent.bind(this);
     this._keyboardDidShow = this._keyboardDidShow.bind(this);
     this._keyboardDidHide = this._keyboardDidHide.bind(this);
   }
@@ -83,8 +76,9 @@ export default class EventDetailsScreen extends React.Component {
 
     const currentUserId = await authHelper.getCurrentUserId();
     const eventId = this.props.navigation.getParam("eventId", null);
+    const userId = this.props.navigation.getParam("userId", null);
 
-    this.setState({ currentUserId, eventId });
+    this.setState({ currentUserId, eventId, userId });
   }
 
   componentWillUnmount() {
@@ -101,11 +95,12 @@ export default class EventDetailsScreen extends React.Component {
   }
 
   _onOpenActionSheet = () => {
+    const { currentUserId, userId } = this.state;
     const actions = {
       options: ["Cancel"]
     };
 
-    if (this.props.event.user_id === this.state.currentUserId) {
+    if (userId === currentUserId) {
       actions.options.push("Delete");
     } else {
       actions.options.push("Report");
@@ -145,9 +140,7 @@ export default class EventDetailsScreen extends React.Component {
   verifyReportEvent = reason => {
     Alert.alert(
       "Report",
-      `Are you sure you want to report this ${
-        this.props.event.event_type
-      } for ${reason}?`,
+      `Are you sure you want to report this post for ${reason}?`,
       [
         {
           text: "Cancel",
@@ -162,10 +155,13 @@ export default class EventDetailsScreen extends React.Component {
   };
 
   reportEvent = async reason => {
-    const { event, reportEvent, navigation } = this.props;
+    const { reportEvent, navigation } = this.props;
 
     try {
-      const response = await reportEvent(event.id, reason.toLowerCase());
+      const response = await reportEvent(
+        this.state.eventId,
+        reason.toLowerCase()
+      );
       if (response.error) throw response.error;
 
       navigation.goBack();
@@ -175,59 +171,27 @@ export default class EventDetailsScreen extends React.Component {
   };
 
   verifyDeleteEvent() {
-    Alert.alert(
-      "Delete",
-      `Are you sure you want to delete this ${this.props.event.event_type}?`,
-      [
-        {
-          text: "Cancel",
-          style: "cancel"
-        },
-        {
-          text: "Delete",
-          onPress: () => this.deleteEvent()
-        }
-      ]
-    );
+    Alert.alert("Delete", `Are you sure you want to delete this post?`, [
+      {
+        text: "Cancel",
+        style: "cancel"
+      },
+      {
+        text: "Delete",
+        onPress: () => this.deleteEvent()
+      }
+    ]);
   }
 
   async deleteEvent() {
-    const { event, navigation, deleteEvent } = this.props;
-    this.setState({ eventOptionsModalVisible: false });
+    const { navigation } = this.props;
 
-    try {
-      const response = await deleteEvent(event.id);
-      if (response.error) throw response.error;
+    this.props.mutate({
+      DELETE_EVENT,
+      variables: { id: this.state.eventId }
+    });
 
-      navigation.goBack();
-    } catch (err) {
-      throw err;
-    }
-  }
-
-  async favoriteEvent() {
-    const { event } = this.props;
-    const { currentUserId } = this.state;
-
-    // If event has been disliked... needs to change for readability.
-    if (event.liked) {
-      notificationService.deleteNotification(event.id, event.user_id, "like");
-      return;
-    }
-
-    // If event has been liked and the creator isn't the current user, send necessary notifications.
-    if (!event.liked && event.user_id !== currentUserId) {
-      this.notify(event);
-    }
-  }
-
-  async notify(event) {
-    await notificationService.sendPushNotification(
-      event.user_id,
-      "Someone liked your event!",
-      event.title
-    );
-    notificationService.createNotification(event.id, event.user_id, "like");
+    navigation.goBack();
   }
 
   submitComment() {
@@ -269,48 +233,11 @@ export default class EventDetailsScreen extends React.Component {
                   user={event.user}
                   createdAt={event.created_at}
                 />
-                <View style={styles.eventSection}>
-                  <RatingComponent
-                    avg_rating={event.avg_rating}
-                    current_rating={event.current_user_rating}
-                    event_id={event.id}
-                  />
-                  <View style={[styles.textContent, { padding: 10 }]}>
-                    {event.title && (
-                      <Text style={{ fontSize: 18, fontWeight: "500" }}>
-                        {event.title}
-                      </Text>
-                    )}
-                    {event.distanceFrom &&
-                      event.distanceFrom.status === "OK" && (
-                        <Text style={styles.subText}>
-                          {event.distanceFrom.distance.text}
-                        </Text>
-                      )}
-                    <Text
-                      style={{ fontSize: 14, fontWeight: "200", marginTop: 15 }}
-                    >
-                      {event.description}
-                    </Text>
-                  </View>
-                  {event.image && (
-                    <TouchableHighlight
-                      onPress={() => this.setState({ isImageZoomed: true })}
-                    >
-                      <Image
-                        style={styles.image}
-                        source={{ uri: event.image }}
-                      />
-                    </TouchableHighlight>
-                  )}
-                  <SocialComponent
-                    event={event}
-                    navigation={navigation}
-                    onLikePress={() => this.favoriteEvent()}
-                    onCommentPress={() => this.commentInputField.focus()}
-                  />
-                </View>
-
+                <EventInfoComponent
+                  event={event}
+                  navigation={navigation}
+                  inputFocus={() => this.commentInputField.focus()}
+                />
                 <Query query={EVENT_COMMENTS} variables={{ eventId }}>
                   {({ loading, error, data, refetch }) => {
                     return (
@@ -375,13 +302,7 @@ export default class EventDetailsScreen extends React.Component {
                           />
                         }
                       />
-                      <View
-                        style={{
-                          alignItems: "center",
-                          justifyContent: "center",
-                          flexGrow: 1
-                        }}
-                      >
+                      <View style={styles.containerCenter}>
                         <Icon
                           name="send"
                           size={24}
@@ -413,14 +334,6 @@ export default class EventDetailsScreen extends React.Component {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    flexDirection: "column",
-    margin: 5
-  },
-  eventSection: {
-    backgroundColor: "#fff"
-  },
   commentInput: {
     flexDirection: "row",
     backgroundColor: "#fff",
@@ -428,13 +341,11 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#eee"
   },
-  image: {
-    width: Dimensions.get("window").width,
-    height: Dimensions.get("window").height * 0.35
-  },
-  subText: {
-    fontWeight: "200",
-    color: "grey",
-    fontSize: 12
+  containerCenter: {
+    alignItems: "center",
+    justifyContent: "center",
+    flexGrow: 1
   }
 });
+
+export default graphql(DELETE_EVENT)(EventDetailsScreen);

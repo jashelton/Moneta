@@ -29,7 +29,10 @@ export default class VibeComponent extends React.Component {
           event={vibe}
           navigation={navigation}
           onCommentPress={() =>
-            navigation.navigate("EventDetails", { eventId: vibe.id })
+            navigation.navigate("EventDetails", {
+              eventId: vibe.id,
+              userId: vibe.user.id
+            })
           }
         />
       </View>

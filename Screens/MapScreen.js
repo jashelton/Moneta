@@ -107,7 +107,8 @@ export default class MapScreen extends React.Component {
                             }
                             onPress={() =>
                               this.props.navigation.navigate("EventDetails", {
-                                eventId: m.id
+                                eventId: m.id,
+                                userId: m.user.id
                               })
                             }
                             ref={marker => {

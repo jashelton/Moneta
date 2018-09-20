@@ -39,7 +39,10 @@ export default class MomentComponent extends React.Component {
           underlayColor="#eee"
           style={[styles.imageTouch, { height }]}
           onPress={() =>
-            navigation.push("EventDetails", { eventId: moment.id })
+            navigation.push("EventDetails", {
+              eventId: moment.id,
+              userId: moment.user.id
+            })
           }
         >
           <Image
@@ -52,7 +55,10 @@ export default class MomentComponent extends React.Component {
           event={moment}
           navigation={navigation}
           onCommentPress={() =>
-            navigation.navigate("EventDetails", { eventId: moment.id })
+            navigation.navigate("EventDetails", {
+              eventId: moment.id,
+              userId: moment.user.id
+            })
           }
         />
       </View>

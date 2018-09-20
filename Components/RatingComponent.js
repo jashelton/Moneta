@@ -16,7 +16,7 @@ const RatingComponent = ({ event_id, current_rating, avg_rating }) => {
             <AirbnbRating
               count={5}
               defaultRating={current_rating || 0}
-              size={22}
+              size={20}
               showRating={false}
               onFinishRating={value =>
                 rateEvent({ variables: { event_id, value } })

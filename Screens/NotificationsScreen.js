@@ -44,7 +44,10 @@ export default class NotificationsScreen extends React.Component {
           />
         }
         onPress={() =>
-          this.props.navigation.navigate("EventDetails", { eventId: event.id })
+          this.props.navigation.navigate("EventDetails", {
+            eventId: event.id,
+            userId: user.id
+          })
         }
       />
     );
