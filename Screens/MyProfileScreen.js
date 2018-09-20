@@ -122,7 +122,6 @@ export default class MyProfileScreen extends React.Component {
               userDetails={data.getUser}
               currentUser={currentUser}
               toggleEditProfile={this.toggleEditProfile}
-              toggleFollowing={() => this.toggleFollowing()}
               toggleFollowsModal={data => this.toggleFollowsModal(data)}
             />
           );

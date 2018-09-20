@@ -1,18 +1,7 @@
 import React from "react";
 import { Query } from "react-apollo";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  Modal,
-  Dimensions,
-  AppState
-} from "react-native";
-import {
-  PRIMARY_DARK_COLOR,
-  PRIMARY_LIGHT_COLOR
-} from "../common/styles/common-styles";
+import { View, StyleSheet, ActivityIndicator } from "react-native";
+import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
 import { Divider } from "react-native-elements";
 
 import RecentActivity from "../Components/RecentActivity";
@@ -53,11 +42,6 @@ export default class UserDetailsScreen extends React.Component {
     this.setState({ currentUser, userId });
   }
 
-  toggleFollowing() {
-    const { userDetails, updateUserDetailsFollows } = this.props;
-    updateUserDetailsFollows(userDetails.id, !userDetails.isFollowing);
-  }
-
   toggleFollowsModal = type => {
     const { followsModalVisibility } = this.state;
     const followsOptions = {
@@ -74,11 +58,9 @@ export default class UserDetailsScreen extends React.Component {
 
   _navigateToUser(userId) {
     this.toggleFollowsModal();
-    // TODO: This causes an issue with routing.
     this.props.navigation.replace("UserDetails", { userId });
   }
 
-  // Edit Profile
   toggleEditProfile() {
     const { editProfileModalVisible } = this.state;
     this.setState({ editProfileModalVisible: !editProfileModalVisible });
@@ -150,7 +132,6 @@ export default class UserDetailsScreen extends React.Component {
               userDetails={data.getUser}
               currentUser={currentUser}
               toggleEditProfile={this.toggleEditProfile}
-              toggleFollowing={() => this.toggleFollowing()}
               toggleFollowsModal={data => this.toggleFollowsModal(data)}
             />
           );
