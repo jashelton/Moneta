@@ -4,7 +4,8 @@ import {
   EVENT_QUERY,
   EVENT_COMMENTS,
   CREATE_COMMENT,
-  DELETE_EVENT
+  DELETE_EVENT,
+  ALL_EVENTS_QUERY
 } from "../graphql/queries";
 import {
   ScrollView,
@@ -186,13 +187,36 @@ class EventDetailsScreen extends React.Component {
   async deleteEvent() {
     const { navigation } = this.props;
 
-    this.props.mutate({
+    await this.props.mutate({
       DELETE_EVENT,
-      variables: { id: this.state.eventId }
+      variables: { id: this.state.eventId },
+      update: this.updateEventsCache
     });
 
     navigation.goBack();
   }
+
+  updateEventsCache = (store, { data: { deleteEvent } }) => {
+    try {
+      const { allEvents } = store.readQuery({
+        query: ALL_EVENTS_QUERY,
+        variables: { offset: 0 }
+      });
+
+      if (!deleteEvent) return;
+
+      const filteredEvents = allEvents.filter(e => e.id !== this.state.eventId);
+      store.writeQuery({
+        query: ALL_EVENTS_QUERY,
+        variables: { offset: 0 },
+        data: {
+          allEvents: filteredEvents
+        }
+      });
+    } catch (err) {
+      throw new Error(err);
+    }
+  };
 
   submitComment() {
     Keyboard.dismiss();
