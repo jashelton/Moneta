@@ -6,26 +6,13 @@ import {
   TouchableHighlight,
   Image
 } from "react-native";
-import { AirbnbRating } from "react-native-ratings";
 import SocialComponent from "./SocialComponent";
 import UserHeaderComponent from "../Components/UserHeaderComponent";
+import RatingComponent from "../Components/RatingComponent";
 
 export default class MomentComponent extends React.Component {
-  submitRating(value) {
-    const { moment, canRate } = this.props;
-
-    if (moment.user_rating !== value && canRate) {
-      const rating = {
-        previousRating: moment.user_rating || null,
-        newRating: value
-      };
-
-      this.props.submitRating(moment.id, rating);
-    }
-  }
-
   render() {
-    const { moment, navigation, height, handleLike } = this.props;
+    const { moment, navigation, height } = this.props;
 
     return (
       <View style={styles.container}>
@@ -34,38 +21,11 @@ export default class MomentComponent extends React.Component {
           createdAt={moment.created_at}
           navigation={navigation}
         />
-        <View
-          style={{
-            alignItems: "flex-end",
-            justifyContent: "center",
-            marginRight: 15
-          }}
-        >
-          <View>
-            <Text
-              style={{ alignSelf: "center", fontSize: 14, fontWeight: "200" }}
-            >
-              {moment.avg_rating
-                ? `Avg: ${moment.avg_rating}`
-                : "No ratings yet."}
-            </Text>
-            <AirbnbRating
-              count={5}
-              defaultRating={moment.current_user_rating || 0}
-              size={22}
-              showRating={false}
-              onFinishRating={value => this.submitRating(value)}
-            />
-            <Text
-              style={{ alignSelf: "center", fontSize: 14, fontWeight: "200" }}
-            >
-              {moment.current_user_rating
-                ? `My Rating: ${moment.current_user_rating}`
-                : "Rate Anonymously"}
-            </Text>
-          </View>
-        </View>
-
+        <RatingComponent
+          avg_rating={moment.avg_rating}
+          current_rating={moment.current_user_rating}
+          event_id={moment.id}
+        />
         <View style={{ padding: 10 }}>
           <Text style={{ fontSize: 15, fontWeight: "400", marginBottom: 5 }}>
             {moment.title}

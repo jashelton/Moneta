@@ -1,23 +1,10 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { AirbnbRating } from "react-native-ratings";
 import SocialComponent from "../Components/SocialComponent";
 import UserHeaderComponent from "../Components/UserHeaderComponent";
+import RatingComponent from "../Components/RatingComponent";
 
 export default class VibeComponent extends React.Component {
-  submitRating(value) {
-    const { vibe, canRate } = this.props;
-
-    if (vibe.user_rating !== value && canRate) {
-      const rating = {
-        previousRating: vibe.user_rating || null,
-        newRating: value
-      };
-
-      this.props.submitRating(vibe.id, rating);
-    }
-  }
-
   render() {
     const { vibe, navigation } = this.props;
 
@@ -28,25 +15,11 @@ export default class VibeComponent extends React.Component {
           createdAt={vibe.created_at}
           navigation={navigation}
         />
-        <View style={styles.ratingsWrapper}>
-          <View>
-            <Text style={styles.text}>
-              {vibe.avg_rating ? `Avg: ${vibe.avg_rating}` : "No ratings yet."}
-            </Text>
-            <AirbnbRating
-              count={5}
-              defaultRating={vibe.current_user_rating || 0}
-              size={22}
-              showRating={false}
-              onFinishRating={value => this.submitRating(value)}
-            />
-            <Text style={styles.text}>
-              {vibe.current_user_rating
-                ? `My Rating: ${vibe.current_user_rating}`
-                : "Rate Anonymously"}
-            </Text>
-          </View>
-        </View>
+        <RatingComponent
+          avg_rating={vibe.avg_rating}
+          current_rating={vibe.current_user_rating}
+          event_id={vibe.id}
+        />
         <View style={{ flex: 1, padding: 15 }}>
           <Text style={{ fontSize: 14, fontWeight: "200" }}>
             {vibe.description}

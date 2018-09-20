@@ -296,3 +296,13 @@ export const UPDATE_USER = gql`
     }
   }
 `;
+
+export const RATE_EVENT = gql`
+  mutation RateEvent($event_id: ID!, $value: Int!) {
+    rateEvent(event_id: $event_id, value: $value) {
+      id
+      avg_rating
+      current_user_rating
+    }
+  }
+`;

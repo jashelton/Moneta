@@ -28,11 +28,11 @@ import { notificationService } from "../Services/notification.service";
 import SocialComponent from "../Components/SocialComponent";
 import ViewToggle from "../Components/ViewToggle";
 import CommentsComponent from "../Components/CommentsComponent";
-import { AirbnbRating } from "react-native-ratings";
 import { connectActionSheet } from "@expo/react-native-action-sheet";
 import UserHeaderComponent from "../Components/UserHeaderComponent";
 import ErrorComponent from "../Components/ErrorComponent";
 import ImageViewerComponent from "../Components/ImageViewerComponent";
+import RatingComponent from "../Components/RatingComponent";
 
 @connectActionSheet
 export default class EventDetailsScreen extends React.Component {
@@ -235,24 +235,6 @@ export default class EventDetailsScreen extends React.Component {
     this.setState({ commentValue: "", inputFocused: false });
   }
 
-  async submitRating(value) {
-    const { event } = this.props;
-    const { canRate } = this.state;
-
-    if (event.current_user_rating !== value && canRate) {
-      this.setState({ canRate: false });
-
-      const rating = {
-        previousRating: event.current_user_rating || null,
-        newRating: value
-      };
-
-      await this.props.detailsUpdateRating(event.id, rating);
-    }
-
-    this.setState({ canRate: true });
-  }
-
   render() {
     const { isImageZoomed, commentValue, eventId } = this.state;
     const { navigation } = this.props;
@@ -288,45 +270,11 @@ export default class EventDetailsScreen extends React.Component {
                   createdAt={event.created_at}
                 />
                 <View style={styles.eventSection}>
-                  <View
-                    style={{
-                      alignItems: "flex-end",
-                      justifyContent: "center",
-                      marginRight: 15
-                    }}
-                  >
-                    <View>
-                      <Text
-                        style={{
-                          alignSelf: "center",
-                          fontSize: 14,
-                          fontWeight: "200"
-                        }}
-                      >
-                        {event.avg_rating
-                          ? `Avg: ${event.avg_rating}`
-                          : "No ratings yet."}
-                      </Text>
-                      <AirbnbRating
-                        count={5}
-                        defaultRating={event.current_user_rating || 0}
-                        size={22}
-                        showRating={false}
-                        onFinishRating={value => this.submitRating(value)}
-                      />
-                      <Text
-                        style={{
-                          alignSelf: "center",
-                          fontSize: 14,
-                          fontWeight: "200"
-                        }}
-                      >
-                        {event.current_user_rating
-                          ? `My Rating: ${event.current_user_rating}`
-                          : "Rate Anonymously"}
-                      </Text>
-                    </View>
-                  </View>
+                  <RatingComponent
+                    avg_rating={event.avg_rating}
+                    current_rating={event.current_user_rating}
+                    event_id={event.id}
+                  />
                   <View style={[styles.textContent, { padding: 10 }]}>
                     {event.title && (
                       <Text style={{ fontSize: 18, fontWeight: "500" }}>
