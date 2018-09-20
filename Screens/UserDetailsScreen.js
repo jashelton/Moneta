@@ -138,6 +138,12 @@ export default class UserDetailsScreen extends React.Component {
     return (
       <Query query={GET_USER} variables={{ id: userId }}>
         {({ loading, error, data }) => {
+          if (loading)
+            return (
+              <View>
+                <ActivityIndicator />
+              </View>
+            );
           return (
             <UserInfo
               loading={loading}

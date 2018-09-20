@@ -30,7 +30,7 @@ export default class FollowsModal extends React.Component {
             activeOpacity={0.7}
           />
         }
-        onPress={() => this.props.navigateToUser(item.user_id)}
+        onPress={() => this.props.navigateToUser(item.id)}
         chevron
         bottomDivider
       />
