@@ -1,4 +1,6 @@
 import React from "react";
+import { UPDATE_USER } from "../graphql/queries";
+import { graphql } from "react-apollo";
 import { View, Modal, StyleSheet } from "react-native";
 import {
   PRIMARY_DARK_COLOR,
@@ -15,7 +17,7 @@ import {
 } from "react-native-dotenv";
 import { commonHelper } from "../Helpers";
 
-export default class EditProfileModal extends React.Component {
+class EditProfileModal extends React.Component {
   options = {
     keyPrefix: "",
     bucket: BUCKET,
@@ -30,9 +32,8 @@ export default class EditProfileModal extends React.Component {
 
     this.state = {
       imageFile: null,
-      first_name: props.first_name,
-      last_name: props.last_name
-      // username: props.username
+      first_name: props.userDetails.first_name,
+      last_name: props.userDetails.last_name
     };
 
     this.prepS3Upload = this.prepS3Upload.bind(this);
@@ -70,30 +71,23 @@ export default class EditProfileModal extends React.Component {
     let { imageFile, first_name, last_name } = this.state;
 
     const user = {
-      id: this.props.userDetails.id,
       first_name,
       last_name
-      // username
     };
 
-    try {
-      if (imageFile && imageFile.uri) {
-        const s3Upload = await RNS3.put(imageFile, this.options);
-        user.profile_image = s3Upload.body.postResponse.location;
-      }
-
-      const response = await this.props.updateCurrentUserDetails(user);
-      if (response.error) throw response.error;
-      this.props.toggleEditProfile();
-    } catch (err) {
-      this.props.toggleEditProfile();
-      throw err;
+    if (imageFile && imageFile.uri) {
+      const s3Upload = await RNS3.put(imageFile, this.options);
+      user.profile_image = s3Upload.body.postResponse.location;
     }
+
+    await this.props.mutate({ UPDATE_USER, variables: { ...user } });
+
+    this.props.toggleEditProfile();
   }
 
   render() {
     const { toggleEditProfile, userDetails, isVisible } = this.props;
-    const { imageFile } = this.state;
+    const { imageFile, first_name, last_name } = this.state;
 
     return (
       <Modal
@@ -136,19 +130,14 @@ export default class EditProfileModal extends React.Component {
         <View style={styles.editProfileBody}>
           <TextField
             label="First Name"
-            value={userDetails.first_name}
+            value={first_name}
             onChangeText={first_name => this.setState({ first_name })}
           />
           <TextField
             label="Last Name"
-            value={userDetails.last_name}
+            value={last_name}
             onChangeText={last_name => this.setState({ last_name })}
           />
-          {/* <TextField
-            label='Username'
-            value={userDetails.username || ''}
-            onChangeText={(username) => this.setState({ username }) }
-          /> */}
         </View>
       </Modal>
     );
@@ -173,3 +162,5 @@ const styles = StyleSheet.create({
     padding: 15
   }
 });
+
+export default graphql(UPDATE_USER)(EditProfileModal);

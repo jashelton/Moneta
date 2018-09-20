@@ -115,6 +115,23 @@ export default class UserDetailsScreen extends React.Component {
     );
   };
 
+  _renderProfileModal = () => {
+    const { editProfileModalVisible, currentUser } = this.state;
+    return (
+      <Query query={GET_USER} variables={{ id: currentUser }}>
+        {({ loading, error, data }) => {
+          return (
+            <EditProfileModal
+              isVisible={editProfileModalVisible}
+              toggleEditProfile={this.toggleEditProfile}
+              userDetails={data.getUser}
+            />
+          );
+        }}
+      </Query>
+    );
+  };
+
   _renderUserProfile = () => {
     const { userId, currentUser } = this.state;
 
@@ -184,12 +201,7 @@ export default class UserDetailsScreen extends React.Component {
         <View style={{ height: "40%" }}>{this._renderUserProfile()}</View>
         <Divider />
         <View style={{ flex: 1 }}>{this._renderUserActivity()}</View>
-        {/* Edit Profile Modal */}
-        {/* <EditProfileModal
-          isVisible={editProfileModalVisible}
-          toggleEditProfile={this.toggleEditProfile}
-          userDetails={userDetails}
-        /> */}
+        {editProfileModalVisible && this._renderProfileModal()}
         {followsModalVisibility && query && this._renderFollowsModal()}}
       </View>
     );

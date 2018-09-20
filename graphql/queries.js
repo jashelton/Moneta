@@ -277,3 +277,22 @@ export const TOGGLE_FOLLOING = gql`
     }
   }
 `;
+
+export const UPDATE_USER = gql`
+  mutation UpdateUser(
+    $first_name: String
+    $last_name: String
+    $profile_image: String
+  ) {
+    updateUser(
+      first_name: $first_name
+      last_name: $last_name
+      profile_image: $profile_image
+    ) {
+      id
+      first_name
+      last_name
+      profile_image
+    }
+  }
+`;

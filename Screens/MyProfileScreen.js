@@ -93,6 +93,23 @@ export default class MyProfileScreen extends React.Component {
     );
   };
 
+  _renderProfileModal = () => {
+    const { editProfileModalVisible, currentUser } = this.state;
+    return (
+      <Query query={GET_USER} variables={{ id: currentUser }}>
+        {({ loading, error, data }) => {
+          return (
+            <EditProfileModal
+              isVisible={editProfileModalVisible}
+              toggleEditProfile={this.toggleEditProfile}
+              userDetails={data.getUser}
+            />
+          );
+        }}
+      </Query>
+    );
+  };
+
   _renderUserProfile = () => {
     const { currentUser } = this.state;
 
@@ -156,7 +173,6 @@ export default class MyProfileScreen extends React.Component {
 
   _navigateToUser(userId) {
     this.toggleFollowsModal();
-    // TODO: This causes an issue with routing.
     this.props.navigation.navigate("UserDetails", { userId });
   }
 
@@ -171,12 +187,7 @@ export default class MyProfileScreen extends React.Component {
       <View style={styles.container}>
         <View style={{ height: "40%" }}>{this._renderUserProfile()}</View>
         <View style={styles.container}>{this._renderUserActivity()}</View>
-        {/* Edit Profile Modal */}
-        {/* <EditProfileModal
-          isVisible={editProfileModalVisible}
-          toggleEditProfile={this.toggleEditProfile}
-          userDetails={currentUserDetails}
-        /> */}
+        {editProfileModalVisible && this._renderProfileModal()}
         {followsModalVisibility && query && this._renderFollowsModal()}}
       </View>
     );
