@@ -78,7 +78,7 @@ export default class HomeScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingBottom: 50
+    paddingBottom: 55
   },
   leftIcon: {
     marginLeft: 10
