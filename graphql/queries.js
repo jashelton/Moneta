@@ -312,3 +312,11 @@ export const DELETE_EVENT = gql`
     deleteEvent(id: $id)
   }
 `;
+
+export const REPORT_EVENT = gql`
+  mutation ReportEvent($event_id: ID!, $reason: String!) {
+    reportEvent(event_id: $event_id, reason: $reason) {
+      id
+    }
+  }
+`;

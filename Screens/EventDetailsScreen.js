@@ -1,11 +1,12 @@
 import React from "react";
-import { Query, Mutation, graphql } from "react-apollo";
+import { Query, Mutation, graphql, compose } from "react-apollo";
 import {
   EVENT_QUERY,
   EVENT_COMMENTS,
+  ALL_EVENTS_QUERY,
   CREATE_COMMENT,
   DELETE_EVENT,
-  ALL_EVENTS_QUERY
+  REPORT_EVENT
 } from "../graphql/queries";
 import {
   ScrollView,
@@ -156,19 +157,18 @@ class EventDetailsScreen extends React.Component {
   };
 
   reportEvent = async reason => {
-    const { reportEvent, navigation } = this.props;
+    const { navigation } = this.props;
 
-    try {
-      const response = await reportEvent(
-        this.state.eventId,
-        reason.toLowerCase()
-      );
-      if (response.error) throw response.error;
+    await this.props.reportEvent({
+      REPORT_EVENT,
+      variables: {
+        event_id: this.state.eventId,
+        reason: reason.toLowerCase()
+      },
+      update: this.updateEventsCache
+    });
 
-      navigation.goBack();
-    } catch (err) {
-      throw err;
-    }
+    navigation.goBack();
   };
 
   verifyDeleteEvent() {
@@ -187,7 +187,7 @@ class EventDetailsScreen extends React.Component {
   async deleteEvent() {
     const { navigation } = this.props;
 
-    await this.props.mutate({
+    await this.props.deleteEvent({
       DELETE_EVENT,
       variables: { id: this.state.eventId },
       update: this.updateEventsCache
@@ -196,14 +196,18 @@ class EventDetailsScreen extends React.Component {
     navigation.goBack();
   }
 
-  updateEventsCache = (store, { data: { deleteEvent } }) => {
+  updateEventsCache = (store, { data }) => {
+    let eventAction;
+    if (data.deleteEvent) eventAction = data.deleteEvent;
+    if (data.reportEvent) eventAction = data.reportEvent;
+
     try {
       const { allEvents } = store.readQuery({
         query: ALL_EVENTS_QUERY,
         variables: { offset: 0 }
       });
 
-      if (!deleteEvent) return;
+      if (!eventAction) return;
 
       const filteredEvents = allEvents.filter(e => e.id !== this.state.eventId);
       store.writeQuery({
@@ -372,4 +376,7 @@ const styles = StyleSheet.create({
   }
 });
 
-export default graphql(DELETE_EVENT)(EventDetailsScreen);
+export default compose(
+  graphql(DELETE_EVENT, { name: "deleteEvent" }),
+  graphql(REPORT_EVENT, { name: "reportEvent" })
+)(EventDetailsScreen);
