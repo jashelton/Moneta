@@ -67,9 +67,9 @@ export default class UserDetailsScreen extends React.Component {
   }
 
   _renderFollowsModal = () => {
-    const { query, currentUser, followsModalVisibility } = this.state;
+    const { query, userId, followsModalVisibility } = this.state;
     return (
-      <Query query={query} variables={{ id: currentUser }}>
+      <Query query={query} variables={{ id: userId }}>
         {({ loading, error, data }) => {
           const response =
             query === USER_FOLLOWERS

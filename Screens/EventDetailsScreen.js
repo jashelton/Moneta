@@ -264,6 +264,7 @@ class EventDetailsScreen extends React.Component {
                 <EventInfoComponent
                   event={event}
                   navigation={navigation}
+                  onImgPress={() => this.setState({ isImageZoomed: true })}
                   inputFocus={() => this.commentInputField.focus()}
                 />
                 <Query query={EVENT_COMMENTS} variables={{ eventId }}>

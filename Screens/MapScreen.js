@@ -1,5 +1,5 @@
 import React from "react";
-import { Query } from "react-apollo";
+import { graphql } from "react-apollo";
 import { MAP_MARKERS } from "../graphql/queries";
 import MapView from "react-native-maps";
 import { View, StyleSheet, ActivityIndicator } from "react-native";
@@ -7,11 +7,11 @@ import { Icon } from "react-native-elements";
 import { LocationHelper, authHelper } from "../Helpers";
 import {
   PRIMARY_DARK_COLOR,
-  PRIMARY_COLOR,
-  DIVIDER_COLOR
+  PRIMARY_COLOR
 } from "../common/styles/common-styles";
+import ErrorComponent from "../Components/ErrorComponent";
 
-export default class MapScreen extends React.Component {
+class MapScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
     return {
       title: "Event Map",
@@ -67,74 +67,82 @@ export default class MapScreen extends React.Component {
     this.setState({ region });
   }
 
+  _onRefresh = () => {
+    this.props.data.refetch();
+  };
+
   render() {
     const { currentUser, region } = this.state;
+    const { loading, error, allEvents, refetch } = this.props.data;
+    const markers = allEvents;
+
+    if (loading)
+      return (
+        <View>
+          <ActivityIndicator />
+        </View>
+      );
+
+    if (error)
+      return (
+        <ErrorComponent
+          iconName="error"
+          refetchData={refetch}
+          errorMessage={error.message}
+          isSnackBarVisible={error ? true : false}
+          snackBarActionText="Retry"
+        />
+      );
 
     return (
       <View style={styles.container}>
-        <Query query={MAP_MARKERS} variables={{ type: "moment" }}>
-          {({ loading, error, data, refetch }) => {
-            const markers = data.allEvents;
-
-            if (loading)
-              return (
-                <View>
-                  <ActivityIndicator />
-                </View>
-              );
-
-            return (
-              <View style={styles.container}>
-                {region && (
-                  <View style={styles.container}>
-                    <MapView
-                      style={styles.map}
-                      showsUserLocation={true}
-                      showsMyLocationButton={false}
-                      showsIndoors={true}
-                      loadingEnabled={true}
-                      showsTraffic={false}
-                      mapType="standard"
-                      region={region}
-                      onRegionChangeComplete={this.onRegionChange}
-                    >
-                      {markers.length &&
-                        markers.map((m, i) => (
-                          <MapView.Marker
-                            key={i}
-                            pinColor={
-                              m.user.id === currentUser ? PRIMARY_COLOR : "red"
-                            }
-                            onPress={() =>
-                              this.props.navigation.navigate("EventDetails", {
-                                eventId: m.id,
-                                userId: m.user.id
-                              })
-                            }
-                            ref={marker => {
-                              this.marker = marker;
-                            }}
-                            coordinate={m.coordinate}
-                          />
-                        ))}
-                    </MapView>
-                    <View
-                      style={{ position: "absolute", bottom: 25, right: 25 }}
-                    >
-                      <Icon
-                        raised
-                        size={30}
-                        color={PRIMARY_DARK_COLOR}
-                        name="my-location"
-                        onPress={this.setCurrentLocation}
-                      />
-                    </View>
-                  </View>
-                )}
+        <View style={styles.container}>
+          {region && (
+            <View style={styles.container}>
+              <MapView
+                style={styles.map}
+                showsUserLocation={true}
+                showsMyLocationButton={false}
+                showsIndoors={true}
+                loadingEnabled={true}
+                showsTraffic={false}
+                mapType="standard"
+                region={region}
+                onRegionChangeComplete={this.onRegionChange}
+              >
+                {markers.length &&
+                  markers.map((m, i) => (
+                    <MapView.Marker
+                      key={i}
+                      flat={true}
+                      pinColor={
+                        m.user.id === currentUser ? PRIMARY_COLOR : "red"
+                      }
+                      onPress={() =>
+                        this.props.navigation.navigate("EventDetails", {
+                          eventId: m.id,
+                          userId: m.user.id
+                        })
+                      }
+                      ref={marker => {
+                        this.marker = marker;
+                      }}
+                      coordinate={m.coordinate}
+                    />
+                  ))}
+              </MapView>
+              <View style={{ position: "absolute", bottom: 25, right: 25 }}>
+                <Icon
+                  raised
+                  size={30}
+                  color={PRIMARY_DARK_COLOR}
+                  name="my-location"
+                  onPress={this.setCurrentLocation}
+                />
               </View>
-            );
-          }}
-        </Query>
+            </View>
+          )}
+        </View>
       </View>
     );
   }
@@ -159,3 +167,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between"
   }
 });
+
+export default graphql(MAP_MARKERS, {
+  options: {
+    variables: { type: "moment" }
+  }
+})(MapScreen);

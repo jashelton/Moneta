@@ -10,7 +10,7 @@ import {
 import RatingComponent from "../Components/RatingComponent";
 import SocialComponent from "../Components/SocialComponent";
 
-const EventInfoComponent = ({ event, navigation, inputFocus }) => {
+const EventInfoComponent = ({ event, navigation, inputFocus, onImgPress }) => {
   return (
     <View style={styles.container}>
       <RatingComponent
@@ -33,9 +33,7 @@ const EventInfoComponent = ({ event, navigation, inputFocus }) => {
         </Text>
       </View>
       {event.image && (
-        <TouchableHighlight
-          onPress={() => this.setState({ isImageZoomed: true })}
-        >
+        <TouchableHighlight onPress={() => onImgPress()}>
           <Image style={styles.image} source={{ uri: event.image }} />
         </TouchableHighlight>
       )}
