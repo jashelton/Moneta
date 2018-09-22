@@ -48,7 +48,7 @@ export default class MomentComponent extends React.Component {
           <Image
             style={styles.image}
             resizeMode="cover"
-            source={{ uri: moment.image }}
+            source={{ uri: moment.Images[0].image }}
           />
         </TouchableHighlight>
         <SocialComponent

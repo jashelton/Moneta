@@ -55,7 +55,8 @@ class EventDetailsScreen extends React.Component {
       userId: null,
       isImageZoomed: false,
       commentValue: "",
-      inputFocused: false
+      inputFocused: false,
+      activeImage: 0
     };
 
     this._keyboardDidShow = this._keyboardDidShow.bind(this);
@@ -228,7 +229,7 @@ class EventDetailsScreen extends React.Component {
   }
 
   render() {
-    const { isImageZoomed, commentValue, eventId } = this.state;
+    const { isImageZoomed, commentValue, eventId, activeImage } = this.state;
     const { navigation } = this.props;
 
     return (
@@ -266,6 +267,10 @@ class EventDetailsScreen extends React.Component {
                   navigation={navigation}
                   onImgPress={() => this.setState({ isImageZoomed: true })}
                   inputFocus={() => this.commentInputField.focus()}
+                  activeImage={activeImage}
+                  setActiveImage={index =>
+                    this.setState({ activeImage: index })
+                  }
                 />
                 <Query query={EVENT_COMMENTS} variables={{ eventId }}>
                   {({ loading, error, data, refetch }) => {
@@ -282,7 +287,7 @@ class EventDetailsScreen extends React.Component {
                 <ImageViewerComponent
                   visible={isImageZoomed}
                   onClose={() => this.setState({ isImageZoomed: false })}
-                  image={event.image}
+                  image={event.Images[activeImage].image}
                 />
               </ScrollView>
               <Mutation

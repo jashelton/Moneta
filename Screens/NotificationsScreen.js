@@ -38,7 +38,11 @@ export default class NotificationsScreen extends React.Component {
           <Avatar
             size="small"
             rounded
-            source={event.image ? { uri: event.image } : null}
+            source={
+              event.Images && event.images.length
+                ? { uri: event.Images[0].image }
+                : null
+            }
             icon={{ name: "chat-bubble-outline", size: 20 }}
             activeOpacity={0.7}
           />

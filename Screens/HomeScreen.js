@@ -1,6 +1,7 @@
 import React from "react";
 import { Query } from "react-apollo";
-import { View, StyleSheet, ActivityIndicator } from "react-native";
+import { View, StyleSheet } from "react-native";
+import { WaveIndicator } from "react-native-indicators";
 import { permissionsHelper, adHelper } from "../Helpers";
 import RecentActivity from "../Components/RecentActivity";
 import ErrorComponent from "../Components/ErrorComponent";
@@ -25,7 +26,7 @@ export default class HomeScreen extends React.Component {
           if (loading)
             return (
               <View style={styles.loadingContainer}>
-                <ActivityIndicator />
+                <WaveIndicator />
               </View>
             );
           if (error)

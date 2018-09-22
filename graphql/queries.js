@@ -7,13 +7,16 @@ export const ALL_EVENTS_QUERY = gql`
       title
       description
       likes_count
-      image
       comments_count
       avg_rating
       current_user_rating
       event_type
       created_at
       has_liked
+      Images {
+        id
+        image
+      }
       user {
         id
         first_name
@@ -30,13 +33,16 @@ export const EVENT_QUERY = gql`
       id
       title
       description
-      image
       avg_rating
       current_user_rating
       likes_count
       has_liked
       comments_count
       created_at
+      Images {
+        id
+        image
+      }
       user {
         id
         first_name
@@ -87,13 +93,16 @@ export const CREATE_VIBE = gql`
       title
       description
       likes_count
-      image
       comments_count
       avg_rating
       current_user_rating
       event_type
       created_at
       has_liked
+      Images {
+        id
+        image
+      }
       user {
         id
         first_name
@@ -140,6 +149,10 @@ export const CREATE_MOMENT = gql`
       event_type
       created_at
       has_liked
+      Images {
+        id
+        image
+      }
       user {
         id
         first_name
@@ -184,8 +197,11 @@ export const NOTIFICATIONS = gql`
       created_at
       event {
         id
-        image
         event_type
+        Images {
+          id
+          image
+        }
         user {
           id
           first_name

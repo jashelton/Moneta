@@ -10,6 +10,7 @@ import {
   Modal,
   Dimensions
 } from "react-native";
+import { WaveIndicator } from "react-native-indicators";
 import { Icon, Button } from "react-native-elements";
 import { TextField } from "react-native-material-textfield";
 import { RNS3 } from "react-native-aws3";
@@ -89,7 +90,8 @@ class CreateMomentScreen extends React.Component {
       eventForm: initialEvent,
       imageFile: null,
       visiblePlacesSearch: false,
-      isCreateDisabled: false
+      isCreateDisabled: false,
+      loading: false
     };
 
     this.clearEvent = this.clearEvent.bind(this);
@@ -223,8 +225,8 @@ class CreateMomentScreen extends React.Component {
   };
 
   async createEvent() {
+    this.setState({ isCreateDisabled: true, loading: true });
     this.checkLocation();
-    this.setState({ isCreateDisabled: true }); // Prevent dupe insert
 
     let { imageFile, isCreateDisabled } = this.state;
     const {
@@ -244,6 +246,7 @@ class CreateMomentScreen extends React.Component {
         title.length > 60
       ) {
         alert("You must include a valid Description, and Image");
+        this.setState({ isCreateDisabled: false, loading: false });
         return;
       }
 
@@ -280,7 +283,7 @@ class CreateMomentScreen extends React.Component {
       }
     }
 
-    this.setState({ isCreateDisabled: false });
+    this.setState({ isCreateDisabled: false, loading: false });
   }
 
   render() {
@@ -292,7 +295,13 @@ class CreateMomentScreen extends React.Component {
       randomizeLocation,
       imageCoords
     } = this.state.eventForm;
-    const { visiblePlacesSearch } = this.state;
+    const { visiblePlacesSearch, loading } = this.state;
+    if (loading)
+      return (
+        <View style={styles.loadingContainer}>
+          <WaveIndicator color={PRIMARY_DARK_COLOR} size={80} />
+        </View>
+      );
     return (
       <View style={{ flex: 1 }}>
         <ScrollView
@@ -410,6 +419,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingTop: Constants.statusBarHeight
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center"
   }
 });
 
