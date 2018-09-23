@@ -24,8 +24,7 @@ async function selectImage(withExif) {
   }
 
   const result = await ImagePicker.launchImageLibraryAsync({
-    // Require type image
-    allowsEditing: false,
+    allowsEditing: true,
     aspect: [4, 3],
     exif: withExif
   });
