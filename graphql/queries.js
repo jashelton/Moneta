@@ -119,7 +119,8 @@ export const CREATE_MOMENT = gql`
     $latitude: Float!
     $longitude: Float!
     $title: String!
-    $image: String!
+    $image: String
+    $images: [String]
     $city: String!
     $country_code: String!
     $region: String!
@@ -130,6 +131,7 @@ export const CREATE_MOMENT = gql`
       longitude: $longitude
       title: $title
       image: $image
+      images: $images
       city: $city
       country_code: $country_code
       region: $region

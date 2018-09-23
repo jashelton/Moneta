@@ -1,17 +1,16 @@
 import React from "react";
+import { graphql } from "react-apollo";
 import {
   View,
   Text,
   ScrollView,
-  TouchableHighlight,
-  Image,
   StyleSheet,
   Switch,
   Modal,
   Dimensions
 } from "react-native";
 import { WaveIndicator } from "react-native-indicators";
-import { Icon, Button } from "react-native-elements";
+import { Button } from "react-native-elements";
 import { TextField } from "react-native-material-textfield";
 import { RNS3 } from "react-native-aws3";
 import { Haptic, Constants } from "expo";
@@ -23,43 +22,37 @@ import {
   BUCKET,
   BUCKET_REGION
 } from "react-native-dotenv";
-import ViewToggle from "../Components/ViewToggle";
-import GooglePlacesInput from "../Components/LocationAutocomplete";
 import {
   DIVIDER_COLOR,
   PRIMARY_DARK_COLOR,
   TEXT_ICONS_COLOR
 } from "../common/styles/common-styles";
-import { graphql } from "react-apollo";
 import {
   CREATE_MOMENT,
   ALL_EVENTS_QUERY,
   MAP_MARKERS
 } from "../graphql/queries";
+import ViewToggle from "../Components/ViewToggle";
+import GooglePlacesInput from "../Components/LocationAutocomplete";
+import ImageSelectionComponent from "../Components/ImageSelectionComponent";
 
 const initialEvent = {
   title: "",
   description: "",
-  localImage: null,
   imageLocation: "",
-  imageCoords: null,
-  addressInfo: null,
   randomizeLocation: false
+};
+
+const selectedEventLocation = {
+  coords: null,
+  address: null,
+  location: ""
 };
 
 class CreateMomentScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
     return {
       title: "Create Moment",
-      // headerLeft: (
-      //   <Button
-      //     containerStyle={styles.leftIcon}
-      //     clear
-      //     title='Clear'
-      //     titleStyle={{color: 'blue'}}
-      //     onPress={navigation.getParam('clearEvent')}
-      //   />
-      // ),
       headerRight: (
         <Button
           containerStyle={styles.rightIcon}
@@ -91,7 +84,9 @@ class CreateMomentScreen extends React.Component {
       imageFile: null,
       visiblePlacesSearch: false,
       isCreateDisabled: false,
-      loading: false
+      loading: false,
+      localImages: [],
+      selectedEventLocation
     };
 
     this.clearEvent = this.clearEvent.bind(this);
@@ -105,7 +100,6 @@ class CreateMomentScreen extends React.Component {
     this.options.keyPrefix = `user_${user_data.id}/`;
 
     this.props.navigation.setParams({
-      clearEvent: () => this.clearEvent(),
       createEvent: () => this.createEvent(),
       isDisabled: this.state.isCreateDisabled
     });
@@ -116,8 +110,11 @@ class CreateMomentScreen extends React.Component {
   }
 
   clearEvent() {
-    let { eventForm } = this.state;
+    let { eventForm, selectedEventLocation } = this.state;
     eventForm = initialEvent;
+    selectedEventLocation.coords = null;
+    selectedEventLocation.address = null;
+    selectedEventLocation.location = "";
 
     this.setState({ eventForm, imageFile: null });
   }
@@ -140,52 +137,62 @@ class CreateMomentScreen extends React.Component {
   // Check permission on CAMERA_ROLL and store what is needed to upload image to S3.
   async prepS3Upload() {
     const result = await commonHelper.selectImage(true);
+    const { localImages, selectedEventLocation } = this.state;
+    const image = {
+      s3: {},
+      data: {}
+    };
 
-    if (!result.cancelled) {
-      const { imageFile, eventForm } = this.state;
+    if (result.cancelled) return;
 
-      imageFile = {
-        uri: result.uri,
-        name: this.createDateString(),
-        type: result.type
-      }; // Required fields for S3 upload
-      eventForm.localImage = result; // Path to image to display to user before S3 upload
+    image.s3.uri = result.uri;
+    image.s3.name = this.createDateString();
+    image.s3.type = result.type;
 
-      this.setState({ imageFile, eventForm });
+    // For images that have location data associated with them via exif.
+    if (result.exif.GPSLatitude && result.exif.GPSLongitude) {
+      const imageCoords = LocationHelper.formatExifCoords(result.exif);
+      const address = await LocationHelper.coordsToAddress(imageCoords);
+      const imageLocation = `${address[0].name}, ${address[0].city || null}, ${
+        address[0].region
+      }, ${address[0].isoCountryCode}`;
 
-      // For images that have location data associated with them via exif.
-      if (result.exif.GPSLatitude && result.exif.GPSLongitude) {
-        const imageCoords = LocationHelper.formatExifCoords(result.exif);
-        const address = await LocationHelper.coordsToAddress(imageCoords);
-        const imageLocation = `${address[0].name}, ${address[0].city ||
-          null}, ${address[0].region}, ${address[0].isoCountryCode}`;
-        const { eventForm } = this.state;
+      image.data.imageLocation = imageLocation;
+      image.data.imageCoords = imageCoords;
+      image.data.addressInfo = address[0];
 
-        eventForm.imageLocation = imageLocation;
-        eventForm.imageCoords = imageCoords;
-        eventForm.addressInfo = address[0];
-      } else {
-        eventForm.imageLocation = "";
-        eventForm.imageCoords = null;
+      if (!selectedEventLocation.coords || !selectedEventLocation.location) {
+        selectedEventLocation.coords = imageCoords;
+        selectedEventLocation.location = imageLocation;
+        selectedEventLocation.address = address[0];
       }
-
-      this.setState({ eventForm });
+    } else {
+      image.data.imageLocation = "";
+      image.data.imageCoords = null;
     }
+
+    localImages.push(image);
+    this.setState({ localImages, selectedEventLocation });
   }
 
   // Custom location selection.  Get address and coords.
   async customImageLocation(data, details) {
     const { location } = details.geometry;
     const { description } = data;
-    let { eventForm } = this.state;
+    let { selectedEventLocation } = this.state;
 
-    eventForm.imageCoords = { latitude: location.lat, longitude: location.lng };
-    const address = await LocationHelper.coordsToAddress(eventForm.imageCoords);
+    selectedEventLocation.coords = {
+      latitude: location.lat,
+      longitude: location.lng
+    };
+    const address = await LocationHelper.coordsToAddress(
+      selectedEventLocation.coords
+    );
 
-    eventForm.imageLocation = description;
-    eventForm.addressInfo = address[0];
+    selectedEventLocation.location = description;
+    selectedEventLocation.address = address[0];
 
-    this.setState({ eventForm, visiblePlacesSearch: false });
+    this.setState({ visiblePlacesSearch: false });
   }
 
   updateCache = (store, { data: { createMoment } }) => {
@@ -226,23 +233,16 @@ class CreateMomentScreen extends React.Component {
 
   async createEvent() {
     this.setState({ isCreateDisabled: true, loading: true });
-    this.checkLocation();
 
-    let { imageFile, isCreateDisabled } = this.state;
-    const {
-      title,
-      description,
-      imageLocation,
-      imageCoords,
-      addressInfo,
-      randomizeLocation
-    } = this.state.eventForm;
+    let { isCreateDisabled, localImages } = this.state;
+    const { coords, location, address } = this.state.selectedEventLocation;
+    const { title, description, randomizeLocation } = this.state.eventForm;
 
     if (!isCreateDisabled) {
       if (
         description === "" ||
-        imageLocation === "" ||
-        !imageCoords ||
+        location === "" ||
+        !coords ||
         title.length > 60
       ) {
         alert("You must include a valid Description, and Image");
@@ -251,22 +251,28 @@ class CreateMomentScreen extends React.Component {
       }
 
       const { latitude, longitude } = randomizeLocation
-        ? LocationHelper.generateRandomPoint(imageCoords, 2500)
-        : imageCoords;
+        ? LocationHelper.generateRandomPoint(coords, 2500)
+        : coords;
 
       const event = {
         title,
         description,
-        city: addressInfo.city,
-        region: addressInfo.region,
-        country_code: addressInfo.isoCountryCode,
+        city: address.city,
+        region: address.region,
+        country_code: address.isoCountryCode,
         latitude,
-        longitude
+        longitude,
+        images: []
       };
 
       try {
-        const s3Upload = await RNS3.put(imageFile, this.options);
-        event.image = s3Upload.body.postResponse.location;
+        for (let i = 0; i < localImages.length; i++) {
+          const s3Upload = await RNS3.put(localImages[i].s3, this.options);
+          event.images.push(s3Upload.body.postResponse.location);
+          if (i === 0) {
+            event.image = s3Upload.body.postResponse.location;
+          }
+        }
 
         await this.props.mutate({
           CREATE_MOMENT,
@@ -287,15 +293,9 @@ class CreateMomentScreen extends React.Component {
   }
 
   render() {
-    const {
-      localImage,
-      title,
-      description,
-      imageLocation,
-      randomizeLocation,
-      imageCoords
-    } = this.state.eventForm;
-    const { visiblePlacesSearch, loading } = this.state;
+    const { title, description, randomizeLocation } = this.state.eventForm;
+    const { visiblePlacesSearch, loading, localImages } = this.state;
+    const { coords, location } = this.state.selectedEventLocation;
     if (loading)
       return (
         <View style={styles.loadingContainer}>
@@ -334,28 +334,18 @@ class CreateMomentScreen extends React.Component {
             blurOnSubmit={true}
             label="Description"
           />
-          <ViewToggle hide={!localImage}>
+          <ViewToggle hide={!localImages.length}>
             <TextField
               label="Event Location"
-              baseColor={!imageCoords ? "red" : "green"}
-              value={imageLocation}
+              baseColor={!coords ? "red" : "green"}
+              value={location}
               onFocus={() => this.setState({ visiblePlacesSearch: true })}
             />
           </ViewToggle>
-          <TouchableHighlight
-            underlayColor="#eee"
-            style={styles.imageUpload}
-            onPress={this.prepS3Upload}
-          >
-            {!localImage ? (
-              <Icon style={styles.iconBtn} color="#d0d0d0" name="add-a-photo" />
-            ) : (
-              <Image
-                style={styles.uploadedImage}
-                source={{ uri: localImage.uri }}
-              />
-            )}
-          </TouchableHighlight>
+          <ImageSelectionComponent
+            images={localImages}
+            prepS3Upload={this.prepS3Upload}
+          />
           <Modal
             animationType="slide"
             transparent={false}
