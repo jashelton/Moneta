@@ -1,11 +1,7 @@
 import React from "react";
-import {
-  ActivityIndicator,
-  AsyncStorage,
-  StyleSheet,
-  View,
-  Text
-} from "react-native";
+import { AsyncStorage, StyleSheet, View, Text } from "react-native";
+import { WaveIndicator } from "react-native-indicators";
+import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
 import { authHelper } from "../Helpers";
 import Sentry from "sentry-expo";
 
@@ -38,7 +34,7 @@ export default class AuthLoadingScreen extends React.Component {
     return (
       <View style={styles.container}>
         <Text>Loading</Text>
-        <ActivityIndicator />
+        <WaveIndicator color={PRIMARY_DARK_COLOR} size={80} />
       </View>
     );
   }

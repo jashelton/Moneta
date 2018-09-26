@@ -1,5 +1,4 @@
 import gql from "graphql-tag";
-import { GraphQLObjectType, GraphQLFloat, GraphQLInputObjectType, GraphQLString } from 'graphql';
 
 export const ALL_EVENTS_QUERY = gql`
   query AllEvents($offset: Int, $type: String, $userId: Int) {

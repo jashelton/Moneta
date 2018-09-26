@@ -1,9 +1,9 @@
 import React from "react";
 import { Query } from "react-apollo";
-import { View, StyleSheet, ActivityIndicator } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
 import { Divider } from "react-native-elements";
-
+import { WaveIndicator } from "react-native-indicators";
 import RecentActivity from "../Components/RecentActivity";
 import { authHelper } from "../Helpers";
 import UserInfo from "../Components/UserInfo";
@@ -80,7 +80,7 @@ export default class UserDetailsScreen extends React.Component {
           if (loading)
             return (
               <View>
-                <ActivityIndicator />
+                <WaveIndicator color={PRIMARY_DARK_COLOR} size={80} />
               </View>
             );
 
@@ -123,7 +123,7 @@ export default class UserDetailsScreen extends React.Component {
           if (loading)
             return (
               <View>
-                <ActivityIndicator />
+                <WaveIndicator color={PRIMARY_DARK_COLOR} size={80} />
               </View>
             );
           return (

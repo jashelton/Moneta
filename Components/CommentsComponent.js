@@ -1,6 +1,8 @@
 import React from "react";
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { Avatar } from "react-native-elements";
+import { WaveIndicator } from "react-native-indicators";
+import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
 
 export default class CommentsComponent extends React.Component {
   render() {
@@ -9,7 +11,7 @@ export default class CommentsComponent extends React.Component {
     if (loading)
       return (
         <View>
-          <ActivityIndicator />
+          <WaveIndicator color={PRIMARY_DARK_COLOR} size={80} />
         </View>
       );
 

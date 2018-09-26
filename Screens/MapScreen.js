@@ -2,9 +2,10 @@ import React from "react";
 import { graphql } from "react-apollo";
 import { MAP_MARKERS } from "../graphql/queries";
 import MapView from "react-native-maps";
-import { View, StyleSheet, ActivityIndicator } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { Icon } from "react-native-elements";
 import { LocationHelper, authHelper } from "../Helpers";
+import { WaveIndicator } from "react-native-indicators";
 import {
   PRIMARY_DARK_COLOR,
   PRIMARY_COLOR
@@ -79,7 +80,7 @@ class MapScreen extends React.Component {
     if (loading)
       return (
         <View>
-          <ActivityIndicator />
+          <WaveIndicator color={PRIMARY_DARK_COLOR} size={80} />
         </View>
       );
 

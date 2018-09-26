@@ -175,7 +175,7 @@ class CreateMomentScreen extends React.Component {
       const address = await LocationHelper.coordsToAddress(imageCoords);
       const imageLocation = `${address[0].name}, ${address[0].city || null}, ${
         address[0].region
-        }, ${address[0].isoCountryCode}`;
+      }, ${address[0].isoCountryCode}`;
 
       image.data.imageLocation = imageLocation;
       image.data.imageCoords = imageCoords;
@@ -235,7 +235,7 @@ class CreateMomentScreen extends React.Component {
           const imageData = {
             image: s3Upload.body.postResponse.location,
             ...localImages[i].data.imageCoords
-          }
+          };
 
           event.images.push(imageData);
           if (i === 0) {

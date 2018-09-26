@@ -1,13 +1,8 @@
 import React from "react";
 import { graphql } from "react-apollo";
 import { USER_SEARCH } from "../graphql/queries";
-import {
-  ScrollView,
-  View,
-  StyleSheet,
-  FlatList,
-  ActivityIndicator
-} from "react-native";
+import { ScrollView, View, StyleSheet, FlatList } from "react-native";
+import { WaveIndicator } from "react-native-indicators";
 import { SearchBar, ListItem, Avatar } from "react-native-elements";
 import { Constants } from "expo";
 import ErrorComponent from "../Components/ErrorComponent";
@@ -59,7 +54,7 @@ class SearchScreen extends React.Component {
     if (loading)
       return (
         <View>
-          <ActivityIndicator />
+          <WaveIndicator color={PRIMARY_DARK_COLOR} size={80} />
         </View>
       );
 

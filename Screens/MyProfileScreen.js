@@ -1,11 +1,8 @@
 import React from "react";
 import { Query } from "react-apollo";
-import { View, StyleSheet, ActivityIndicator, Dimensions } from "react-native";
-import {
-  PRIMARY_DARK_COLOR,
-  ACCENT_COLOR
-} from "../common/styles/common-styles";
-import { Icon } from "react-native-elements";
+import { View, StyleSheet, Dimensions } from "react-native";
+import { WaveIndicator } from "react-native-indicators";
+import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
 import RecentActivity from "../Components/RecentActivity";
 import { authHelper } from "../Helpers";
 import UserInfo from "../Components/UserInfo";
@@ -76,7 +73,7 @@ export default class MyProfileScreen extends React.Component {
           if (loading)
             return (
               <View>
-                <ActivityIndicator />
+                <WaveIndicator color={PRIMARY_DARK_COLOR} size={80} />
               </View>
             );
 

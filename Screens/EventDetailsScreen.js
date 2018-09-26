@@ -12,11 +12,11 @@ import {
   ScrollView,
   View,
   StyleSheet,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Alert,
   Keyboard
 } from "react-native";
+import { WaveIndicator } from "react-native-indicators";
 import {
   PRIMARY_DARK_COLOR,
   DIVIDER_COLOR
@@ -240,7 +240,7 @@ class EventDetailsScreen extends React.Component {
           if (loading)
             return (
               <View style={styles.loadingContainer}>
-                <ActivityIndicator />
+                <WaveIndicator color={PRIMARY_DARK_COLOR} size={80} />
               </View>
             );
 

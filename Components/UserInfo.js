@@ -6,9 +6,9 @@ import {
   Text,
   StyleSheet,
   TouchableHighlight,
-  Dimensions,
-  ActivityIndicator
+  Dimensions
 } from "react-native";
+import { WaveIndicator } from "react-native-indicators";
 import {
   PRIMARY_DARK_COLOR,
   TEXT_ICONS_COLOR,
@@ -42,7 +42,7 @@ export default class UserInfo extends React.Component {
     if (loading)
       return (
         <View style={styles.userInfoContainer}>
-          <ActivityIndicator />
+          <WaveIndicator color={PRIMARY_DARK_COLOR} size={80} />
         </View>
       );
 

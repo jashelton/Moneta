@@ -1,11 +1,7 @@
 import React from "react";
-import {
-  View,
-  StyleSheet,
-  FlatList,
-  RefreshControl,
-  ActivityIndicator
-} from "react-native";
+import { View, StyleSheet, FlatList, RefreshControl } from "react-native";
+import { WaveIndicator } from "react-native-indicators";
+import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
 import { ListItem, Avatar, Icon } from "react-native-elements";
 import TimeAgo from "react-native-timeago";
 import { Query } from "react-apollo";
@@ -65,7 +61,7 @@ export default class NotificationsScreen extends React.Component {
             if (loading)
               return (
                 <View>
-                  <ActivityIndicator />
+                  <WaveIndicator color={PRIMARY_DARK_COLOR} size={80} />
                 </View>
               );
 

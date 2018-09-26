@@ -1,14 +1,10 @@
 import React from "react";
-import {
-  ScrollView,
-  View,
-  FlatList,
-  StyleSheet,
-  ActivityIndicator
-} from "react-native";
-import { ListItem, Avatar } from "react-native-elements";
 import { Query } from "react-apollo";
 import { GET_EVENT_LIKES } from "../graphql/queries";
+import { ScrollView, View, FlatList, StyleSheet } from "react-native";
+import { WaveIndicator } from "react-native-indicators";
+import { ListItem, Avatar } from "react-native-elements";
+import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
 
 export default class LikeScreen extends React.Component {
   state = { event_id: null };
@@ -52,7 +48,7 @@ export default class LikeScreen extends React.Component {
             if (loading)
               return (
                 <View>
-                  <ActivityIndicator />
+                  <WaveIndicator color={PRIMARY_DARK_COLOR} size={80} />
                 </View>
               );
             return (
