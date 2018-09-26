@@ -134,6 +134,26 @@ class CreateMomentScreen extends React.Component {
       1}-${time.getDate()}_${now}`;
   }
 
+  // Custom location selection.  Get address and coords.
+  async customImageLocation(data, details) {
+    const { location } = details.geometry;
+    const { description } = data;
+    let { selectedEventLocation } = this.state;
+
+    selectedEventLocation.coords = {
+      latitude: location.lat,
+      longitude: location.lng
+    };
+    const address = await LocationHelper.coordsToAddress(
+      selectedEventLocation.coords
+    );
+
+    selectedEventLocation.location = description;
+    selectedEventLocation.address = address[0];
+
+    this.setState({ visiblePlacesSearch: false });
+  }
+
   // Check permission on CAMERA_ROLL and store what is needed to upload image to S3.
   async prepS3Upload() {
     const result = await commonHelper.selectImage(true);
@@ -155,7 +175,7 @@ class CreateMomentScreen extends React.Component {
       const address = await LocationHelper.coordsToAddress(imageCoords);
       const imageLocation = `${address[0].name}, ${address[0].city || null}, ${
         address[0].region
-      }, ${address[0].isoCountryCode}`;
+        }, ${address[0].isoCountryCode}`;
 
       image.data.imageLocation = imageLocation;
       image.data.imageCoords = imageCoords;
@@ -174,62 +194,6 @@ class CreateMomentScreen extends React.Component {
     localImages.push(image);
     this.setState({ localImages, selectedEventLocation });
   }
-
-  // Custom location selection.  Get address and coords.
-  async customImageLocation(data, details) {
-    const { location } = details.geometry;
-    const { description } = data;
-    let { selectedEventLocation } = this.state;
-
-    selectedEventLocation.coords = {
-      latitude: location.lat,
-      longitude: location.lng
-    };
-    const address = await LocationHelper.coordsToAddress(
-      selectedEventLocation.coords
-    );
-
-    selectedEventLocation.location = description;
-    selectedEventLocation.address = address[0];
-
-    this.setState({ visiblePlacesSearch: false });
-  }
-
-  updateCache = (store, { data: { createMoment } }) => {
-    try {
-      const { allEvents } = store.readQuery({
-        query: ALL_EVENTS_QUERY,
-        variables: { offset: 0 }
-      });
-
-      store.writeQuery({
-        query: ALL_EVENTS_QUERY,
-        variables: { offset: 0 },
-        data: {
-          allEvents: [createMoment, ...allEvents]
-        }
-      });
-    } catch (err) {
-      throw new Error(err);
-    }
-
-    try {
-      const { allEvents } = store.readQuery({
-        query: MAP_MARKERS,
-        variables: { type: "moment" }
-      });
-
-      store.writeQuery({
-        query: MAP_MARKERS,
-        variables: { type: "moment" },
-        data: {
-          allEvents: [createMoment, ...allEvents]
-        }
-      });
-    } catch (err) {
-      console.log(err);
-    }
-  };
 
   async createEvent() {
     this.setState({ isCreateDisabled: true, loading: true });
@@ -268,9 +232,14 @@ class CreateMomentScreen extends React.Component {
       try {
         for (let i = 0; i < localImages.length; i++) {
           const s3Upload = await RNS3.put(localImages[i].s3, this.options);
-          event.images.push(s3Upload.body.postResponse.location);
+          const imageData = {
+            image: s3Upload.body.postResponse.location,
+            ...localImages[i].data.imageCoords
+          }
+
+          event.images.push(imageData);
           if (i === 0) {
-            event.image = s3Upload.body.postResponse.location;
+            event.image = s3Upload.body.postResponse.location; // Shouldn't need this.
           }
         }
 
@@ -291,6 +260,42 @@ class CreateMomentScreen extends React.Component {
 
     this.setState({ isCreateDisabled: false, loading: false });
   }
+
+  updateCache = (store, { data: { createMoment } }) => {
+    try {
+      const { allEvents } = store.readQuery({
+        query: ALL_EVENTS_QUERY,
+        variables: { offset: 0 }
+      });
+
+      store.writeQuery({
+        query: ALL_EVENTS_QUERY,
+        variables: { offset: 0 },
+        data: {
+          allEvents: [createMoment, ...allEvents]
+        }
+      });
+    } catch (err) {
+      throw new Error(err);
+    }
+
+    try {
+      const { allEvents } = store.readQuery({
+        query: MAP_MARKERS,
+        variables: { type: "moment" }
+      });
+
+      store.writeQuery({
+        query: MAP_MARKERS,
+        variables: { type: "moment" },
+        data: {
+          allEvents: [createMoment, ...allEvents]
+        }
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   render() {
     const { title, description, randomizeLocation } = this.state.eventForm;

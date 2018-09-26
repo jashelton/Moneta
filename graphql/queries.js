@@ -1,4 +1,5 @@
 import gql from "graphql-tag";
+import { GraphQLObjectType, GraphQLFloat, GraphQLInputObjectType, GraphQLString } from 'graphql';
 
 export const ALL_EVENTS_QUERY = gql`
   query AllEvents($offset: Int, $type: String, $userId: Int) {
@@ -120,7 +121,7 @@ export const CREATE_MOMENT = gql`
     $longitude: Float!
     $title: String!
     $image: String
-    $images: [String]
+    $images: [ImageInput]
     $city: String!
     $country_code: String!
     $region: String!
