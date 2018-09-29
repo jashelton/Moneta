@@ -4,6 +4,8 @@ import { TOGGLE_LIKE } from "../graphql/queries";
 import { View, Text, StyleSheet } from "react-native";
 import { Icon, Divider } from "react-native-elements";
 import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
+import { notificationService } from '../Services';
+import { authHelper } from '../Helpers/';
 
 export default class SocialComponent extends React.Component {
   LikeComponent = event => {
@@ -15,10 +17,19 @@ export default class SocialComponent extends React.Component {
               color="#fb3958"
               name={!event.has_liked ? "favorite-border" : "favorite"}
               iconStyle={{ padding: 5 }}
-              onPress={() =>
-                toggleLike({
-                  variables: { event_id: event.id }
-                })
+              onPress={() => {
+                  toggleLike({
+                    variables: { event_id: event.id }
+                  }).then( async ({ data: { toggleLike } }) => {
+                    const currentUserId = await authHelper.getCurrentUserId();
+                    const { has_liked, user } = toggleLike;
+
+                    if (has_liked && user.push_token && currentUserId !== user.id) {
+                      const body = `Someone has liked your ${toggleLike.event_type}.`;
+                      notificationService.sendPushNotification(user.push_token, 'Title', body);
+                    }
+                  });
+                }
               }
             />
             {event.likes_count && (

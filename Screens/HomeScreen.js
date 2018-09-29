@@ -12,7 +12,7 @@ export default class HomeScreen extends React.Component {
   async componentDidMount() {
     // Get permissions from user for push notifications.
     // If agreed, user.push_token will be updated to store push token in db.
-    // await permissionsHelper.registerForPushNotificationsAsync();
+    permissionsHelper.registerForPushNotificationsAsync();
   }
 
   render() {

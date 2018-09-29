@@ -230,6 +230,25 @@ export const GET_USER = gql`
   }
 `;
 
+export const FACEBOOK_USER = gql`
+  query FacebookUser($fbId: ID!) {
+    facebookUser(facebook_id: $fbId) {
+      id
+      first_name
+      last_name
+      jwt
+    }
+  }
+`;
+
+export const CREATE_USER = gql`
+  mutation CreateUser($first_name: String, $last_name: String, $id: ID!) {
+    createUser(first_name: $first_name, last_name: $last_name, facebook_id: $id) {
+      id
+    }
+  }
+`;
+
 export const USER_FOLLOWING = gql`
   query UserFollowing($id: ID!) {
     userFollowing(id: $id) {
@@ -280,6 +299,12 @@ export const TOGGLE_LIKE = gql`
       id
       likes_count
       has_liked
+      event_type
+      user {
+        id
+        name
+        push_token
+      }
     }
   }
 `;
@@ -311,6 +336,15 @@ export const UPDATE_USER = gql`
       first_name
       last_name
       profile_image
+    }
+  }
+`;
+
+export const SET_PUSH_TOKEN = gql`
+  mutation SetPushToken($pt: String!) {
+    setPushToken(push_token: $pt) {
+      id
+      push_token
     }
   }
 `;

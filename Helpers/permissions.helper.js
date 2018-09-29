@@ -1,5 +1,6 @@
 import { Permissions, Notifications } from "expo";
-import { notificationService } from "../Services/notification.service";
+import { client } from '../App';
+import { SET_PUSH_TOKEN } from '../graphql/queries';
 
 export const permissionsHelper = {
   registerForPushNotificationsAsync
@@ -27,7 +28,5 @@ async function registerForPushNotificationsAsync() {
 
   // Get the token that uniquely identifies this device
   let token = await Notifications.getExpoPushTokenAsync();
-  notificationService.insertPushToken(token);
-
-  return token;
+  client.mutate({mutation: SET_PUSH_TOKEN, variables: { pt: token }});
 }
