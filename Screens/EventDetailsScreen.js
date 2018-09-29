@@ -294,11 +294,13 @@ class EventDetailsScreen extends React.Component {
                   }}
                 </Query>
 
-                <ImageViewerComponent
-                  visible={isImageZoomed}
-                  onClose={() => this.setState({ isImageZoomed: false })}
-                  image={event.Images[activeImage].image}
-                />
+                {event.event_type === "moment" && (
+                  <ImageViewerComponent
+                    visible={isImageZoomed}
+                    onClose={() => this.setState({ isImageZoomed: false })}
+                    image={event.Images[activeImage].image}
+                  />
+                )}
               </ScrollView>
               <Mutation
                 mutation={CREATE_COMMENT}
