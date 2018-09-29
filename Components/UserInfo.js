@@ -17,6 +17,8 @@ import {
 } from "../common/styles/common-styles";
 import { Avatar, Button } from "react-native-elements";
 import TimeAgo from "react-native-timeago";
+import { authHelper } from "../Helpers";
+import { notificationService } from "../Services";
 
 export default class UserInfo extends React.Component {
   _getInitials() {
@@ -108,6 +110,18 @@ export default class UserInfo extends React.Component {
                     onPress={() =>
                       toggleFollowing({
                         variables: { forUserId: userDetails.id }
+                      }).then(async ({ data: { toggleFollowing: follow } }) => {
+                        const {
+                          first_name,
+                          last_name
+                        } = await authHelper.getParsedUserData();
+                        if (follow.isFollowing) {
+                          const body = `${first_name} ${last_name} has followed you.`;
+                          notificationService.sendPushNotification(
+                            follow.push_token,
+                            body
+                          );
+                        }
                       })
                     }
                   />

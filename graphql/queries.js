@@ -325,6 +325,7 @@ export const TOGGLE_FOLLOING = gql`
       followers_count
       mutual_count
       isFollowing
+      push_token
     }
   }
 `;
