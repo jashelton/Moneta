@@ -1,6 +1,6 @@
 import React from "react";
 import Nav from "./Navigation/Navigator";
-import { ENDPOINT, SENTRY_DNS } from "react-native-dotenv";
+import { SENTRY_DNS } from "react-native-dotenv";
 import { authHelper } from "./Helpers";
 import { StatusBar, View } from "react-native";
 import Sentry from "sentry-expo";

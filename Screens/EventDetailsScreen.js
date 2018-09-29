@@ -30,6 +30,7 @@ import UserHeaderComponent from "../Components/UserHeaderComponent";
 import ErrorComponent from "../Components/ErrorComponent";
 import ImageViewerComponent from "../Components/ImageViewerComponent";
 import EventInfoComponent from "../Components/EventInfoComponent";
+import { notificationService } from "../Services/";
 
 @connectActionSheet
 class EventDetailsScreen extends React.Component {
@@ -223,9 +224,18 @@ class EventDetailsScreen extends React.Component {
     }
   };
 
-  submitComment() {
+  submitComment({ data }) {
     Keyboard.dismiss();
     this.setState({ commentValue: "", inputFocused: false });
+
+    const { comment_user, owner } = data.createComment;
+
+    if (owner.push_token && comment_user.id !== this.state.userId) {
+      const body = `${comment_user.first_name} ${
+        comment_user.last_name
+      } commented on your post.`;
+      notificationService.sendPushNotification(owner.push_token, body);
+    }
   }
 
   render() {
@@ -347,7 +357,7 @@ class EventDetailsScreen extends React.Component {
                           }
                           disabled={!commentValue.length}
                           onPress={() =>
-                            createComment().then(() => this.submitComment())
+                            createComment().then(res => this.submitComment(res))
                           }
                         />
                       </View>

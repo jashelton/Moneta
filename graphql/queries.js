@@ -82,6 +82,10 @@ export const CREATE_COMMENT = gql`
         last_name
         profile_image
       }
+      owner {
+        id
+        push_token
+      }
     }
   }
 `;
@@ -243,7 +247,11 @@ export const FACEBOOK_USER = gql`
 
 export const CREATE_USER = gql`
   mutation CreateUser($first_name: String, $last_name: String, $id: ID!) {
-    createUser(first_name: $first_name, last_name: $last_name, facebook_id: $id) {
+    createUser(
+      first_name: $first_name
+      last_name: $last_name
+      facebook_id: $id
+    ) {
       id
     }
   }

@@ -7,8 +7,8 @@ export const notificationService = {
   createNotification
 };
 
-async function sendPushNotification(push_token, title, body) {
-  const notifyData = { to: push_token, title, body };
+async function sendPushNotification(push_token, body) {
+  const notifyData = { to: push_token, body, badge: 0 };
   const options = {
     headers: {
       "content-type": "application/json",

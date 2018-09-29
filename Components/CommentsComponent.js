@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Avatar } from "react-native-elements";
 import { WaveIndicator } from "react-native-indicators";
-import { PRIMARY_DARK_COLOR } from '../common/styles/common-styles';
+import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
 
 export default class CommentsComponent extends React.Component {
   render() {

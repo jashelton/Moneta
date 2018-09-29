@@ -23,14 +23,14 @@ async function fbLogin(token) {
 // Get Facebook data
 // Check if user exists in DB, if not, create user
 async function handleUser(userData, userToken) {
-  const { data } = await this.getFacebookUser(userData.id); // name, facebook_id
+  const data = await this.getFacebookUser(userData.id); // name, facebook_id
 
-  if (!data.facebookUser) {
+  if (!data.data.facebookUser) {
     const facebookUserData = await this.fbUserData(userData.id, userToken); // fname, lname, email, fbId, picture
-
+    
     await this.createUser(facebookUserData);
   } else {
-    return data.facebookUser;
+    return data;
   }
 
   return await this.getFacebookUser(userData.id);
