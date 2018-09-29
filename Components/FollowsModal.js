@@ -2,7 +2,6 @@ import React from "react";
 import { Constants } from "expo";
 import { View, Modal, StyleSheet, FlatList } from "react-native";
 import { Button, ListItem, Avatar } from "react-native-elements";
-
 import {
   PRIMARY_DARK_COLOR,
   TEXT_ICONS_COLOR
@@ -10,7 +9,7 @@ import {
 
 export default class FollowsModal extends React.Component {
   _navigateToUserDetails(userId) {
-    const { navigation, toggleFollowsModal, navigateToUser } = this.props;
+    const { navigation, toggleFollowsModal } = this.props;
     toggleFollowsModal();
     // TODO: This causes an issue with routing.
     navigation.replace("UserDetails", { userId });

@@ -242,6 +242,13 @@ class EventDetailsScreen extends React.Component {
     const { isImageZoomed, commentValue, eventId, activeImage } = this.state;
     const { navigation } = this.props;
 
+    if (!eventId)
+      return (
+        <View style={styles.loadingContainer}>
+          <WaveIndicator color={PRIMARY_DARK_COLOR} size={80} />
+        </View>
+      );
+
     return (
       <Query query={EVENT_QUERY} variables={{ eventId }} errorPolicy="all">
         {({ loading, error, data, refetch }) => {
@@ -271,6 +278,7 @@ class EventDetailsScreen extends React.Component {
                 <UserHeaderComponent
                   user={event.user}
                   createdAt={event.created_at}
+                  navigation={navigation}
                 />
                 <EventInfoComponent
                   event={event}
