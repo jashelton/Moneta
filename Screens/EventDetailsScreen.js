@@ -312,7 +312,11 @@ class EventDetailsScreen extends React.Component {
               </ScrollView>
               <Mutation
                 mutation={CREATE_COMMENT}
-                variables={{ eventId, text: commentValue }}
+                variables={{
+                  eventId,
+                  text: commentValue,
+                  owner_id: event.user.id
+                }}
                 refetchQueries={[
                   { query: EVENT_QUERY, variables: { eventId } }
                 ]}

@@ -20,7 +20,7 @@ export default class SocialComponent extends React.Component {
               disabled={loading}
               onPress={() => {
                 toggleLike({
-                  variables: { event_id: event.id }
+                  variables: { event_id: event.id, owner_id: event.user.id }
                 }).then(async ({ data: { toggleLike } }) => {
                   const currentUser = await authHelper.getParsedUserData();
                   const { has_liked, user } = toggleLike;

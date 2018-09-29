@@ -12,20 +12,25 @@ export default class NotificationsScreen extends React.Component {
   static navigationOptions = { title: "Notifications" };
 
   _renderNotification({ item }) {
-    const { action_type, event } = item;
+    const { action_type, event, actor } = item;
     const { user } = item.event;
+    const iconType = {
+      like: "favorite",
+      comment: "chat-bubble-outline"
+    };
+
     return (
       <ListItem
-        title={`${user.first_name} ${user.last_name} ${
+        title={`${actor.first_name} ${actor.last_name} ${
           action_type === "like" ? "liked" : "commented on"
         } your event.`}
-        titleStyle={{ fontSize: 12 }}
+        titleStyle={{ fontSize: 14 }}
         subtitle={<TimeAgo time={item.created_at} style={styles.subText} />}
         chevron
         leftAvatar={
           <Avatar
             size="small"
-            source={user.image ? { uri: user.image } : null}
+            source={actor.profile_image ? { uri: actor.profile_image } : null}
             icon={{ name: "person", size: 20 }}
             activeOpacity={0.7}
           />
@@ -35,11 +40,11 @@ export default class NotificationsScreen extends React.Component {
             size="small"
             rounded
             source={
-              event.Images && event.images.length
+              event.Images && event.Images.length
                 ? { uri: event.Images[0].image }
                 : null
             }
-            icon={{ name: "chat-bubble-outline", size: 20 }}
+            icon={{ name: iconType[action_type], size: 20 }}
             activeOpacity={0.7}
           />
         }
@@ -110,5 +115,10 @@ export default class NotificationsScreen extends React.Component {
 const styles = StyleSheet.create({
   constainer: {
     flex: 1
+  },
+  subText: {
+    fontWeight: "200",
+    color: "grey",
+    fontSize: 12
   }
 });

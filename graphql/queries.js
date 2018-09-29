@@ -71,8 +71,12 @@ export const EVENT_COMMENTS = gql`
 
 // TODO: Look into fragments considering eventComments and createComment returns the same thing.
 export const CREATE_COMMENT = gql`
-  mutation CreateComment($eventId: ID!, $text: String!) {
-    createComment(event_id: $eventId, text: $text) {
+  mutation CreateComment($eventId: ID!, $text: String!, $owner_id: ID!) {
+    createComment(
+      event_id: $eventId
+      text: $text
+      action_for_user_id: $owner_id
+    ) {
       id
       text
       created_at
@@ -201,18 +205,18 @@ export const NOTIFICATIONS = gql`
       id
       action_type
       created_at
+      actor {
+        id
+        first_name
+        last_name
+        profile_image
+      }
       event {
         id
         event_type
         Images {
           id
           image
-        }
-        user {
-          id
-          first_name
-          last_name
-          profile_image
         }
       }
     }
@@ -302,8 +306,8 @@ export const GET_EVENT_LIKES = gql`
 `;
 
 export const TOGGLE_LIKE = gql`
-  mutation ToggleLike($event_id: ID!) {
-    toggleLike(event_id: $event_id) {
+  mutation ToggleLike($event_id: ID!, $owner_id: ID!) {
+    toggleLike(event_id: $event_id, action_for_user_id: $owner_id) {
       id
       likes_count
       has_liked
