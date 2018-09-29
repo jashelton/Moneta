@@ -2,7 +2,6 @@ import React from "react";
 import { Query } from "react-apollo";
 import { View, StyleSheet } from "react-native";
 import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
-import { Divider } from "react-native-elements";
 import { WaveIndicator } from "react-native-indicators";
 import RecentActivity from "../Components/RecentActivity";
 import { authHelper } from "../Helpers";
@@ -181,13 +180,17 @@ export default class UserDetailsScreen extends React.Component {
     const {
       editProfileModalVisible,
       followsModalVisibility,
+      currentUser,
       query
     } = this.state;
     return (
       <View style={styles.container}>
-        <View style={{ height: "40%" }}>{this._renderUserProfile()}</View>
-        <Divider />
-        <View style={{ flex: 1 }}>{this._renderUserActivity()}</View>
+        {currentUser && (
+          <View style={{ height: "40%" }}>{this._renderUserProfile()}</View>
+        )}
+        {currentUser && (
+          <View style={styles.container}>{this._renderUserActivity()}</View>
+        )}
         {editProfileModalVisible && this._renderProfileModal()}
         {followsModalVisibility && query && this._renderFollowsModal()}}
       </View>

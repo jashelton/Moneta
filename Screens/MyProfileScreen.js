@@ -176,13 +176,18 @@ export default class MyProfileScreen extends React.Component {
     const {
       editProfileModalVisible,
       followsModalVisibility,
+      currentUser,
       query
     } = this.state;
 
     return (
       <View style={styles.container}>
-        <View style={{ height: "40%" }}>{this._renderUserProfile()}</View>
-        <View style={styles.container}>{this._renderUserActivity()}</View>
+        {currentUser && (
+          <View style={{ height: "40%" }}>{this._renderUserProfile()}</View>
+        )}
+        {currentUser && (
+          <View style={styles.container}>{this._renderUserActivity()}</View>
+        )}
         {editProfileModalVisible && this._renderProfileModal()}
         {followsModalVisibility && query && this._renderFollowsModal()}}
       </View>

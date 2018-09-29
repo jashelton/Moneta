@@ -20,7 +20,7 @@ export default class FollowsModal extends React.Component {
     return (
       <ListItem
         title={`${item.first_name} ${item.last_name}`}
-        titleStyle={{ fontSize: 12 }}
+        titleStyle={{ fontSize: 14 }}
         leftAvatar={
           <Avatar
             size="small"
