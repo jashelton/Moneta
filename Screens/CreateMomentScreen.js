@@ -3,10 +3,12 @@ import { graphql } from "react-apollo";
 import {
   View,
   Text,
+  Alert,
+  Modal,
+  Switch,
+  Linking,
   ScrollView,
   StyleSheet,
-  Switch,
-  Modal,
   Dimensions
 } from "react-native";
 import { WaveIndicator } from "react-native-indicators";
@@ -126,6 +128,19 @@ class CreateMomentScreen extends React.Component {
     this.setState({ eventForm });
   }
 
+  _notifyDisabledCameraPermissions = errorMessage => {
+    Alert.alert("Permissions Issue", errorMessage, [
+      {
+        text: "Cancel",
+        style: "cancel"
+      },
+      {
+        text: "Update",
+        onPress: () => Linking.openURL("app-settings:")
+      }
+    ]);
+  };
+
   createDateString() {
     const time = new Date();
     const now = Date.now();
@@ -157,6 +172,10 @@ class CreateMomentScreen extends React.Component {
   // Check permission on CAMERA_ROLL and store what is needed to upload image to S3.
   async prepS3Upload() {
     const result = await commonHelper.selectImage(true);
+    if (result.errorMessage) {
+      return this._notifyDisabledCameraPermissions(result.errorMessage);
+    }
+
     const { localImages, selectedEventLocation } = this.state;
     const image = {
       s3: {},

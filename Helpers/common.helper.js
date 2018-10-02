@@ -12,15 +12,11 @@ async function getFilters() {
   return data;
 }
 
-async function setFilters() {}
-
 async function selectImage(withExif) {
   let { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
 
   if (status !== "granted") {
-    this.setState({
-      errorMessage: "Permission to access camera roll was denied"
-    });
+    return { errorMessage: "Permission to access camera roll was denied" };
   }
 
   const result = await ImagePicker.launchImageLibraryAsync({
