@@ -74,8 +74,7 @@ class MapScreen extends React.Component {
 
   render() {
     const { currentUser, region } = this.state;
-    const { loading, error, allEvents, refetch } = this.props.data;
-    const markers = allEvents;
+    const { loading, error, allEvents: markers, refetch } = this.props.data;
 
     if (loading)
       return (
@@ -171,6 +170,6 @@ const styles = StyleSheet.create({
 
 export default graphql(MAP_MARKERS, {
   options: {
-    variables: { type: "moment" }
+    variables: { type: "moment", map: true }
   }
 })(MapScreen);

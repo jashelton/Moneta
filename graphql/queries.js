@@ -33,6 +33,7 @@ export const EVENT_QUERY = gql`
       id
       title
       description
+      has_randomized_location
       avg_rating
       current_user_rating
       likes_count
@@ -124,6 +125,8 @@ export const CREATE_VIBE = gql`
 export const CREATE_MOMENT = gql`
   mutation CreateMoment(
     $description: String!
+    $map: Boolean
+    $random: Boolean
     $latitude: Float!
     $longitude: Float!
     $title: String!
@@ -135,6 +138,8 @@ export const CREATE_MOMENT = gql`
   ) {
     createMoment(
       description: $description
+      display_on_map: $map
+      has_randomized_location: $random
       latitude: $latitude
       longitude: $longitude
       title: $title
@@ -174,8 +179,8 @@ export const CREATE_MOMENT = gql`
 `;
 
 export const MAP_MARKERS = gql`
-  query allEvents($type: String!) {
-    allEvents(event_type: $type) {
+  query allEvents($type: String!, $map: Boolean) {
+    allEvents(event_type: $type, display_on_map: $map) {
       id
       coordinate {
         longitude

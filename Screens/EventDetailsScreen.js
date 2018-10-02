@@ -14,7 +14,8 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Alert,
-  Keyboard
+  Keyboard,
+  Text
 } from "react-native";
 import { WaveIndicator } from "react-native-indicators";
 import {
@@ -280,6 +281,13 @@ class EventDetailsScreen extends React.Component {
                   createdAt={event.created_at}
                   navigation={navigation}
                 />
+                <View style={{ padding: 5 }}>
+                  <Text>
+                    {event.has_randomized_location
+                      ? "This moment has been randomized within a radius around where it occurred."
+                      : null}
+                  </Text>
+                </View>
                 <EventInfoComponent
                   event={event}
                   navigation={navigation}

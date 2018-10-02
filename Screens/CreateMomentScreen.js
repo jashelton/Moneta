@@ -42,7 +42,8 @@ const initialEvent = {
   title: "",
   description: "",
   imageLocation: "",
-  randomizeLocation: false
+  randomizeLocation: false,
+  displayOnMap: true
 };
 
 const selectedEventLocation = {
@@ -119,13 +120,6 @@ class CreateMomentScreen extends React.Component {
     selectedEventLocation.location = "";
 
     this.setState({ eventForm, imageFile: null });
-  }
-
-  updateRandomizeLocationState(value) {
-    let { eventForm } = this.state;
-
-    eventForm.randomizeLocation = value;
-    this.setState({ eventForm });
   }
 
   _notifyDisabledCameraPermissions = errorMessage => {
@@ -219,7 +213,12 @@ class CreateMomentScreen extends React.Component {
 
     let { isCreateDisabled, localImages } = this.state;
     const { coords, location, address } = this.state.selectedEventLocation;
-    const { title, description, randomizeLocation } = this.state.eventForm;
+    const {
+      title,
+      description,
+      randomizeLocation,
+      displayOnMap
+    } = this.state.eventForm;
 
     if (!isCreateDisabled) {
       if (
@@ -240,6 +239,8 @@ class CreateMomentScreen extends React.Component {
       const event = {
         title,
         description,
+        map: displayOnMap,
+        random: randomizeLocation,
         city: address.city,
         region: address.region,
         country_code: address.isoCountryCode,
@@ -289,7 +290,7 @@ class CreateMomentScreen extends React.Component {
 
       store.writeQuery({
         query: ALL_EVENTS_QUERY,
-        variables: { offset: 0 },
+        variables: { offset: 0, type: "moment" },
         data: {
           allEvents: [createMoment, ...allEvents]
         }
@@ -317,8 +318,13 @@ class CreateMomentScreen extends React.Component {
   };
 
   render() {
-    const { title, description, randomizeLocation } = this.state.eventForm;
-    const { visiblePlacesSearch, loading, localImages } = this.state;
+    const {
+      title,
+      description,
+      randomizeLocation,
+      displayOnMap
+    } = this.state.eventForm;
+    const { visiblePlacesSearch, loading, localImages, eventForm } = this.state;
     const { coords, location } = this.state.selectedEventLocation;
     if (loading)
       return (
@@ -335,14 +341,29 @@ class CreateMomentScreen extends React.Component {
             <Text>Randomize location within radius nearby?</Text>
             <Switch
               value={randomizeLocation ? true : false}
-              onValueChange={value => this.updateRandomizeLocationState(value)}
+              onValueChange={value =>
+                this.setState({
+                  eventForm: { ...eventForm, randomizeLocation: value }
+                })
+              }
+            />
+          </View>
+          <View style={styles.sliderContainer}>
+            <Text>Show on map?</Text>
+            <Switch
+              value={displayOnMap ? true : false}
+              onValueChange={value =>
+                this.setState({
+                  eventForm: { ...eventForm, displayOnMap: value }
+                })
+              }
             />
           </View>
           <TextField
             label="Title (optional)"
             value={title}
             onChangeText={title =>
-              this.setState({ eventForm: { ...this.state.eventForm, title } })
+              this.setState({ eventForm: { ...eventForm, title } })
             }
             characterRestriction={60}
           />
@@ -350,7 +371,7 @@ class CreateMomentScreen extends React.Component {
             value={description}
             onChangeText={description =>
               this.setState({
-                eventForm: { ...this.state.eventForm, description }
+                eventForm: { ...eventForm, description }
               })
             }
             returnKeyType="next"
