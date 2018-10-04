@@ -1,14 +1,25 @@
 import gql from "graphql-tag";
 
 export const ALL_EVENTS_QUERY = gql`
-  query AllEvents($offset: Int, $type: String, $userId: Int) {
-    allEvents(offset: $offset, event_type: $type, user_id: $userId) {
+  query AllEvents(
+    $offset: Int
+    $type: String
+    $userId: Int
+    $rate_threshold: Float
+  ) {
+    allEvents(
+      offset: $offset
+      event_type: $type
+      user_id: $userId
+      rating_threshold: $rate_threshold
+    ) {
       id
       title
       description
       likes_count
       comments_count
       avg_rating
+      ratings_count
       current_user_rating
       event_type
       created_at
