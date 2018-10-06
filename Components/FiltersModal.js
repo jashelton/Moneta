@@ -54,7 +54,9 @@ export default class FiltersModal extends React.Component {
         </View>
         <View style={{ flexDirection: "column", padding: 15 }}>
           <ListItem
-            title={`Ranking: ${rankingValue || rateLimit}`}
+            title={`Minimum Rating: ${
+              rankingValue !== null ? rankingValue : rateLimit
+            }`}
             leftIcon={{ name: "star" }}
             bottomDivider
             chevron
@@ -63,8 +65,9 @@ export default class FiltersModal extends React.Component {
           <ViewToggle hide={!rankingVisible}>
             <View style={styles.innerAccordion}>
               <Slider
-                value={rankingValue || rateLimit}
+                value={rankingValue !== null ? rankingValue : rateLimit}
                 onValueChange={rankingValue => this.setState({ rankingValue })}
+                minimumValue={0}
                 maximumValue={5}
                 step={0.25}
                 thumbTintColor={PRIMARY_DARK_COLOR}

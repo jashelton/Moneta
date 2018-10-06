@@ -1,15 +1,15 @@
 import React from "react";
-import { graphql } from "react-apollo";
+import { Query } from "react-apollo";
+import { ALL_EVENTS_QUERY } from "../graphql/queries";
 import { View, StyleSheet } from "react-native";
 import { Button } from "react-native-elements";
 import { WaveIndicator } from "react-native-indicators";
-import { permissionsHelper, adHelper } from "../Helpers";
+import { permissionsHelper, adHelper, commonHelper } from "../Helpers";
 import RecentActivity from "../Components/RecentActivity";
 import ErrorComponent from "../Components/ErrorComponent";
-import { ALL_EVENTS_QUERY } from "../graphql/queries";
 import FiltersModal from "../Components/FiltersModal";
 
-class HomeScreen extends React.Component {
+export default class HomeScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
     return {
       title: "Recent Activity",
@@ -25,80 +25,112 @@ class HomeScreen extends React.Component {
     };
   };
 
-  state = {
-    filtersModalVisible: false,
-    rateLimit: 0
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      filtersModalVisible: false,
+      filters: {}
+    };
+
+    this._updateFilters = this._updateFilters.bind(this);
+  }
 
   async componentDidMount() {
-    // Get permissions from user for push notifications.
-    // If agreed, user.push_token will be updated to store push token in db.
     permissionsHelper.registerForPushNotificationsAsync();
+
+    const filters = await commonHelper.getFilters();
+    this.setState({ filters });
 
     this.props.navigation.setParams({
       showModal: () => this.setState({ filtersModalVisible: true })
     });
   }
 
-  _updateFilters = selected => {
-    this.setState({ rateLimit: selected.rank });
-    this.props.data.refetch({ offset: 0, rate_threshold: selected.rank });
-  };
+  _updateFilters(rateLimit) {
+    const { filters } = this.state;
+    filters.events.rateLimit = rateLimit;
+    this.setState({ filters });
+    commonHelper.setFilters(filters);
+  }
 
   render() {
-    const { filtersModalVisible, rateLimit } = this.state;
-    const { loading, error, refetch, allEvents: events } = this.props.data;
-
-    if (loading)
-      return (
-        <View style={styles.loadingContainer}>
-          <WaveIndicator />
-        </View>
-      );
-
-    if (error)
-      return (
-        <ErrorComponent
-          iconName="error"
-          refetchData={refetch}
-          errorMessage={error.message}
-          isSnackBarVisible={error ? true : false}
-          snackBarActionText="Retry"
-        />
-      );
+    const { filtersModalVisible, filters } = this.state;
 
     return (
       <View style={styles.container}>
-        <RecentActivity
-          loading={loading}
-          navigation={this.props.navigation}
-          events={events}
-          handleScroll={() =>
-            fetchMore({
-              variables: { offset: events.length },
-              updateQuery: (prev, { fetchMoreResult }) => {
-                if (!fetchMoreResult) return prev;
-                return Object.assign({}, prev, {
-                  allEvents: [...prev.allEvents, ...fetchMoreResult.allEvents]
-                });
-              }
-            })
-          }
-          noDataMessage="There is no recent activity to display."
-          onRefresh={refetch}
-        />
-        <View style={{ position: "absolute", bottom: 0 }}>
-          {adHelper.displayPublisherBanner()}
-        </View>
+        {filters &&
+          filters.events &&
+          filters.events.rateLimit > -1 && (
+            <Query
+              query={ALL_EVENTS_QUERY}
+              variables={{
+                offset: 0,
+                rate_threshold: filters.events.rateLimit
+              }}
+            >
+              {({ loading, error, data: { allEvents: events }, refetch }) => {
+                if (loading)
+                  return (
+                    <View style={styles.loadingContainer}>
+                      <WaveIndicator />
+                    </View>
+                  );
 
-        <FiltersModal
-          isVisible={filtersModalVisible}
-          rateLimit={rateLimit}
-          toggleVisibility={() =>
-            this.setState({ filtersModalVisible: !filtersModalVisible })
-          }
-          onSetFilters={this._updateFilters}
-        />
+                if (error)
+                  return (
+                    <ErrorComponent
+                      iconName="error"
+                      refetchData={refetch}
+                      errorMessage={error.message}
+                      isSnackBarVisible={error ? true : false}
+                      snackBarActionText="Retry"
+                    />
+                  );
+                return (
+                  <View style={{ paddingBottom: 55 }}>
+                    <RecentActivity
+                      loading={loading}
+                      navigation={this.props.navigation}
+                      events={events}
+                      handleScroll={() =>
+                        fetchMore({
+                          variables: { offset: events.length },
+                          updateQuery: (prev, { fetchMoreResult }) => {
+                            if (!fetchMoreResult) return prev;
+                            return Object.assign({}, prev, {
+                              allEvents: [
+                                ...prev.allEvents,
+                                ...fetchMoreResult.allEvents
+                              ]
+                            });
+                          }
+                        })
+                      }
+                      noDataMessage="There is no recent activity to display."
+                      onRefresh={refetch}
+                    />
+                    <View style={{ position: "absolute", bottom: 0 }}>
+                      {adHelper.displayPublisherBanner()}
+                    </View>
+
+                    <FiltersModal
+                      isVisible={filtersModalVisible}
+                      rateLimit={filters.events.rateLimit}
+                      toggleVisibility={() =>
+                        this.setState({
+                          filtersModalVisible: !filtersModalVisible
+                        })
+                      }
+                      onSetFilters={selected => {
+                        refetch({ offset: 0, rate_threshold: selected.rank });
+                        this._updateFilters(selected.rank);
+                      }}
+                    />
+                  </View>
+                );
+              }}
+            </Query>
+          )}
       </View>
     );
   }
@@ -106,8 +138,7 @@ class HomeScreen extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    paddingBottom: 55
+    flex: 1
   },
   leftIcon: {
     marginLeft: 10
@@ -118,7 +149,3 @@ const styles = StyleSheet.create({
     alignItems: "center"
   }
 });
-
-export default graphql(ALL_EVENTS_QUERY, {
-  options: { variables: { offset: 0, rate_threshold: 3 } } // TODO: Need to get this from previous selection || default
-})(HomeScreen);

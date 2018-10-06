@@ -2,8 +2,9 @@ import React from "react";
 import { AsyncStorage, StyleSheet, View, Text } from "react-native";
 import { WaveIndicator } from "react-native-indicators";
 import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
-import { authHelper } from "../Helpers";
+import { authHelper, commonHelper } from "../Helpers";
 import Sentry from "sentry-expo";
+import { filters } from "../common/defaults/filters";
 
 export default class AuthLoadingScreen extends React.Component {
   constructor(props) {
@@ -23,6 +24,18 @@ export default class AuthLoadingScreen extends React.Component {
         first_name: user.first_name,
         last_name: user.last_name
       });
+
+      // Check if user_filters exists and is current, if not, set default filters.
+      // TODO: Need better handling of filters... don't blow away prev filters values.
+      const user_filters = await commonHelper.getFilters();
+
+      if (
+        !user_filters ||
+        user_filters.schemaVersion !== filters.schemaVersion
+      ) {
+        AsyncStorage.removeItem("user_filters");
+        AsyncStorage.setItem("user_filters", JSON.stringify(filters));
+      }
 
       this.props.navigation.navigate("App");
     } else {

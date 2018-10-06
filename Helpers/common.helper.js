@@ -3,13 +3,24 @@ import { ImagePicker, Permissions } from "expo";
 
 export const commonHelper = {
   getFilters,
-  selectImage
+  setFilters,
+  selectImage,
+  getRateLimitFilter
 };
 
 async function getFilters() {
   let data = await AsyncStorage.getItem("user_filters");
   data = JSON.parse(data);
   return data;
+}
+
+async function setFilters(filters) {
+  AsyncStorage.setItem("user_filters", JSON.stringify(filters));
+}
+
+async function getRateLimitFilter() {
+  const data = await getFilters();
+  return data.events.rateLimit;
 }
 
 async function selectImage(withExif) {
