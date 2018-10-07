@@ -1,6 +1,6 @@
 import axios from "axios";
 import { client } from "../App";
-import { CREATE_USER, FACEBOOK_USER } from '../graphql/queries';
+import { CREATE_USER, FACEBOOK_USER } from "../graphql/queries";
 
 export const authService = {
   fbLogin,
@@ -27,7 +27,7 @@ async function handleUser(userData, userToken) {
 
   if (!data.data.facebookUser) {
     const facebookUserData = await this.fbUserData(userData.id, userToken); // fname, lname, email, fbId, picture
-    
+
     await this.createUser(facebookUserData);
   } else {
     return data;
@@ -37,7 +37,11 @@ async function handleUser(userData, userToken) {
 }
 
 function getFacebookUser(fbId) {
-  return client.query({ query: FACEBOOK_USER, variables: { fbId }, fetchPolicy: 'no-cache' });
+  return client.query({
+    query: FACEBOOK_USER,
+    variables: { fbId },
+    fetchPolicy: "no-cache"
+  });
 }
 
 async function createUser(user) {

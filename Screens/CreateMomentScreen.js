@@ -89,7 +89,8 @@ class CreateMomentScreen extends React.Component {
       isCreateDisabled: false,
       loading: false,
       localImages: [],
-      selectedEventLocation
+      selectedEventLocation,
+      rateLimit: null
     };
 
     this.clearEvent = this.clearEvent.bind(this);
@@ -100,12 +101,15 @@ class CreateMomentScreen extends React.Component {
 
   async componentDidMount() {
     const user_data = await authHelper.getParsedUserData();
+    const rateLimit = await commonHelper.getRateLimitFilter();
     this.options.keyPrefix = `user_${user_data.id}/`;
 
     this.props.navigation.setParams({
       createEvent: () => this.createEvent(),
       isDisabled: this.state.isCreateDisabled
     });
+
+    this.setState({ rateLimit });
   }
 
   async checkLocation() {
@@ -282,15 +286,17 @@ class CreateMomentScreen extends React.Component {
   }
 
   updateCache = (store, { data: { createMoment } }) => {
+    const { rateLimit } = this.state;
+
     try {
       const { allEvents } = store.readQuery({
         query: ALL_EVENTS_QUERY,
-        variables: { offset: 0 }
+        variables: { offset: 0, rate_threshold: rateLimit }
       });
 
       store.writeQuery({
         query: ALL_EVENTS_QUERY,
-        variables: { offset: 0, type: "moment" },
+        variables: { offset: 0, rate_threshold: rateLimit },
         data: {
           allEvents: [createMoment, ...allEvents]
         }

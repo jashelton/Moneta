@@ -6,6 +6,7 @@ import { Button } from "react-native-elements";
 import { TextField } from "react-native-material-textfield";
 import { DIVIDER_COLOR } from "../common/styles/common-styles";
 import { Haptic } from "expo";
+import { commonHelper } from "../Helpers";
 
 class CreateVibeScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
@@ -27,27 +28,32 @@ class CreateVibeScreen extends React.Component {
 
   state = {
     desc: "",
-    isCreateDisabled: false
+    isCreateDisabled: false,
+    rateLimit: null
   };
 
-  componentDidMount() {
+  async componentDidMount() {
+    const rateLimit = await commonHelper.getRateLimitFilter();
+    this.setState({ rateLimit });
+
     this.props.navigation.setParams({
       createVibe: () => this.createVibe(),
       isCreateDisabled: this.state.isCreateDisabled
     });
   }
 
-  updateCache = (store, { data: { createVibe } }) => {
-    const data = store.readQuery({
+  _updateCache = (store, { data: { createVibe } }) => {
+    const { rateLimit } = this.state;
+    const { allEvents } = store.readQuery({
       query: ALL_EVENTS_QUERY,
-      variables: { offset: 0 }
+      variables: { offset: 0, rate_threshold: rateLimit }
     });
 
     store.writeQuery({
       query: ALL_EVENTS_QUERY,
-      variables: { offset: 0 },
+      variables: { offset: 0, rate_threshold: rateLimit },
       data: {
-        allEvents: [createVibe, ...data.allEvents]
+        allEvents: [createVibe, ...allEvents]
       }
     });
   };
@@ -65,7 +71,7 @@ class CreateVibeScreen extends React.Component {
       await this.props.mutate({
         CREATE_VIBE,
         variables: { desc },
-        update: this.updateCache
+        update: this._updateCache
       });
 
       this.setState({ desc: "" });

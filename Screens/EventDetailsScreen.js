@@ -23,7 +23,7 @@ import {
   DIVIDER_COLOR
 } from "../common/styles/common-styles";
 import { Icon, Input } from "react-native-elements";
-import { authHelper } from "../Helpers";
+import { authHelper, commonHelper } from "../Helpers";
 import { connectActionSheet } from "@expo/react-native-action-sheet";
 import ViewToggle from "../Components/ViewToggle";
 import CommentsComponent from "../Components/CommentsComponent";
@@ -58,7 +58,8 @@ class EventDetailsScreen extends React.Component {
       isImageZoomed: false,
       commentValue: "",
       inputFocused: false,
-      activeImage: 0
+      activeImage: 0,
+      rateLimit: null
     };
 
     this._keyboardDidShow = this._keyboardDidShow.bind(this);
@@ -66,6 +67,8 @@ class EventDetailsScreen extends React.Component {
   }
 
   async componentDidMount() {
+    const rateLimit = await commonHelper.getRateLimitFilter();
+
     this.keyboardDidShowListener = Keyboard.addListener(
       "keyboardDidShow",
       this._keyboardDidShow
@@ -83,7 +86,7 @@ class EventDetailsScreen extends React.Component {
     const eventId = this.props.navigation.getParam("eventId", null);
     const userId = this.props.navigation.getParam("userId", null);
 
-    this.setState({ currentUserId, eventId, userId });
+    this.setState({ currentUserId, eventId, userId, rateLimit });
   }
 
   componentWillUnmount() {
@@ -200,6 +203,7 @@ class EventDetailsScreen extends React.Component {
   }
 
   updateEventsCache = (store, { data }) => {
+    const { rateLimit } = this.state;
     let eventAction;
     if (data.deleteEvent) eventAction = data.deleteEvent;
     if (data.reportEvent) eventAction = data.reportEvent;
@@ -207,7 +211,7 @@ class EventDetailsScreen extends React.Component {
     try {
       const { allEvents } = store.readQuery({
         query: ALL_EVENTS_QUERY,
-        variables: { offset: 0 }
+        variables: { offset: 0, rate_threshold: rateLimit }
       });
 
       if (!eventAction) return;
@@ -215,7 +219,7 @@ class EventDetailsScreen extends React.Component {
       const filteredEvents = allEvents.filter(e => e.id !== this.state.eventId);
       store.writeQuery({
         query: ALL_EVENTS_QUERY,
-        variables: { offset: 0 },
+        variables: { offset: 0, rate_threshold: rateLimit },
         data: {
           allEvents: filteredEvents
         }
@@ -225,11 +229,11 @@ class EventDetailsScreen extends React.Component {
     }
   };
 
-  submitComment({ data }) {
+  submitComment({ data: { createComment } }) {
     Keyboard.dismiss();
     this.setState({ commentValue: "", inputFocused: false });
 
-    const { comment_user, owner } = data.createComment;
+    const { comment_user, owner } = createComment;
 
     if (owner.push_token && comment_user.id !== this.state.userId) {
       const body = `${comment_user.first_name} ${

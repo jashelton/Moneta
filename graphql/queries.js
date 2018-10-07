@@ -38,6 +38,21 @@ export const ALL_EVENTS_QUERY = gql`
   }
 `;
 
+export const MAP_MARKERS = gql`
+  query allEvents($type: String!, $map: Boolean) {
+    allEvents(event_type: $type, display_on_map: $map) {
+      id
+      coordinate {
+        longitude
+        latitude
+      }
+      user {
+        id
+      }
+    }
+  }
+`;
+
 export const EVENT_QUERY = gql`
   query GetEvent($eventId: ID!) {
     getEvent(id: $eventId) {
@@ -115,6 +130,7 @@ export const CREATE_VIBE = gql`
       likes_count
       comments_count
       avg_rating
+      ratings_count
       current_user_rating
       event_type
       created_at
@@ -167,6 +183,7 @@ export const CREATE_MOMENT = gql`
       image
       comments_count
       avg_rating
+      ratings_count
       current_user_rating
       coordinate {
         longitude
@@ -184,21 +201,6 @@ export const CREATE_MOMENT = gql`
         first_name
         last_name
         profile_image
-      }
-    }
-  }
-`;
-
-export const MAP_MARKERS = gql`
-  query allEvents($type: String!, $map: Boolean) {
-    allEvents(event_type: $type, display_on_map: $map) {
-      id
-      coordinate {
-        longitude
-        latitude
-      }
-      user {
-        id
       }
     }
   }
