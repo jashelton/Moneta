@@ -386,6 +386,7 @@ export const RATE_EVENT = gql`
       id
       avg_rating
       current_user_rating
+      ratings_count
     }
   }
 `;

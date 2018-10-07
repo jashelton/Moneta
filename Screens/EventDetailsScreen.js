@@ -285,13 +285,16 @@ class EventDetailsScreen extends React.Component {
                   createdAt={event.created_at}
                   navigation={navigation}
                 />
-                <View style={{ padding: 5 }}>
+                <ViewToggle
+                  hide={!event.has_randomized_location}
+                  style={{ padding: 5 }}
+                >
                   <Text>
-                    {event.has_randomized_location
-                      ? "This moment has been randomized within a radius around where it occurred."
-                      : null}
+                    {
+                      "This moment has been randomized within a radius around where it occurred."
+                    }
                   </Text>
-                </View>
+                </ViewToggle>
                 <EventInfoComponent
                   event={event}
                   navigation={navigation}
