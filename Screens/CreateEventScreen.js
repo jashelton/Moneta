@@ -2,6 +2,7 @@ import React from "react";
 import { View, StyleSheet } from "react-native";
 import { ListItem } from "react-native-elements";
 import { DIVIDER_COLOR } from "../common/styles/common-styles";
+import { adHelper } from "../Helpers";
 
 export default class CreateEventScreen extends React.Component {
   render() {
@@ -23,6 +24,9 @@ export default class CreateEventScreen extends React.Component {
           onPress={() => this.props.navigation.navigate("CreateVibe")}
           bottomDivider
         />
+        <View style={{ position: "absolute", bottom: 0 }}>
+          {adHelper.displayPublisherBanner()}
+        </View>
       </View>
     );
   }

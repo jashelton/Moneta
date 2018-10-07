@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet, FlatList, RefreshControl } from "react-native";
+import { View, StyleSheet, FlatList, RefreshControl, Text } from "react-native";
 import { WaveIndicator } from "react-native-indicators";
 import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
 import { ListItem, Avatar, Icon } from "react-native-elements";
@@ -7,6 +7,7 @@ import TimeAgo from "react-native-timeago";
 import { Query } from "react-apollo";
 import ErrorComponent from "../Components/ErrorComponent";
 import { NOTIFICATIONS } from "../graphql/queries";
+import { adHelper } from "../Helpers";
 
 export default class NotificationsScreen extends React.Component {
   static navigationOptions = { title: "Notifications" };
@@ -60,7 +61,7 @@ export default class NotificationsScreen extends React.Component {
 
   render() {
     return (
-      <View style={styles.constainer}>
+      <View style={styles.container}>
         <Query query={NOTIFICATIONS} variables={{ offset: 0 }}>
           {({ loading, error, refetch, fetchMore, data }) => {
             if (loading)
@@ -80,6 +81,20 @@ export default class NotificationsScreen extends React.Component {
                   snackBarActionText="Retry"
                 />
               );
+
+            if (!data.userNotifications.length)
+              return (
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}
+                >
+                  <Text>No notifications to display.</Text>
+                </View>
+              );
+
             return (
               <FlatList
                 keyExtractor={(item, index) => index.toString()}
@@ -107,13 +122,16 @@ export default class NotificationsScreen extends React.Component {
             );
           }}
         </Query>
+        <View style={{ position: "absolute", bottom: 0 }}>
+          {adHelper.displayPublisherBanner()}
+        </View>
       </View>
     );
   }
 }
 
 const styles = StyleSheet.create({
-  constainer: {
+  container: {
     flex: 1
   },
   subText: {
