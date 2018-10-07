@@ -1,86 +1,36 @@
 import React from "react";
-import { View, Text, StyleSheet, FlatList, RefreshControl } from "react-native";
-import { notificationService } from "../Services/notification.service";
-import { ListItem, Avatar, Icon } from "react-native-elements";
+import { View, StyleSheet, FlatList, RefreshControl } from "react-native";
+import { WaveIndicator } from "react-native-indicators";
 import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
-import SnackBar from "react-native-snackbar-component";
+import { ListItem, Avatar, Icon } from "react-native-elements";
 import TimeAgo from "react-native-timeago";
+import { Query } from "react-apollo";
+import ErrorComponent from "../Components/ErrorComponent";
+import { NOTIFICATIONS } from "../graphql/queries";
 
 export default class NotificationsScreen extends React.Component {
   static navigationOptions = { title: "Notifications" };
 
-  constructor(props) {
-    super(props);
-
-    this.viewabilityConfigCallbackPairs = [
-      {
-        viewabilityConfig: {
-          waitForInteraction: false,
-          itemVisiblePercentThreshold: 95,
-          minimumViewTime: 2500
-        },
-        onViewableItemsChanged: this.markViewableItemsAsViewed
-      }
-    ];
-
-    this.state = {
-      notifications: null,
-      refreshing: false
-    };
-
-    this.getNotifications = this.getNotifications.bind(this);
-    this.handleScroll = this.handleScroll.bind(this);
-  }
-
-  componentDidMount() {
-    this.getNotifications(0);
-  }
-
-  async getNotifications(offset) {
-    if (this.state.error) this.setState({ error: null });
-
-    try {
-      const { data } = await notificationService.getNotifications(offset || 0);
-      this.setState({ notifications: data });
-    } catch (err) {
-      this.setState({
-        error: "There was a problem getting your notifications."
-      });
-      throw err;
-    }
-  }
-
-  async handleScroll(offset) {
-    if (offset > 15) {
-      try {
-        const { data } = await notificationService.getNotifications(offset);
-        this.setState({ notifications: this.state.notifications.concat(data) });
-      } catch (err) {
-        this.setState({
-          error: "There was a problem getting your notifications."
-        });
-        throw err;
-      }
-    }
-  }
-
   _renderNotification({ item }) {
-    const { action_type } = item;
-    // TODO: action_type === comment ? Should prob navigate to CommentsScreen
-    // Right now, the problem is that the comment screen requires incrementCommentCount as a prop.
-    // const navRoute = action_type === 'like' ? 'EventDetails' : 'Comments';
+    const { action_type, event, actor } = item;
+    const { user } = item.event;
+    const iconType = {
+      like: "favorite",
+      comment: "chat-bubble-outline"
+    };
 
     return (
       <ListItem
-        title={`${item.username || item.name} ${
+        title={`${actor.first_name} ${actor.last_name} ${
           action_type === "like" ? "liked" : "commented on"
         } your event.`}
-        titleStyle={{ fontSize: 12 }}
+        titleStyle={{ fontSize: 14 }}
         subtitle={<TimeAgo time={item.created_at} style={styles.subText} />}
+        chevron
         leftAvatar={
           <Avatar
             size="small"
-            source={item.profile_image ? { uri: item.profile_image } : null}
+            source={actor.profile_image ? { uri: actor.profile_image } : null}
             icon={{ name: "person", size: 20 }}
             activeOpacity={0.7}
           />
@@ -89,76 +39,74 @@ export default class NotificationsScreen extends React.Component {
           <Avatar
             size="small"
             rounded
-            source={{ uri: item.event_image }}
-            source={item.event_image ? { uri: item.event_image } : null}
-            icon={{ name: "chat-bubble-outline", size: 20 }}
+            source={
+              event.Images && event.Images.length
+                ? { uri: event.Images[0].image }
+                : null
+            }
+            icon={{ name: iconType[action_type], size: 20 }}
             activeOpacity={0.7}
           />
         }
         onPress={() =>
           this.props.navigation.navigate("EventDetails", {
-            eventId: item.event_id
+            eventId: event.id,
+            userId: user.id
           })
         }
-        chevron
       />
     );
   }
 
-  markViewableItemsAsViewed({ viewableItems }) {
-    const notificationIds = viewableItems.map(vi => vi.item.id);
-    notificationService.markNotificationsViewed(notificationIds);
-  }
-
   render() {
-    const { notifications, refreshing, error } = this.state;
-
-    if (error) {
-      return (
-        <View style={{ flex: 1 }}>
-          <View
-            style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-          >
-            <Icon
-              size={36}
-              name="refresh"
-              color={PRIMARY_DARK_COLOR}
-              onPress={() => this.getNotifications()}
-            />
-          </View>
-          <SnackBar
-            visible={error ? true : false}
-            textMessage={error}
-            actionHandler={() => this.setState({ error: null })}
-            actionText="close"
-          />
-        </View>
-      );
-    }
-
     return (
       <View style={styles.constainer}>
-        {notifications && notifications.length ? (
-          <FlatList
-            keyExtractor={(item, index) => index.toString()}
-            data={notifications}
-            renderItem={this._renderNotification.bind(this)}
-            onEndReached={() => this.handleScroll(notifications.length)}
-            onEndReachedThreshold={0}
-            viewabilityConfigCallbackPairs={this.viewabilityConfigCallbackPairs}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={this.getNotifications}
+        <Query query={NOTIFICATIONS} variables={{ offset: 0 }}>
+          {({ loading, error, refetch, fetchMore, data }) => {
+            if (loading)
+              return (
+                <View>
+                  <WaveIndicator color={PRIMARY_DARK_COLOR} size={80} />
+                </View>
+              );
+
+            if (error)
+              return (
+                <ErrorComponent
+                  iconName="error"
+                  refetchData={refetch}
+                  errorMessage={error.message}
+                  isSnackBarVisible={error ? true : false}
+                  snackBarActionText="Retry"
+                />
+              );
+            return (
+              <FlatList
+                keyExtractor={(item, index) => index.toString()}
+                data={data.userNotifications}
+                renderItem={this._renderNotification.bind(this)}
+                onEndReached={() =>
+                  fetchMore({
+                    variables: { offset: data.userNotifications.length },
+                    updateQuery: (prev, { fetchMoreResult }) => {
+                      if (!fetchMoreResult) return prev;
+                      return Object.assign({}, prev, {
+                        userNotifications: [
+                          ...prev.userNotifications,
+                          ...fetchMoreResult.userNotifications
+                        ]
+                      });
+                    }
+                  })
+                }
+                onEndReachedThreshold={0}
+                refreshControl={
+                  <RefreshControl refreshing={loading} onRefresh={refetch} />
+                }
               />
-            }
-          />
-        ) : (
-          <Text style={{ alignSelf: "center" }}>
-            {" "}
-            There are no notifcations to display.{" "}
-          </Text>
-        )}
+            );
+          }}
+        </Query>
       </View>
     );
   }
@@ -167,5 +115,10 @@ export default class NotificationsScreen extends React.Component {
 const styles = StyleSheet.create({
   constainer: {
     flex: 1
+  },
+  subText: {
+    fontWeight: "200",
+    color: "grey",
+    fontSize: 12
   }
 });

@@ -1,40 +1,50 @@
 import React from "react";
+import { Mutation } from "react-apollo";
+import { TOGGLE_LIKE } from "../graphql/queries";
 import { View, Text, StyleSheet } from "react-native";
 import { Icon, Divider } from "react-native-elements";
 import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
+import { notificationService } from "../Services";
+import { authHelper } from "../Helpers/";
 
 export default class SocialComponent extends React.Component {
-  render() {
-    const {
-      event,
-      showCommentIcon,
-      onCommentPress,
-      onLikePress,
-      navigation
-    } = this.props;
-
+  LikeComponent = event => {
     return (
-      <View style={styles.container}>
-        <Divider />
-        <View
-          style={{
-            padding: 10,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between"
-          }}
-        >
+      <Mutation mutation={TOGGLE_LIKE}>
+        {(toggleLike, { loading }) => (
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <Icon
               color="#fb3958"
-              name={!event.liked ? "favorite-border" : "favorite"}
+              name={!event.has_liked ? "favorite-border" : "favorite"}
               iconStyle={{ padding: 5 }}
-              onPress={() => onLikePress()}
+              disabled={loading}
+              onPress={() => {
+                toggleLike({
+                  variables: { event_id: event.id, owner_id: event.user.id }
+                }).then(async ({ data: { toggleLike } }) => {
+                  const currentUser = await authHelper.getParsedUserData();
+                  const { has_liked, user } = toggleLike;
+
+                  if (
+                    has_liked &&
+                    user.push_token &&
+                    currentUser.id !== user.id
+                  ) {
+                    const body = `${currentUser.first_name} ${
+                      currentUser.last_name
+                    } has liked your ${toggleLike.event_type}.`;
+                    notificationService.sendPushNotification(
+                      user.push_token,
+                      body
+                    );
+                  }
+                });
+              }}
             />
             {event.likes_count && (
               <Text
                 onPress={() =>
-                  navigation.navigate("Likes", { eventId: event.id })
+                  this.props.navigation.navigate("Likes", { eventId: event.id })
                 }
                 style={{ paddingHorizontal: 5, color: PRIMARY_DARK_COLOR }}
               >
@@ -42,17 +52,28 @@ export default class SocialComponent extends React.Component {
               </Text>
             )}
           </View>
-          {showCommentIcon && (
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Text>{event.comment_count}</Text>
-              <Icon
-                color="#fb3958"
-                name="comment"
-                iconStyle={{ padding: 5 }}
-                onPress={() => onCommentPress()}
-              />
-            </View>
-          )}
+        )}
+      </Mutation>
+    );
+  };
+
+  render() {
+    const { event, onCommentPress } = this.props;
+
+    return (
+      <View style={styles.container}>
+        <Divider />
+        <View style={styles.socialWrapper}>
+          {this.LikeComponent(event)}
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Text>{event.comments_count}</Text>
+            <Icon
+              color="#fb3958"
+              name="comment"
+              iconStyle={{ padding: 5 }}
+              onPress={() => onCommentPress()}
+            />
+          </View>
         </View>
         <Divider />
       </View>
@@ -63,5 +84,11 @@ export default class SocialComponent extends React.Component {
 const styles = StyleSheet.create({
   container: {
     marginTop: 10
+  },
+  socialWrapper: {
+    padding: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between"
   }
 });

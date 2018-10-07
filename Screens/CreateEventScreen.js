@@ -1,14 +1,9 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import { ListItem } from "react-native-elements";
-import {
-  DIVIDER_COLOR,
-  PRIMARY_DARK_COLOR,
-  TEXT_ICONS_COLOR
-} from "../common/styles/common-styles";
-import { connect } from "react-redux";
+import { DIVIDER_COLOR } from "../common/styles/common-styles";
 
-class CreateEventScreen extends React.Component {
+export default class CreateEventScreen extends React.Component {
   render() {
     return (
       <View style={styles.container}>
@@ -42,12 +37,3 @@ const styles = StyleSheet.create({
     color: DIVIDER_COLOR
   }
 });
-
-const mapStateToProps = state => {
-  return {
-    loading: state.loading,
-    error: state.error
-  };
-};
-
-export default connect(mapStateToProps)(CreateEventScreen);

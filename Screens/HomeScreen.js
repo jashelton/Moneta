@@ -1,31 +1,25 @@
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  AppState
-} from "react-native";
-import { Icon } from "react-native-elements";
-import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
+import { Query } from "react-apollo";
+import { ALL_EVENTS_QUERY } from "../graphql/queries";
+import { View, StyleSheet } from "react-native";
+import { Button } from "react-native-elements";
+import { WaveIndicator } from "react-native-indicators";
+import { permissionsHelper, adHelper, commonHelper } from "../Helpers";
 import RecentActivity from "../Components/RecentActivity";
-import { permissionsHelper } from "../Helpers";
-import { listRecentActivity, loadMoreRows, clearErrors } from "../reducer";
-import { connect } from "react-redux";
-import SnackBar from "react-native-snackbar-component";
-import FilterRecentActivityModal from "../Components/FilterRecentActivityModal";
+import ErrorComponent from "../Components/ErrorComponent";
+import FiltersModal from "../Components/FiltersModal";
 
-class HomeScreen extends React.Component {
+export default class HomeScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
     return {
-      title: "Recent Events",
+      title: "Recent Activity",
       headerLeft: (
-        <Icon
+        <Button
           containerStyle={styles.leftIcon}
-          size={28}
-          name="filter-list"
-          color={PRIMARY_DARK_COLOR}
-          onPress={navigation.getParam("showFilterList")}
+          clear
+          title="Filter"
+          titleStyle={{ color: "blue" }}
+          onPress={navigation.getParam("showModal")}
         />
       )
     };
@@ -33,165 +27,110 @@ class HomeScreen extends React.Component {
 
   constructor(props) {
     super(props);
-
     this.state = {
-      refreshing: false,
-      filtersVisible: false,
-      socialSelected: "Feed",
-      appState: AppState.currentState
+      filtersModalVisible: false,
+      filters: {}
     };
 
-    this._onRefresh = this._onRefresh.bind(this);
-    this.handleScroll = this.handleScroll.bind(this);
-    this.updateSocialSelected = this.updateSocialSelected.bind(this);
+    this._updateFilters = this._updateFilters.bind(this);
   }
 
   async componentDidMount() {
-    AppState.addEventListener("change", this._handleAppStateChange);
-    // Get permissions from user for push notifications.
-    // If agreed, user.push_token will be updated to store push token in db.
-    await permissionsHelper.registerForPushNotificationsAsync();
+    permissionsHelper.registerForPushNotificationsAsync();
 
-    this.getActivity();
+    const filters = await commonHelper.getFilters();
+    this.setState({ filters });
 
     this.props.navigation.setParams({
-      toggleIsVisible: () => this.toggleIsVisible(),
-      showFilterList: () =>
-        this.setState({ filtersVisible: !this.state.filtersVisible })
+      showModal: () => this.setState({ filtersModalVisible: true })
     });
   }
 
-  componentWillUnmount() {
-    AppState.removeEventListener("change", this._handleAppStateChange);
-  }
-
-  _handleAppStateChange = nextAppState => {
-    if (
-      this.state.appState.match(/inactive|background/) &&
-      nextAppState === "active"
-    ) {
-      this.getActivity();
-    }
-    this.setState({ appState: nextAppState });
-  };
-
-  async getActivity() {
-    const { socialSelected } = this.state;
-    const { listRecentActivity } = this.props;
-
-    try {
-      // For nearby events, pass coords as second parameter
-      const response = await listRecentActivity(
-        socialSelected || "Feed",
-        null,
-        0
-      );
-
-      if (response.error) throw response.error;
-    } catch (err) {
-      throw err;
-    }
-  }
-
-  // Should be changed... if a user has already loaded more posts, its bad to clear that out.
-  // Refresh should check if there are any events newer that the most recent event.
-  _onRefresh() {
-    this.setState({ refreshing: true });
-    this.getActivity();
-    this.setState({ refreshing: false });
-  }
-
-  toggleIsVisible() {
-    this.setState({ isVisible: !this.state.isVisible });
-  }
-
-  updateSocialSelected(option) {
-    this.setState({ socialSelected: option });
-    this.props.listRecentActivity(option, null, 0);
-  }
-
-  handleScroll(offset) {
-    if (!this.props.loading && offset >= 10) {
-      this.props.loadMoreRows(this.state.socialSelected, null, offset);
-    }
+  _updateFilters(rateLimit) {
+    const { filters } = this.state;
+    filters.events.rateLimit = rateLimit;
+    this.setState({ filters });
+    commonHelper.setFilters(filters);
   }
 
   render() {
-    const { navigation, recentEvents, loading, error } = this.props;
-    const { filtersVisible, socialSelected, refreshing } = this.state;
-
-    if (loading && !filtersVisible) {
-      return (
-        <View
-          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-        >
-          <ActivityIndicator />
-        </View>
-      );
-    }
+    const { filtersModalVisible, filters } = this.state;
 
     return (
       <View style={styles.container}>
-        <FilterRecentActivityModal
-          filtersVisible={filtersVisible}
-          setVisibility={() =>
-            this.setState({ filtersVisible: !this.state.filtersVisible })
-          }
-          socialSelected={socialSelected}
-          updateSocialSelected={option => this.updateSocialSelected(option)}
-        />
-        {recentEvents.length ? (
-          <View>
-            <RecentActivity
-              refreshing={refreshing}
-              navigation={navigation}
-              events={recentEvents}
-              handleScroll={this.handleScroll}
-              noDataMessage="There is no recent activity to display."
-              _onRefresh={this._onRefresh}
-            />
-          </View>
-        ) : loading && !recentEvents.length ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator />
-          </View>
-        ) : error ? (
-          <View style={styles.container}>
-            <View
-              style={{
-                flex: 1,
-                alignItems: "center",
-                justifyContent: "center"
+        {filters &&
+          filters.events &&
+          filters.events.rateLimit > -1 && (
+            <Query
+              query={ALL_EVENTS_QUERY}
+              variables={{
+                offset: 0,
+                rate_threshold: filters.events.rateLimit
               }}
             >
-              <Icon
-                size={36}
-                name="refresh"
-                color={PRIMARY_DARK_COLOR}
-                onPress={() => this.getActivity()}
-              />
-              <Text>Could not find any events.</Text>
-            </View>
-            <SnackBar
-              visible={this.props.error ? true : false}
-              textMessage={this.props.error}
-              actionHandler={() => this.props.clearErrors()}
-              actionText="close"
-            />
-          </View>
-        ) : (
-          <View
-            style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-          >
-            <Icon
-              size={36}
-              name="refresh"
-              color={PRIMARY_DARK_COLOR}
-              onPress={() => this.getActivity()}
-            />
-            <Text>Could not find any events.</Text>
-          </View>
-        )}
+              {({ loading, error, data: { allEvents: events }, refetch }) => {
+                if (loading)
+                  return (
+                    <View style={styles.loadingContainer}>
+                      <WaveIndicator />
+                    </View>
+                  );
+
+                if (error)
+                  return (
+                    <ErrorComponent
+                      iconName="error"
+                      refetchData={refetch}
+                      errorMessage={error.message}
+                      isSnackBarVisible={error ? true : false}
+                      snackBarActionText="Retry"
+                    />
+                  );
+                return (
+                  <View style={{ paddingBottom: 55 }}>
+                    <RecentActivity
+                      loading={loading}
+                      navigation={this.props.navigation}
+                      events={events}
+                      handleScroll={() =>
+                        fetchMore({
+                          variables: { offset: events.length },
+                          updateQuery: (prev, { fetchMoreResult }) => {
+                            if (!fetchMoreResult) return prev;
+                            return Object.assign({}, prev, {
+                              allEvents: [
+                                ...prev.allEvents,
+                                ...fetchMoreResult.allEvents
+                              ]
+                            });
+                          }
+                        })
+                      }
+                      noDataMessage="There is no recent activity to display."
+                      onRefresh={refetch}
+                    />
+                    <View style={{ position: "absolute", bottom: 0 }}>
+                      {adHelper.displayPublisherBanner()}
+                    </View>
+
+                    <FiltersModal
+                      isVisible={filtersModalVisible}
+                      rateLimit={filters.events.rateLimit}
+                      toggleVisibility={() =>
+                        this.setState({
+                          filtersModalVisible: !filtersModalVisible
+                        })
+                      }
+                      onSetFilters={selected => {
+                        refetch({ offset: 0, rate_threshold: selected.rank });
+                        this._updateFilters(selected.rank);
+                      }}
+                    />
+                  </View>
+                );
+              }}
+            </Query>
+          )}
       </View>
     );
   }
@@ -210,22 +149,3 @@ const styles = StyleSheet.create({
     alignItems: "center"
   }
 });
-
-const mapStateToProps = state => {
-  return {
-    recentEvents: state.recentEvents,
-    loading: state.loading,
-    error: state.error
-  };
-};
-
-const mapDispatchToProps = {
-  listRecentActivity,
-  loadMoreRows,
-  clearErrors
-};
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(HomeScreen);

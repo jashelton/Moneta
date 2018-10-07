@@ -1,9 +1,10 @@
 import React from "react";
-import { Button, AsyncStorage } from "react-native";
-import { StyleSheet, View } from "react-native";
+import { AsyncStorage, StyleSheet, View } from "react-native";
+import { SocialIcon } from "react-native-elements";
 import { APP_ID } from "react-native-dotenv";
-
 import { authService } from "../Services";
+import { filters } from "../common/defaults/filters";
+import { commonHelper } from "../Helpers";
 
 export default class LoginScreen extends React.Component {
   constructor(props) {
@@ -17,7 +18,7 @@ export default class LoginScreen extends React.Component {
     const { type, token } = await Expo.Facebook.logInWithReadPermissionsAsync(
       APP_ID,
       {
-        permissions: ["public_profile", "email", "user_friends"]
+        permissions: ["public_profile", "email"]
       }
     );
 
@@ -25,7 +26,20 @@ export default class LoginScreen extends React.Component {
       const data = await authService.fbLogin(token);
       const user_data = JSON.stringify(data);
 
-      await AsyncStorage.setItem("user_data", user_data); // TODO: Really only need fb_id and jwt
+      await AsyncStorage.setItem("user_data", user_data);
+
+      // Check if user_filters exists and is current, if not, set default filters.
+      // TODO: Need better handling of filters... don't blow away prev filters values.
+      const user_filters = await commonHelper.getFilters();
+
+      if (
+        !user_filters ||
+        user_filters.schemaVersion !== filters.schemaVersion
+      ) {
+        await AsyncStorage.removeItem("user_filters");
+        await AsyncStorage.setItem("user_filters", JSON.stringify(filters));
+      }
+
       this.props.navigation.navigate("App");
     }
   }
@@ -37,9 +51,10 @@ export default class LoginScreen extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-        <Button
-          title="Login with FaceBook"
-          style={styles.button}
+        <SocialIcon
+          title="Sign In With Facebook"
+          button
+          type="facebook"
           onPress={this.logIn}
         />
       </View>
@@ -51,7 +66,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    alignItems: "center",
     justifyContent: "center"
   }
 });

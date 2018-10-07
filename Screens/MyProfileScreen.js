@@ -1,38 +1,23 @@
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  Dimensions,
-  AppState
-} from "react-native";
-import {
-  PRIMARY_DARK_COLOR,
-  ACCENT_COLOR
-} from "../common/styles/common-styles";
-import { connect } from "react-redux";
-import Carousel, { Pagination } from "react-native-snap-carousel";
-import { Icon } from "react-native-elements";
+import { Query } from "react-apollo";
+import { View, StyleSheet, Dimensions } from "react-native";
+import { WaveIndicator } from "react-native-indicators";
+import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
 import RecentActivity from "../Components/RecentActivity";
 import { authHelper } from "../Helpers";
 import UserInfo from "../Components/UserInfo";
 import UserStats from "../Components/UserStats";
-import {
-  clearErrors,
-  createError,
-  getCurrentUserDetails,
-  getCurrentUserStats,
-  listRecentActivityForCurrentUser,
-  loadMoreRowsForCurrentUserActivity
-} from "../reducer";
-import SnackBar from "react-native-snackbar-component";
 import EditProfileModal from "../Components/EditProfileModal";
 import FollowsModal from "../Components/FollowsModal";
-import { userService } from "../Services";
+import {
+  ALL_EVENTS_QUERY,
+  GET_USER,
+  USER_FOLLOWERS,
+  USER_FOLLOWING,
+  USER_MUTUAL
+} from "../graphql/queries";
 
-class MyProfileScreen extends React.Component {
-  // static navigationOptions = { title: 'My Profile' };
+export default class MyProfileScreen extends React.Component {
   static navigationOptions = { header: null };
 
   constructor() {
@@ -41,61 +26,18 @@ class MyProfileScreen extends React.Component {
     this.state = {
       currentUser: null,
       editProfileModalVisible: false,
-      refreshing: false,
-      sliderActiveSlide: 0,
       followsModalVisibility: false,
-      followsList: null,
-      appState: AppState.currentState
+      query: null
     };
 
     this.toggleEditProfile = this.toggleEditProfile.bind(this);
-    this._onRefresh = this._onRefresh.bind(this);
-    this.handleScroll = this.handleScroll.bind(this);
-    this._renderItem = this._renderItem.bind(this);
     this.toggleFollowsModal = this.toggleFollowsModal.bind(this);
     this._navigateToUser = this._navigateToUser.bind(this);
   }
 
   async componentDidMount() {
-    AppState.addEventListener("change", this._handleAppStateChange);
     const currentUser = await authHelper.getCurrentUserId();
     this.setState({ currentUser });
-
-    this.fetchUserDetails();
-  }
-
-  componentWillUnmount() {
-    AppState.removeEventListener("change", this._handleAppStateChange);
-  }
-
-  _handleAppStateChange = nextAppState => {
-    if (
-      this.state.appState.match(/inactive|background/) &&
-      nextAppState === "active"
-    ) {
-      this.fetchUserDetails();
-    }
-    this.setState({ appState: nextAppState });
-  };
-
-  async fetchUserDetails() {
-    if (this.props.error) this.props.clearErrors();
-    const { currentUser } = this.state;
-
-    try {
-      const userDetails = await this.props.getCurrentUserDetails(currentUser);
-      const userStats = await this.props.getCurrentUserStats(currentUser);
-      const activity = await this.props.listRecentActivityForCurrentUser(
-        currentUser,
-        0
-      );
-
-      if (userDetails.error) throw userDetails.error;
-      if (userStats.error) throw userStats.error;
-      if (activity.error) throw activity.error;
-    } catch (err) {
-      throw err;
-    }
   }
 
   toggleEditProfile() {
@@ -103,175 +45,153 @@ class MyProfileScreen extends React.Component {
     this.setState({ editProfileModalVisible: !editProfileModalVisible });
   }
 
-  async toggleFollowsModal(type) {
-    if (type) {
-      try {
-        const { data } = await userService.getFollows(
-          this.state.currentUser,
-          type
-        );
-        this.setState({ followsList: data });
-      } catch (err) {
-        this.setState({ followsModalVisibility: false });
-        this.props.createError("Something went wrong trying to fetch users.");
-        throw err;
-      }
-    }
+  toggleFollowsModal = type => {
     const { followsModalVisibility } = this.state;
+    const followsOptions = {
+      following: USER_FOLLOWING,
+      followers: USER_FOLLOWERS,
+      mutual: USER_MUTUAL
+    };
 
-    this.setState({ followsModalVisibility: !followsModalVisibility });
-  }
+    this.setState({
+      followsModalVisibility: !followsModalVisibility,
+      query: followsOptions[type]
+    });
+  };
+
+  _renderFollowsModal = () => {
+    const { query, currentUser, followsModalVisibility } = this.state;
+    return (
+      <Query query={query} variables={{ id: currentUser }}>
+        {({ loading, error, data }) => {
+          const response =
+            query === USER_FOLLOWERS
+              ? data.userFollowers
+              : query === USER_FOLLOWING
+                ? data.userFollowing
+                : data.userMutual;
+          if (loading)
+            return (
+              <View>
+                <WaveIndicator color={PRIMARY_DARK_COLOR} size={80} />
+              </View>
+            );
+
+          return (
+            <FollowsModal
+              isVisible={followsModalVisibility}
+              toggleFollowsModal={() => this.toggleFollowsModal()}
+              followsList={response}
+              navigateToUser={userId => this._navigateToUser(userId)}
+            />
+          );
+        }}
+      </Query>
+    );
+  };
+
+  _renderProfileModal = () => {
+    const { editProfileModalVisible, currentUser } = this.state;
+    return (
+      <Query query={GET_USER} variables={{ id: currentUser }}>
+        {({ loading, error, data }) => {
+          return (
+            <EditProfileModal
+              isVisible={editProfileModalVisible}
+              toggleEditProfile={this.toggleEditProfile}
+              userDetails={data.getUser}
+            />
+          );
+        }}
+      </Query>
+    );
+  };
+
+  _renderUserProfile = () => {
+    const { currentUser } = this.state;
+
+    return (
+      <Query query={GET_USER} variables={{ id: currentUser }}>
+        {({ loading, error, data }) => {
+          return (
+            <UserInfo
+              loading={loading}
+              userDetails={data.getUser}
+              currentUser={currentUser}
+              toggleEditProfile={this.toggleEditProfile}
+              toggleFollowsModal={data => this.toggleFollowsModal(data)}
+            />
+          );
+        }}
+      </Query>
+    );
+  };
+
+  _renderUserActivity = () => {
+    const { currentUser } = this.state;
+
+    return (
+      <Query
+        query={ALL_EVENTS_QUERY}
+        variables={{ offset: 0, userId: currentUser }}
+      >
+        {({ loading, error, data, refetch, fetchMore }) => {
+          return (
+            <RecentActivity
+              loading={loading}
+              events={data.allEvents}
+              navigation={this.props.navigation}
+              refreshing={loading}
+              _onRefresh={refetch}
+              handleScroll={() =>
+                fetchMore({
+                  variables: {
+                    offset: data.allEvents.length,
+                    user_id: currentUser
+                  },
+                  updateQuery: (prev, { fetchMoreResult }) => {
+                    if (!fetchMoreResult) return prev;
+                    return Object.assign({}, prev, {
+                      allEvents: [
+                        ...prev.allEvents,
+                        ...fetchMoreResult.allEvents
+                      ]
+                    });
+                  }
+                })
+              }
+            />
+          );
+        }}
+      </Query>
+    );
+  };
 
   _navigateToUser(userId) {
     this.toggleFollowsModal();
-    // TODO: This causes an issue with routing.
     this.props.navigation.navigate("UserDetails", { userId });
-  }
-
-  async _onRefresh() {
-    this.setState({ refreshing: true });
-    this.fetchUserDetails();
-    this.setState({ refreshing: false });
-  }
-
-  handleScroll(offset) {
-    if (!this.props.loading && offset >= 10) {
-      this.props.loadMoreRowsForCurrentUserActivity(
-        this.state.currentUser,
-        offset
-      );
-    }
-  }
-
-  _renderItem({ item, index }) {
-    if (index === 0) {
-      return (
-        <UserInfo
-          userDetails={item}
-          currentUser={this.state.currentUser}
-          toggleEditProfile={this.toggleEditProfile}
-          toggleFollowing={() => this.toggleFollowing()}
-          toggleFollowsModal={data => this.toggleFollowsModal(data)}
-        />
-      );
-    } else if (index === 1) {
-      return <UserStats stats={item} />;
-    }
   }
 
   render() {
     const {
-      currentUserDetails,
-      currentUserStats,
-      currentUserActivity,
-      loading,
-      error
-    } = this.props;
-    const {
       editProfileModalVisible,
-      refreshing,
-      sliderActiveSlide,
       followsModalVisibility,
-      followsList
+      currentUser,
+      query
     } = this.state;
-    const { width } = Dimensions.get("window");
-    const carouselElements = [currentUserDetails, currentUserStats];
 
-    if (loading && !error) {
-      return (
-        <View>
-          <Text>Hi</Text>
-          <ActivityIndicator />
-        </View>
-      );
-    }
-
-    if (currentUserDetails.id) {
-      return (
-        <View style={styles.container}>
-          <View style={{ height: "40%" }}>
-            <Carousel
-              ref={c => {
-                this._carousel = c;
-              }}
-              data={carouselElements}
-              renderItem={this._renderItem}
-              sliderWidth={width}
-              itemWidth={width}
-              onSnapToItem={index =>
-                this.setState({ sliderActiveSlide: index })
-              }
-              layout={"default"}
-            />
-            <Pagination
-              dotsLength={carouselElements.length}
-              activeDotIndex={sliderActiveSlide}
-              containerStyle={styles.paginationContainer}
-              dotColor={ACCENT_COLOR}
-              dotStyle={styles.paginationDot}
-              inactiveDotColor="#1a1917"
-              inactiveDotOpacity={0.4}
-              inactiveDotScale={0.6}
-              carouselRef={this._slider1Ref}
-              tappableDots={!!this._slider1Ref}
-            />
-          </View>
-          <View style={styles.container}>
-            <RecentActivity
-              events={currentUserActivity}
-              navigation={this.props.navigation}
-              refreshing={refreshing}
-              _onRefresh={this._onRefresh}
-              handleScroll={this.handleScroll}
-            />
-          </View>
-
-          {/* Edit Profile Modal */}
-          <EditProfileModal
-            isVisible={editProfileModalVisible}
-            toggleEditProfile={this.toggleEditProfile}
-            userDetails={currentUserDetails}
-          />
-
-          {/* Follows Modal */}
-          <FollowsModal
-            isVisible={followsModalVisibility}
-            toggleFollowsModal={() => this.toggleFollowsModal()}
-            followsList={followsList}
-            navigateToUser={userId => this._navigateToUser(userId)}
-          />
-
-          <SnackBar
-            visible={error ? true : false}
-            textMessage={error}
-            actionHandler={() => this.props.clearErrors()}
-            actionText="close"
-          />
-        </View>
-      );
-    } else {
-      return (
-        <View style={styles.container}>
-          <Text>Hello</Text>
-          <View
-            style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-          >
-            <Icon
-              size={36}
-              name="refresh"
-              color={PRIMARY_DARK_COLOR}
-              onPress={() => this.fetchUserDetails()}
-            />
-          </View>
-          <SnackBar
-            visible={error ? true : false}
-            textMessage={error}
-            actionHandler={() => this.props.clearErrors()}
-            actionText="close"
-          />
-        </View>
-      );
-    }
+    return (
+      <View style={styles.container}>
+        {currentUser && (
+          <View style={{ height: "40%" }}>{this._renderUserProfile()}</View>
+        )}
+        {currentUser && (
+          <View style={styles.container}>{this._renderUserActivity()}</View>
+        )}
+        {editProfileModalVisible && this._renderProfileModal()}
+        {followsModalVisibility && query && this._renderFollowsModal()}}
+      </View>
+    );
   }
 }
 
@@ -283,41 +203,5 @@ const styles = StyleSheet.create({
     height: Dimensions.get("window").height * 0.6,
     alignItems: "center",
     justifyContent: "center"
-  },
-  // Pagination
-  paginationDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginHorizontal: 5
-  },
-  paginationContainer: {
-    paddingVertical: 10,
-    backgroundColor: PRIMARY_DARK_COLOR
   }
-  // End Pagination
 });
-
-const mapStateToProps = state => {
-  return {
-    loading: state.loading,
-    currentUserDetails: state.currentUserDetails,
-    currentUserStats: state.currentUserStats,
-    currentUserActivity: state.currentUserActivity,
-    error: state.error
-  };
-};
-
-const mapDispatchToProps = {
-  getCurrentUserDetails,
-  getCurrentUserStats,
-  listRecentActivityForCurrentUser,
-  loadMoreRowsForCurrentUserActivity,
-  clearErrors,
-  createError
-};
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(MyProfileScreen);

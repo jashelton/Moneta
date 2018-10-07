@@ -1,20 +1,17 @@
 import React from "react";
-import { ScrollView, FlatList, StyleSheet } from "react-native";
+import { Query } from "react-apollo";
+import { GET_EVENT_LIKES } from "../graphql/queries";
+import { ScrollView, View, FlatList, StyleSheet } from "react-native";
+import { WaveIndicator } from "react-native-indicators";
 import { ListItem, Avatar } from "react-native-elements";
-import { connect } from "react-redux";
-import { getLikesForEvent, clearErrors } from "../reducer";
+import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
 
-class LikeScreen extends React.Component {
+export default class LikeScreen extends React.Component {
+  state = { event_id: null };
+
   async componentDidMount() {
-    const { getLikesForEvent, navigation } = this.props;
-    const eventId = navigation.getParam("eventId");
-
-    try {
-      const response = await getLikesForEvent(eventId);
-      if (response.error) throw response.error;
-    } catch (err) {
-      throw err;
-    }
+    const event_id = this.props.navigation.getParam("eventId");
+    this.setState({ event_id });
   }
 
   _renderItem({ item }) {
@@ -29,12 +26,12 @@ class LikeScreen extends React.Component {
             activeOpacity={0.7}
           />
         }
-        title={item.name}
+        title={`${item.first_name} ${item.last_name}`}
         chevron
         bottomDivider
         onPress={() =>
           this.props.navigation.navigate("UserDetails", {
-            userId: item.user_id
+            userId: item.id
           })
         }
       />
@@ -42,16 +39,28 @@ class LikeScreen extends React.Component {
   }
 
   render() {
-    const { likesList } = this.props;
+    const { event_id } = this.state;
 
     return (
       <ScrollView style={styles.container}>
-        <FlatList
-          keyExtractor={(item, index) => index.toString()}
-          numColumns={1}
-          data={likesList}
-          renderItem={this._renderItem.bind(this)}
-        />
+        <Query query={GET_EVENT_LIKES} variables={{ event_id }}>
+          {({ loading, error, data, refetch, fetchMore }) => {
+            if (loading)
+              return (
+                <View>
+                  <WaveIndicator color={PRIMARY_DARK_COLOR} size={80} />
+                </View>
+              );
+            return (
+              <FlatList
+                keyExtractor={(item, index) => index.toString()}
+                numColumns={1}
+                data={data.eventLikes}
+                renderItem={this._renderItem.bind(this)}
+              />
+            );
+          }}
+        </Query>
       </ScrollView>
     );
   }
@@ -63,21 +72,3 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff"
   }
 });
-
-const mapStateToProps = state => {
-  return {
-    loading: state.loading,
-    error: state.error,
-    likesList: state.likesList
-  };
-};
-
-const mapDispatchToProps = {
-  getLikesForEvent,
-  clearErrors
-};
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(LikeScreen);

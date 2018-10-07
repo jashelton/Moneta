@@ -6,91 +6,26 @@ import {
   TouchableHighlight,
   Image
 } from "react-native";
-import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
-import { ListItem, Avatar } from "react-native-elements";
-import { AirbnbRating } from "react-native-ratings";
 import SocialComponent from "./SocialComponent";
-import TimeAgo from "react-native-timeago";
+import UserHeaderComponent from "../Components/UserHeaderComponent";
+import RatingComponent from "../Components/RatingComponent";
 
 export default class MomentComponent extends React.Component {
-  submitRating(value) {
-    const { moment, canRate } = this.props;
-
-    if (moment.rating.user_rating !== value && canRate) {
-      const rating = {
-        previousRating: moment.rating.user_rating || null,
-        newRating: value
-      };
-
-      this.props.submitRating(moment.id, rating);
-    }
-  }
-
   render() {
-    const { moment, navigation, height, handleLike } = this.props;
+    const { moment, navigation, height } = this.props;
 
     return (
-      <View
-        style={{
-          flex: 1,
-          flexDirection: "column",
-          margin: 5,
-          backgroundColor: "#fff"
-        }}
-      >
-        <ListItem
-          leftAvatar={
-            <Avatar
-              size="small"
-              rounded
-              source={
-                moment.profile_image ? { uri: moment.profile_image } : null
-              }
-              icon={{ name: "person", size: 20 }}
-              activeOpacity={0.7}
-            />
-          }
-          title={moment.name}
-          titleStyle={{ color: PRIMARY_DARK_COLOR }}
-          subtitle={<TimeAgo time={moment.created_at} style={styles.subText} />}
-          chevron
-          onPress={() =>
-            navigation.navigate("UserDetails", { userId: moment.user_id })
-          }
+      <View style={styles.container}>
+        <UserHeaderComponent
+          user={moment.user}
+          createdAt={moment.created_at}
+          navigation={navigation}
         />
-
-        <View
-          style={{
-            alignItems: "flex-end",
-            justifyContent: "center",
-            marginRight: 15
-          }}
-        >
-          <View>
-            <Text
-              style={{ alignSelf: "center", fontSize: 14, fontWeight: "200" }}
-            >
-              {moment.rating.avg_rating
-                ? `Avg: ${moment.rating.avg_rating}`
-                : "No ratings yet."}
-            </Text>
-            <AirbnbRating
-              count={5}
-              defaultRating={moment.rating.user_rating || 0}
-              size={22}
-              showRating={false}
-              onFinishRating={value => this.submitRating(value)}
-            />
-            <Text
-              style={{ alignSelf: "center", fontSize: 14, fontWeight: "200" }}
-            >
-              {moment.rating.user_rating
-                ? `My Rating: ${moment.rating.user_rating}`
-                : "Rate Anonymously"}
-            </Text>
-          </View>
-        </View>
-
+        <RatingComponent
+          avg_rating={moment.avg_rating}
+          current_rating={moment.current_user_rating}
+          event_id={moment.id}
+        />
         <View style={{ padding: 10 }}>
           <Text style={{ fontSize: 15, fontWeight: "400", marginBottom: 5 }}>
             {moment.title}
@@ -104,22 +39,26 @@ export default class MomentComponent extends React.Component {
           underlayColor="#eee"
           style={[styles.imageTouch, { height }]}
           onPress={() =>
-            navigation.push("EventDetails", { eventId: moment.id })
+            navigation.push("EventDetails", {
+              eventId: moment.id,
+              userId: moment.user.id
+            })
           }
         >
           <Image
             style={styles.image}
             resizeMode="cover"
-            source={{ uri: moment.image }}
+            source={{ uri: moment.Images[0].image }}
           />
         </TouchableHighlight>
         <SocialComponent
           event={moment}
           navigation={navigation}
-          showCommentIcon={true}
-          onLikePress={() => handleLike()}
           onCommentPress={() =>
-            navigation.navigate("EventDetails", { eventId: moment.id })
+            navigation.navigate("EventDetails", {
+              eventId: moment.id,
+              userId: moment.user.id
+            })
           }
         />
       </View>
@@ -128,6 +67,12 @@ export default class MomentComponent extends React.Component {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    flexDirection: "column",
+    margin: 5,
+    backgroundColor: "#fff"
+  },
   imageTouch: {
     width: "100%",
     padding: 2
@@ -146,10 +91,5 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center"
-  },
-  subText: {
-    fontWeight: "200",
-    color: "grey",
-    fontSize: 12
   }
 });

@@ -1,15 +1,11 @@
 import React from "react";
-import {
-  ScrollView,
-  View,
-  StyleSheet,
-  FlatList,
-  ActivityIndicator
-} from "react-native";
+import { graphql } from "react-apollo";
+import { USER_SEARCH } from "../graphql/queries";
+import { ScrollView, View, StyleSheet, FlatList } from "react-native";
+import { WaveIndicator } from "react-native-indicators";
 import { SearchBar, ListItem, Avatar } from "react-native-elements";
 import { Constants } from "expo";
-import { connect } from "react-redux";
-import { getUsersSearch, clearUserSearch } from "../reducer";
+import ErrorComponent from "../Components/ErrorComponent";
 
 class SearchScreen extends React.Component {
   static navigationOptions = { header: null };
@@ -18,18 +14,18 @@ class SearchScreen extends React.Component {
     query: ""
   };
 
-  async searchQuery(value) {
-    const { clearUserSearch, getUsersSearch } = this.props;
+  searchQuery = value => {
+    const { refetch } = this.props.data;
     this.setState({ query: value });
 
     if (!value.length) {
-      this.setState({ query: "" });
-
-      return clearUserSearch();
+      this.setState({ query: null });
+      refetch({ name: null });
+      return;
     }
 
-    getUsersSearch(value);
-  }
+    refetch({ name: value });
+  };
 
   _renderUser({ item }) {
     return (
@@ -43,7 +39,7 @@ class SearchScreen extends React.Component {
             activeOpacity={0.7}
           />
         }
-        title={item.name}
+        title={`${item.first_name} ${item.last_name}`}
         chevron
         bottomDivider
         onPress={() =>
@@ -54,7 +50,24 @@ class SearchScreen extends React.Component {
   }
 
   render() {
-    const { userList, loading } = this.props;
+    const { loading, data, error } = this.props;
+    if (loading)
+      return (
+        <View>
+          <WaveIndicator color={PRIMARY_DARK_COLOR} size={80} />
+        </View>
+      );
+
+    if (error)
+      return (
+        <ErrorComponent
+          iconName="error"
+          refetchData={data.refetch({ name: this.state.query })}
+          errorMessage={error.message}
+          isSnackBarVisible={error ? true : false}
+          snackBarActionText="Retry"
+        />
+      );
 
     return (
       <View style={styles.container}>
@@ -64,7 +77,7 @@ class SearchScreen extends React.Component {
           cancelButtonTitle="Cancel"
           placeholder="Search for user"
           onChangeText={val => this.searchQuery(val)}
-          onClear={() => this.props.clearUserSearch()}
+          onClear={() => this.searchQuery("")}
           onCancel={() => this.searchQuery("")}
           value={this.state.query}
           containerStyle={{
@@ -73,23 +86,14 @@ class SearchScreen extends React.Component {
             borderBottomWidth: 1
           }}
         />
-
-        {loading ? (
-          <View
-            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-          >
-            <ActivityIndicator />
-          </View>
-        ) : (
-          <ScrollView>
-            <FlatList
-              keyExtractor={(item, index) => index.toString()}
-              numColumns={1}
-              data={userList}
-              renderItem={this._renderUser.bind(this)}
-            />
-          </ScrollView>
-        )}
+        <ScrollView>
+          <FlatList
+            keyExtractor={(item, index) => index.toString()}
+            numColumns={1}
+            data={data.allUsers}
+            renderItem={this._renderUser.bind(this)}
+          />
+        </ScrollView>
       </View>
     );
   }
@@ -103,20 +107,4 @@ const styles = StyleSheet.create({
   }
 });
 
-const mapStateToProps = state => {
-  return {
-    loading: state.loading,
-    error: state.error,
-    userList: state.userList
-  };
-};
-
-const mapDispatchToProps = {
-  getUsersSearch,
-  clearUserSearch
-};
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(SearchScreen);
+export default graphql(USER_SEARCH)(SearchScreen);

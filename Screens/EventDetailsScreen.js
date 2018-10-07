@@ -1,73 +1,37 @@
 import React from "react";
+import { Query, Mutation, graphql, compose } from "react-apollo";
+import {
+  EVENT_QUERY,
+  EVENT_COMMENTS,
+  ALL_EVENTS_QUERY,
+  CREATE_COMMENT,
+  DELETE_EVENT,
+  REPORT_EVENT
+} from "../graphql/queries";
 import {
   ScrollView,
   View,
-  Text,
   StyleSheet,
-  ActivityIndicator,
-  TouchableHighlight,
   KeyboardAvoidingView,
   Alert,
-  Image,
-  AppState,
-  Dimensions,
   Keyboard,
-  Modal
+  Text
 } from "react-native";
-import {
-  updateEventDetailsLikes,
-  deleteEvent,
-  reportEvent,
-  markEventViewed,
-  getEventDetails,
-  clearErrors,
-  addCommentToEvent,
-  detailsUpdateRating
-} from "../reducer";
+import { WaveIndicator } from "react-native-indicators";
 import {
   PRIMARY_DARK_COLOR,
   DIVIDER_COLOR
 } from "../common/styles/common-styles";
-import { Icon, ListItem, Avatar, Input } from "react-native-elements";
-import { authHelper, LocationHelper } from "../Helpers";
-import { connect } from "react-redux";
-import { notificationService } from "../Services/notification.service";
-import ImageViewer from "react-native-image-zoom-viewer";
-import SnackBar from "react-native-snackbar-component";
-import SocialComponent from "../Components/SocialComponent";
+import { Icon, Input } from "react-native-elements";
+import { authHelper, commonHelper } from "../Helpers";
+import { connectActionSheet } from "@expo/react-native-action-sheet";
 import ViewToggle from "../Components/ViewToggle";
 import CommentsComponent from "../Components/CommentsComponent";
-import TimeAgo from "react-native-timeago";
-import { AirbnbRating } from "react-native-ratings";
-import { connectActionSheet } from "@expo/react-native-action-sheet";
-
-export class EventDetailsHeader extends React.Component {
-  render() {
-    return (
-      <ListItem
-        leftAvatar={
-          <Avatar
-            size="small"
-            rounded
-            source={this.props.image ? { uri: this.props.image } : null}
-            icon={{ name: "person", size: 20 }}
-            activeOpacity={0.7}
-          />
-        }
-        title={this.props.username || this.props.name}
-        titleStyle={{ color: PRIMARY_DARK_COLOR }}
-        subtitle={new Date(this.props.date).toISOString().substring(0, 10)}
-        subtitleStyle={styles.subText}
-        chevron
-        onPress={() =>
-          this.props.navigation.navigate("UserDetails", {
-            userId: this.props.creator
-          })
-        }
-      />
-    );
-  }
-}
+import UserHeaderComponent from "../Components/UserHeaderComponent";
+import ErrorComponent from "../Components/ErrorComponent";
+import ImageViewerComponent from "../Components/ImageViewerComponent";
+import EventInfoComponent from "../Components/EventInfoComponent";
+import { notificationService } from "../Services/";
 
 @connectActionSheet
 class EventDetailsScreen extends React.Component {
@@ -90,21 +54,21 @@ class EventDetailsScreen extends React.Component {
     this.state = {
       currentUserId: null,
       eventId: null,
-      appState: AppState.currentState,
+      userId: null,
       isImageZoomed: false,
       commentValue: "",
       inputFocused: false,
-      eventOptionsModalVisible: false,
-      canRate: true
+      activeImage: 0,
+      rateLimit: null
     };
 
-    this.verifyDeleteEvent = this.verifyDeleteEvent.bind(this);
     this._keyboardDidShow = this._keyboardDidShow.bind(this);
     this._keyboardDidHide = this._keyboardDidHide.bind(this);
   }
 
   async componentDidMount() {
-    AppState.addEventListener("change", this._handleAppStateChange);
+    const rateLimit = await commonHelper.getRateLimitFilter();
+
     this.keyboardDidShowListener = Keyboard.addListener(
       "keyboardDidShow",
       this._keyboardDidShow
@@ -120,36 +84,15 @@ class EventDetailsScreen extends React.Component {
 
     const currentUserId = await authHelper.getCurrentUserId();
     const eventId = this.props.navigation.getParam("eventId", null);
+    const userId = this.props.navigation.getParam("userId", null);
 
-    this.setState({ currentUserId, eventId });
-
-    await this.fetchEventDetails();
-
-    if (!this.props.event.viewed_id) {
-      this.markEventAsViewed();
-    }
+    this.setState({ currentUserId, eventId, userId, rateLimit });
   }
 
   componentWillUnmount() {
-    AppState.removeEventListener("change", this._handleAppStateChange);
     this.keyboardDidShowListener.remove();
     this.keyboardDidHideListener.remove();
   }
-
-  _handleAppStateChange = async nextAppState => {
-    if (
-      this.state.appState.match(/inactive|background/) &&
-      nextAppState === "active"
-    ) {
-      try {
-        this.fetchEventDetails();
-      } catch (err) {
-        throw err;
-      }
-    }
-
-    this.setState({ appState: nextAppState });
-  };
 
   _keyboardDidShow() {
     this.setState({ inputFocused: true });
@@ -159,29 +102,13 @@ class EventDetailsScreen extends React.Component {
     this.setState({ inputFocused: false });
   }
 
-  async fetchEventDetails() {
-    if (this.props.error) this.props.clearErrors();
-
-    const currentLocation = await LocationHelper.getCurrentLocation();
-    const { eventId } = this.state;
-
-    try {
-      const response = await this.props.getEventDetails(
-        eventId,
-        currentLocation
-      );
-      if (response.error) throw response.error;
-    } catch (err) {
-      throw err;
-    }
-  }
-
   _onOpenActionSheet = () => {
+    const { currentUserId, userId } = this.state;
     const actions = {
       options: ["Cancel"]
     };
 
-    if (this.props.event.user_id === this.state.currentUserId) {
+    if (userId === currentUserId) {
       actions.options.push("Delete");
     } else {
       actions.options.push("Report");
@@ -221,9 +148,7 @@ class EventDetailsScreen extends React.Component {
   verifyReportEvent = reason => {
     Alert.alert(
       "Report",
-      `Are you sure you want to report this ${
-        this.props.event.event_type
-      } for ${reason}?`,
+      `Are you sure you want to report this post for ${reason}?`,
       [
         {
           text: "Cancel",
@@ -238,346 +163,250 @@ class EventDetailsScreen extends React.Component {
   };
 
   reportEvent = async reason => {
-    const { event, reportEvent, navigation } = this.props;
+    const { navigation } = this.props;
 
-    try {
-      const response = await reportEvent(event.id, reason.toLowerCase());
-      if (response.error) throw response.error;
+    await this.props.reportEvent({
+      REPORT_EVENT,
+      variables: {
+        event_id: this.state.eventId,
+        reason: reason.toLowerCase()
+      },
+      update: this.updateEventsCache
+    });
 
-      navigation.goBack();
-    } catch (err) {
-      throw err;
-    }
+    navigation.goBack();
   };
 
   verifyDeleteEvent() {
-    Alert.alert(
-      "Delete",
-      `Are you sure you want to delete this ${this.props.event.event_type}?`,
-      [
-        {
-          text: "Cancel",
-          style: "cancel"
-        },
-        {
-          text: "Delete",
-          onPress: () => this.deleteEvent()
-        }
-      ]
-    );
+    Alert.alert("Delete", `Are you sure you want to delete this post?`, [
+      {
+        text: "Cancel",
+        style: "cancel"
+      },
+      {
+        text: "Delete",
+        onPress: () => this.deleteEvent()
+      }
+    ]);
   }
 
   async deleteEvent() {
-    const { event, navigation, deleteEvent } = this.props;
-    this.setState({ eventOptionsModalVisible: false });
+    const { navigation } = this.props;
+
+    await this.props.deleteEvent({
+      DELETE_EVENT,
+      variables: { id: this.state.eventId },
+      update: this.updateEventsCache
+    });
+
+    navigation.goBack();
+  }
+
+  updateEventsCache = (store, { data }) => {
+    const { rateLimit } = this.state;
+    let eventAction;
+    if (data.deleteEvent) eventAction = data.deleteEvent;
+    if (data.reportEvent) eventAction = data.reportEvent;
 
     try {
-      const response = await deleteEvent(event.id);
-      if (response.error) throw response.error;
+      const { allEvents } = store.readQuery({
+        query: ALL_EVENTS_QUERY,
+        variables: { offset: 0, rate_threshold: rateLimit }
+      });
 
-      navigation.goBack();
+      if (!eventAction) return;
+
+      const filteredEvents = allEvents.filter(e => e.id !== this.state.eventId);
+      store.writeQuery({
+        query: ALL_EVENTS_QUERY,
+        variables: { offset: 0, rate_threshold: rateLimit },
+        data: {
+          allEvents: filteredEvents
+        }
+      });
     } catch (err) {
-      throw err;
+      throw new Error(err);
     }
-  }
+  };
 
-  async markEventAsViewed() {
-    const { event } = this.props;
-    if (!event.viewed_id) {
-      await this.props.markEventViewed(event.id);
+  submitComment({ data: { createComment } }) {
+    Keyboard.dismiss();
+    this.setState({ commentValue: "", inputFocused: false });
+
+    const { comment_user, owner } = createComment;
+
+    if (owner.push_token && comment_user.id !== this.state.userId) {
+      const body = `${comment_user.first_name} ${
+        comment_user.last_name
+      } commented on your post.`;
+      notificationService.sendPushNotification(owner.push_token, body);
     }
-  }
-
-  async favoriteEvent() {
-    const { event } = this.props;
-    const { currentUserId } = this.state;
-
-    await this.props.updateEventDetailsLikes(event.id, event.liked, "details");
-
-    // If event has been disliked... needs to change for readability.
-    if (event.liked) {
-      notificationService.deleteNotification(event.id, event.user_id, "like");
-      return;
-    }
-
-    // If event has been liked and the creator isn't the current user, send necessary notifications.
-    if (!event.liked && event.user_id !== currentUserId) {
-      this.notify();
-    }
-  }
-
-  async notify() {
-    const { event } = this.props;
-
-    await notificationService.sendPushNotification(
-      event.user_id,
-      "Someone liked your event!",
-      event.title
-    );
-    notificationService.createNotification(event.id, event.user_id, "like");
-  }
-
-  submitComment() {
-    let { commentValue } = this.state;
-    const { event, addCommentToEvent } = this.props;
-
-    try {
-      const { data } = addCommentToEvent(event.id, commentValue);
-      Keyboard.dismiss();
-    } catch (err) {
-      throw err;
-    }
-
-    commentValue = "";
-    this.setState({ commentValue, inputFocused: false });
-  }
-
-  async submitRating(value) {
-    const { event } = this.props;
-    const { canRate } = this.state;
-
-    if (event.rating.user_rating !== value && canRate) {
-      this.setState({ canRate: false });
-
-      const rating = {
-        previousRating: event.rating.user_rating || null,
-        newRating: value
-      };
-
-      await this.props.detailsUpdateRating(event.id, rating);
-    }
-
-    this.setState({ canRate: true });
   }
 
   render() {
-    const {
-      isImageZoomed,
-      commentValue,
-      eventOptionsModalVisible,
-      currentUserId
-    } = this.state;
-    const { event, navigation } = this.props;
+    const { isImageZoomed, commentValue, eventId, activeImage } = this.state;
+    const { navigation } = this.props;
 
-    if (this.props.loading) {
+    if (!eventId)
       return (
-        <View
-          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-        >
-          <ActivityIndicator />
+        <View style={styles.loadingContainer}>
+          <WaveIndicator color={PRIMARY_DARK_COLOR} size={80} />
         </View>
       );
-    }
 
-    if (event.id) {
-      return (
-        <View style={{ flex: 1 }}>
-          <ScrollView>
-            <ListItem
-              leftAvatar={
-                <Avatar
-                  size="small"
-                  rounded
-                  source={
-                    event.profile_image ? { uri: event.profile_image } : null
-                  }
-                  icon={{ name: "person", size: 20 }}
-                  activeOpacity={0.7}
+    return (
+      <Query query={EVENT_QUERY} variables={{ eventId }} errorPolicy="all">
+        {({ loading, error, data, refetch }) => {
+          const event = data.getEvent;
+
+          if (loading)
+            return (
+              <View style={styles.loadingContainer}>
+                <WaveIndicator color={PRIMARY_DARK_COLOR} size={80} />
+              </View>
+            );
+
+          if (error)
+            return (
+              <ErrorComponent
+                iconName="error"
+                refetchData={refetch}
+                errorMessage={error.message}
+                isSnackBarVisible={error ? true : false}
+                snackBarActionText="Retry"
+              />
+            );
+
+          return (
+            <View style={{ flex: 1 }}>
+              <ScrollView>
+                <UserHeaderComponent
+                  user={event.user}
+                  createdAt={event.created_at}
+                  navigation={navigation}
                 />
-              }
-              title={event.name}
-              titleStyle={{ color: PRIMARY_DARK_COLOR }}
-              subtitle={
-                <TimeAgo time={event.created_at} style={styles.subText} />
-              }
-              chevron
-              onPress={() =>
-                navigation.navigate("UserDetails", { userId: event.user_id })
-              }
-            />
-            <View style={styles.eventSection}>
-              <View
-                style={{
-                  alignItems: "flex-end",
-                  justifyContent: "center",
-                  marginRight: 15
-                }}
-              >
-                <View>
-                  <Text
-                    style={{
-                      alignSelf: "center",
-                      fontSize: 14,
-                      fontWeight: "200"
-                    }}
-                  >
-                    {event.rating.avg_rating
-                      ? `Avg: ${event.rating.avg_rating}`
-                      : "No ratings yet."}
+                <ViewToggle
+                  hide={!event.has_randomized_location}
+                  style={{ padding: 5 }}
+                >
+                  <Text>
+                    {
+                      "This moment has been randomized within a radius around where it occurred."
+                    }
                   </Text>
-                  <AirbnbRating
-                    count={5}
-                    defaultRating={event.rating.user_rating || 0}
-                    size={22}
-                    showRating={false}
-                    onFinishRating={value => this.submitRating(value)}
+                </ViewToggle>
+                <EventInfoComponent
+                  event={event}
+                  navigation={navigation}
+                  onImgPress={() => this.setState({ isImageZoomed: true })}
+                  inputFocus={() => this.commentInputField.focus()}
+                  activeImage={activeImage}
+                  setActiveImage={index =>
+                    this.setState({ activeImage: index })
+                  }
+                />
+                <Query query={EVENT_COMMENTS} variables={{ eventId }}>
+                  {({ loading, error, data, refetch }) => {
+                    return (
+                      <CommentsComponent
+                        loading={loading}
+                        error={error}
+                        comments={data.eventComments}
+                      />
+                    );
+                  }}
+                </Query>
+
+                {event.event_type === "moment" && (
+                  <ImageViewerComponent
+                    visible={isImageZoomed}
+                    onClose={() => this.setState({ isImageZoomed: false })}
+                    image={event.Images[activeImage].image}
                   />
-                  <Text
-                    style={{
-                      alignSelf: "center",
-                      fontSize: 14,
-                      fontWeight: "200"
-                    }}
-                  >
-                    {event.rating.user_rating
-                      ? `My Rating: ${event.rating.user_rating}`
-                      : "Rate Anonymously"}
-                  </Text>
-                </View>
-              </View>
-              <View style={[styles.textContent, { padding: 10 }]}>
-                {event.title && (
-                  <Text style={{ fontSize: 18, fontWeight: "500" }}>
-                    {event.title}
-                  </Text>
                 )}
-                {event.distanceFrom &&
-                  event.distanceFrom.status === "OK" && (
-                    <Text style={styles.subText}>
-                      {event.distanceFrom.distance.text}
-                    </Text>
-                  )}
-                <Text
-                  style={{ fontSize: 14, fontWeight: "200", marginTop: 15 }}
-                >
-                  {event.description}
-                </Text>
-              </View>
-              {event.image && (
-                <TouchableHighlight
-                  onPress={() => this.setState({ isImageZoomed: true })}
-                >
-                  <Image style={styles.image} source={{ uri: event.image }} />
-                </TouchableHighlight>
-              )}
-              <SocialComponent
-                event={event}
-                navigation={navigation}
-                showCommentIcon={true}
-                onLikePress={() => this.favoriteEvent()}
-                onCommentPress={() => this.commentInputField.focus()}
-              />
-            </View>
+              </ScrollView>
+              <Mutation
+                mutation={CREATE_COMMENT}
+                variables={{
+                  eventId,
+                  text: commentValue,
+                  owner_id: event.user.id
+                }}
+                refetchQueries={[
+                  { query: EVENT_QUERY, variables: { eventId } }
+                ]}
+                update={(store, { data: { createComment } }) => {
+                  const data = store.readQuery({
+                    query: EVENT_COMMENTS,
+                    variables: { eventId }
+                  });
 
-            <CommentsComponent comments={event.comments} />
-
-            {/* Modal to display full screen image with zoom */}
-            <Modal
-              visible={isImageZoomed}
-              transparent={true}
-              onRequestClose={() => this.setState({ isImageZoomed: false })}
-            >
-              <ImageViewer
-                imageUrls={[{ url: event.image }]}
-                index={0}
-                onSwipeDown={() => this.setState({ isImageZoomed: false })}
-                enableSwipeDown={true}
-                renderIndicator={() => null}
-                saveToLocalByLongPress={false}
-                renderHeader={() => (
-                  <TouchableHighlight
-                    style={{
-                      position: "absolute",
-                      width: "100%",
-                      padding: 15,
-                      alignItems: "flex-end",
-                      zIndex: 10000
-                    }}
-                    onPress={() => this.setState({ isImageZoomed: false })}
-                  >
-                    <Icon name="close" size={38} color="#fff" />
-                  </TouchableHighlight>
-                )}
-              />
-            </Modal>
-          </ScrollView>
-          <KeyboardAvoidingView alwaysVisible={true} behavior="padding">
-            <View style={styles.commentInput}>
-              <Input
-                ref={input => (this.commentInputField = input)}
-                placeholder="Comment"
-                containerStyle={{ backgroundColor: "#eee" }}
-                inputContainerStyle={{ borderBottomWidth: 0 }}
-                inputStyle={{ paddingTop: 8 }}
-                value={commentValue}
-                onChangeText={value => this.setState({ commentValue: value })}
-                multiline={true}
-                shake={true}
-                onFocus={() => this.setState({ inputFocused: true })}
-                onBlur={() => this.setState({ inputFocused: false })}
-                leftIcon={
-                  <Icon name="comment" size={22} color={DIVIDER_COLOR} />
-                }
-              />
-              <View
-                style={{
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexGrow: 1
+                  store.writeQuery({
+                    query: EVENT_COMMENTS,
+                    variables: { eventId },
+                    data: {
+                      eventComments: [...data.eventComments, createComment]
+                    }
+                  });
                 }}
               >
-                <Icon
-                  name="send"
-                  size={24}
-                  color={
-                    commentValue.length ? PRIMARY_DARK_COLOR : DIVIDER_COLOR
-                  }
-                  disabled={!commentValue.length}
-                  onPress={this.submitComment.bind(this)}
-                />
-              </View>
+                {createComment => (
+                  <KeyboardAvoidingView alwaysVisible={true} behavior="padding">
+                    <View style={styles.commentInput}>
+                      <Input
+                        ref={input => (this.commentInputField = input)}
+                        placeholder="Comment"
+                        containerStyle={{ backgroundColor: "#eee" }}
+                        inputContainerStyle={{ borderBottomWidth: 0 }}
+                        inputStyle={{ paddingTop: 8 }}
+                        value={commentValue}
+                        onChangeText={value =>
+                          this.setState({ commentValue: value })
+                        }
+                        multiline={true}
+                        shake={true}
+                        onFocus={() => this.setState({ inputFocused: true })}
+                        onBlur={() => this.setState({ inputFocused: false })}
+                        leftIcon={
+                          <Icon
+                            name="comment"
+                            size={22}
+                            color={DIVIDER_COLOR}
+                          />
+                        }
+                      />
+                      <View style={styles.containerCenter}>
+                        <Icon
+                          name="send"
+                          size={24}
+                          color={
+                            commentValue.length
+                              ? PRIMARY_DARK_COLOR
+                              : DIVIDER_COLOR
+                          }
+                          disabled={!commentValue.length}
+                          onPress={() =>
+                            createComment().then(res => this.submitComment(res))
+                          }
+                        />
+                      </View>
+                    </View>
+                    <ViewToggle
+                      hide={!this.state.inputFocused}
+                      style={{ height: 65 }}
+                    />
+                  </KeyboardAvoidingView>
+                )}
+              </Mutation>
             </View>
-            <ViewToggle
-              hide={!this.state.inputFocused}
-              style={{ height: 65 }}
-            />
-          </KeyboardAvoidingView>
-        </View>
-      );
-    } else {
-      return (
-        <View style={{ flex: 1 }}>
-          <View
-            style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-          >
-            <Icon
-              size={36}
-              name="refresh"
-              color={PRIMARY_DARK_COLOR}
-              onPress={() => this.fetchEventDetails()}
-            />
-          </View>
-          <SnackBar
-            visible={this.props.error ? true : false}
-            textMessage={this.props.error}
-            actionHandler={() => this.props.clearErrors()}
-            actionText="close"
-          />
-        </View>
-      );
-    }
+          );
+        }}
+      </Query>
+    );
   }
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    flexDirection: "column",
-    margin: 5
-  },
-  eventSection: {
-    backgroundColor: "#fff"
-  },
   commentInput: {
     flexDirection: "row",
     backgroundColor: "#fff",
@@ -585,44 +414,14 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#eee"
   },
-  image: {
-    width: Dimensions.get("window").width,
-    height: Dimensions.get("window").height * 0.35
-  },
-  subText: {
-    fontWeight: "200",
-    color: "grey",
-    fontSize: 12
-  },
-  modalHeader: {
-    height: 60,
-    backgroundColor: PRIMARY_DARK_COLOR,
-    flexDirection: "row",
-    alignItems: "flex-end",
-    justifyContent: "space-between"
+  containerCenter: {
+    alignItems: "center",
+    justifyContent: "center",
+    flexGrow: 1
   }
 });
 
-const mapStateToProps = state => {
-  return {
-    event: state.event,
-    loading: state.loading,
-    error: state.error
-  };
-};
-
-const mapDispatchToProps = {
-  updateEventDetailsLikes,
-  deleteEvent,
-  reportEvent,
-  markEventViewed,
-  getEventDetails,
-  clearErrors,
-  addCommentToEvent,
-  detailsUpdateRating
-};
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
+export default compose(
+  graphql(DELETE_EVENT, { name: "deleteEvent" }),
+  graphql(REPORT_EVENT, { name: "reportEvent" })
 )(EventDetailsScreen);

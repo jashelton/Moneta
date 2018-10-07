@@ -3,7 +3,9 @@ import { ImagePicker, Permissions } from "expo";
 
 export const commonHelper = {
   getFilters,
-  selectImage
+  setFilters,
+  selectImage,
+  getRateLimitFilter
 };
 
 async function getFilters() {
@@ -12,19 +14,23 @@ async function getFilters() {
   return data;
 }
 
-async function setFilters() {}
+async function setFilters(filters) {
+  AsyncStorage.setItem("user_filters", JSON.stringify(filters));
+}
+
+async function getRateLimitFilter() {
+  const data = await getFilters();
+  return data.events.rateLimit;
+}
 
 async function selectImage(withExif) {
   let { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
 
   if (status !== "granted") {
-    this.setState({
-      errorMessage: "Permission to access camera roll was denied"
-    });
+    return { errorMessage: "Permission to access camera roll was denied" };
   }
 
   const result = await ImagePicker.launchImageLibraryAsync({
-    // Require type image
     allowsEditing: true,
     aspect: [4, 3],
     exif: withExif

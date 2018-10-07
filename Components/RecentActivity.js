@@ -3,81 +3,27 @@ import {
   View,
   Text,
   ScrollView,
-  ActivityIndicator,
   RefreshControl,
   Dimensions,
-  FlatList
+  FlatList,
+  StyleSheet
 } from "react-native";
-import PropTypes from "prop-types";
-import { connect } from "react-redux";
 import MomentComponent from "../Components/MomentComponent";
 import VibeComponent from "../Components/VibeComponent";
-import { adHelper, authHelper } from "../Helpers";
-import { updateEventDetailsLikes, updateRating } from "../reducer";
-import { notificationService } from "../Services";
+import { WaveIndicator } from "react-native-indicators";
+import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
 
-class RecentActivity extends React.Component {
+export default class RecentActivity extends React.Component {
   height = Dimensions.get("window").height / 2;
-  state = {
-    canRate: true
-  };
 
-  async handleEventLike(event) {
-    const { updateEventDetailsLikes } = this.props;
-    const currentUserId = await authHelper.getCurrentUserId();
-
-    // If event has been disliked... needs to change for readability.
-    if (event.liked) {
-      notificationService.deleteNotification(event.id, event.user_id, "like");
-    }
-
-    try {
-      const response = await updateEventDetailsLikes(
-        event.id,
-        event.liked,
-        "activity"
-      );
-      if (response.error) throw response.error;
-    } catch (err) {
-      throw err;
-    }
-
-    // If event has been liked and the creator isn't the current user, send necessary notifications.
-    if (!event.liked && event.user_id !== currentUserId) {
-      this.notify(event);
-    }
-  }
-
-  async notify(event) {
-    await notificationService.sendPushNotification(
-      event.user_id,
-      `Someone liked your ${event.event_type}!`,
-      event.title || event.description
-    );
-    notificationService.createNotification(event.id, event.user_id, "like");
-  }
-
-  async submitRating(eventId, value) {
-    this.setState({ canRate: false });
-
-    await this.props.updateRating(eventId, value);
-
-    this.setState({ canRate: true });
-  }
-
-  _renderImage({ item, index }) {
+  _renderEvent({ item }) {
     return item.event_type === "moment" ? (
       <View>
         <MomentComponent
           moment={item}
           navigation={this.props.navigation}
           height={this.height}
-          handleLike={() => this.handleEventLike(item)}
-          submitRating={(eventId, value) => this.submitRating(eventId, value)}
-          canRate={this.state.canRate}
         />
-
-        {index % 5 === 0 && adHelper.displayPublisherBanner()}
       </View>
     ) : (
       <View>
@@ -85,85 +31,53 @@ class RecentActivity extends React.Component {
           vibe={item}
           navigation={this.props.navigation}
           height={this.height}
-          handleLike={() => this.handleEventLike(item)}
-          submitRating={(eventId, value) => this.submitRating(eventId, value)}
-          canRate={this.state.canRate}
         />
-
-        {index % 5 === 0 && adHelper.displayPublisherBanner()}
       </View>
     );
   }
 
   render() {
-    const { events, noDataMessage, refreshing, loading } = this.props;
+    const { events, loading, onRefresh } = this.props;
 
-    if (loading) {
+    if (loading)
       return (
-        <View>
-          <ActivityIndicator />
+        <View style={styles.container}>
+          <WaveIndicator color={PRIMARY_DARK_COLOR} size={80} />
         </View>
       );
-    }
 
-    if (events && events.length) {
-      return (
-        <View style={{ paddingTop: 5 }}>
-          <FlatList
-            keyExtractor={(item, index) => index.toString()}
-            numColumns={1}
-            data={events}
-            renderItem={this._renderImage.bind(this)}
-            onEndReached={() => this.props.handleScroll(events.length)}
-            onEndReachedThreshold={0}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={this.props._onRefresh}
-              />
-            }
-          />
-        </View>
-      );
-    } else {
+    if (!events.length)
       return (
         <ScrollView
-          contentContainerStyle={{
-            alignItems: "center",
-            justifyContent: "center"
-          }}
+          contentContainerStyle={styles.container}
           refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={this.props._onRefresh}
-            />
+            <RefreshControl refreshing={loading} onRefresh={onRefresh} />
           }
         >
-          <Text>{noDataMessage || "No recent activity to display"}</Text>
+          <Text>There are no events to display.</Text>
         </ScrollView>
       );
-    }
+
+    return (
+      <View style={{ paddingTop: 5 }}>
+        <FlatList
+          keyExtractor={(item, index) => index.toString()}
+          numColumns={1}
+          data={events}
+          renderItem={this._renderEvent.bind(this)}
+          refreshControl={
+            <RefreshControl refreshing={loading} onRefresh={onRefresh} />
+          }
+        />
+      </View>
+    );
   }
 }
 
-RecentActivity.propTypes = {
-  events: PropTypes.array.isRequired,
-  refreshing: PropTypes.bool.isRequired,
-  _onRefresh: PropTypes.func.isRequired
-};
-
-const mapStateToProps = state => {
-  return {
-    loading: state.loading
-  };
-};
-
-const mapDispatchToProps = {
-  updateEventDetailsLikes,
-  updateRating
-};
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(RecentActivity);
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center"
+  }
+});

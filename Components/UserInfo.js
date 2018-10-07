@@ -1,4 +1,6 @@
 import React from "react";
+import { Mutation } from "react-apollo";
+import { TOGGLE_FOLLOING } from "../graphql/queries";
 import {
   View,
   Text,
@@ -6,20 +8,24 @@ import {
   TouchableHighlight,
   Dimensions
 } from "react-native";
-import { Avatar, Button } from "react-native-elements";
-import TimeAgo from "react-native-timeago";
+import { WaveIndicator } from "react-native-indicators";
 import {
   PRIMARY_DARK_COLOR,
   TEXT_ICONS_COLOR,
   ACCENT_COLOR,
   LIGHT_PRIMARY_COLOR
 } from "../common/styles/common-styles";
+import { Avatar, Button } from "react-native-elements";
+import TimeAgo from "react-native-timeago";
+import { authHelper } from "../Helpers";
+import { notificationService } from "../Services";
 
 export default class UserInfo extends React.Component {
   _getInitials() {
-    const { userDetails } = this.props;
-    if (userDetails.name) {
-      return userDetails.name
+    const { first_name, last_name } = this.props.userDetails;
+    const name = first_name.concat(" ", last_name);
+    if (name) {
+      return name
         .split(" ")
         .map((n, i, a) => (i === 0 || i + 1 === a.length ? n[0] : null))
         .join("");
@@ -31,9 +37,17 @@ export default class UserInfo extends React.Component {
       userDetails,
       currentUser,
       toggleEditProfile,
-      toggleFollowing,
-      toggleFollowsModal
+      toggleFollowsModal,
+      loading
     } = this.props;
+
+    if (loading)
+      return (
+        <View style={styles.userInfoContainer}>
+          <WaveIndicator color={PRIMARY_DARK_COLOR} size={80} />
+        </View>
+      );
+
     return (
       <View style={styles.userInfoContainer}>
         <View
@@ -69,7 +83,7 @@ export default class UserInfo extends React.Component {
           >
             <View style={{ flexDirection: "column" }}>
               <Text style={{ fontSize: 18, color: "#fff", fontWeight: "200" }}>
-                {userDetails.name}
+                {userDetails.first_name} {userDetails.last_name}
               </Text>
               <Text
                 style={{
@@ -87,12 +101,32 @@ export default class UserInfo extends React.Component {
               </Text>
             </View>
             {currentUser !== userDetails.id ? (
-              <Button
-                title={userDetails.isFollowing ? "Unfollow" : "Follow"}
-                buttonStyle={styles.mainBtn}
-                titleStyle={{ color: TEXT_ICONS_COLOR, fontWeight: "200" }}
-                onPress={toggleFollowing}
-              />
+              <Mutation mutation={TOGGLE_FOLLOING}>
+                {toggleFollowing => (
+                  <Button
+                    title={userDetails.isFollowing ? "Unfollow" : "Follow"}
+                    buttonStyle={styles.mainBtn}
+                    titleStyle={{ color: TEXT_ICONS_COLOR, fontWeight: "200" }}
+                    onPress={() =>
+                      toggleFollowing({
+                        variables: { forUserId: userDetails.id }
+                      }).then(async ({ data: { toggleFollowing: follow } }) => {
+                        const {
+                          first_name,
+                          last_name
+                        } = await authHelper.getParsedUserData();
+                        if (follow.isFollowing) {
+                          const body = `${first_name} ${last_name} has followed you.`;
+                          notificationService.sendPushNotification(
+                            follow.push_token,
+                            body
+                          );
+                        }
+                      })
+                    }
+                  />
+                )}
+              </Mutation>
             ) : (
               <Button
                 title="Edit Profile"
@@ -107,21 +141,24 @@ export default class UserInfo extends React.Component {
           style={{
             flexDirection: "row",
             justifyContent: "space-evenly",
-            alignItems: "flex-end"
+            alignItems: "flex-end",
+            paddingVertical: 10
           }}
         >
           <TouchableHighlight onPress={() => toggleFollowsModal("followers")}>
             <Text style={styles.socialText}>
-              {userDetails.followers} Followers
+              {userDetails.followers_count} Followers
             </Text>
           </TouchableHighlight>
           <TouchableHighlight onPress={() => toggleFollowsModal("following")}>
             <Text style={styles.socialText}>
-              {userDetails.following} Following
+              {userDetails.following_count} Following
             </Text>
           </TouchableHighlight>
           <TouchableHighlight onPress={() => toggleFollowsModal("mutual")}>
-            <Text style={styles.socialText}>{userDetails.mutual} Mutual</Text>
+            <Text style={styles.socialText}>
+              {userDetails.mutual_count} Mutual
+            </Text>
           </TouchableHighlight>
         </View>
       </View>

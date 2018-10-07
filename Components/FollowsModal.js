@@ -1,8 +1,7 @@
 import React from "react";
 import { Constants } from "expo";
-import { View, Text, Modal, StyleSheet, FlatList } from "react-native";
+import { View, Modal, StyleSheet, FlatList } from "react-native";
 import { Button, ListItem, Avatar } from "react-native-elements";
-
 import {
   PRIMARY_DARK_COLOR,
   TEXT_ICONS_COLOR
@@ -10,7 +9,7 @@ import {
 
 export default class FollowsModal extends React.Component {
   _navigateToUserDetails(userId) {
-    const { navigation, toggleFollowsModal, navigateToUser } = this.props;
+    const { navigation, toggleFollowsModal } = this.props;
     toggleFollowsModal();
     // TODO: This causes an issue with routing.
     navigation.replace("UserDetails", { userId });
@@ -19,8 +18,8 @@ export default class FollowsModal extends React.Component {
   _renderFollow({ item }) {
     return (
       <ListItem
-        title={item.username || item.name}
-        titleStyle={{ fontSize: 12 }}
+        title={`${item.first_name} ${item.last_name}`}
+        titleStyle={{ fontSize: 14 }}
         leftAvatar={
           <Avatar
             size="small"
@@ -30,7 +29,7 @@ export default class FollowsModal extends React.Component {
             activeOpacity={0.7}
           />
         }
-        onPress={() => this.props.navigateToUser(item.user_id)}
+        onPress={() => this.props.navigateToUser(item.id)}
         chevron
         bottomDivider
       />
@@ -62,14 +61,6 @@ export default class FollowsModal extends React.Component {
             keyExtractor={(item, index) => index.toString()}
             data={followsList}
             renderItem={this._renderFollow.bind(this)}
-            // onEndReached={ () => this.handleScroll(notifications.length)}
-            // onEndReachedThreshold={0}
-            // refreshControl={
-            //   <RefreshControl
-            //     refreshing={refreshing}
-            //     onRefresh={this.getNotifications}
-            //   />
-            // }
           />
         </View>
       </Modal>

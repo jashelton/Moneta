@@ -1,21 +1,21 @@
 import React from "react";
+import { graphql } from "react-apollo";
 import {
   View,
   Text,
-  ScrollView,
-  TouchableHighlight,
-  Image,
-  StyleSheet,
-  Switch,
+  Alert,
   Modal,
+  Switch,
+  Linking,
+  ScrollView,
+  StyleSheet,
   Dimensions
 } from "react-native";
-import { Icon, Button } from "react-native-elements";
+import { WaveIndicator } from "react-native-indicators";
+import { Button } from "react-native-elements";
 import { TextField } from "react-native-material-textfield";
 import { RNS3 } from "react-native-aws3";
 import { Haptic, Constants } from "expo";
-import { createEvent, clearErrors } from "../reducer";
-import { connect } from "react-redux";
 import SnackBar from "react-native-snackbar-component";
 import { authHelper, LocationHelper, commonHelper, adHelper } from "../Helpers";
 import {
@@ -24,38 +24,38 @@ import {
   BUCKET,
   BUCKET_REGION
 } from "react-native-dotenv";
-import ViewToggle from "../Components/ViewToggle";
-import GooglePlacesInput from "../Components/LocationAutocomplete";
 import {
   DIVIDER_COLOR,
   PRIMARY_DARK_COLOR,
   TEXT_ICONS_COLOR
 } from "../common/styles/common-styles";
+import {
+  CREATE_MOMENT,
+  ALL_EVENTS_QUERY,
+  MAP_MARKERS
+} from "../graphql/queries";
+import ViewToggle from "../Components/ViewToggle";
+import GooglePlacesInput from "../Components/LocationAutocomplete";
+import ImageSelectionComponent from "../Components/ImageSelectionComponent";
 
 const initialEvent = {
   title: "",
   description: "",
-  localImage: null,
-  eventPrivacy: "Public",
   imageLocation: "",
-  imageCoords: null,
-  addressInfo: null,
-  randomizeLocation: false
+  randomizeLocation: false,
+  displayOnMap: true
+};
+
+const selectedEventLocation = {
+  coords: null,
+  address: null,
+  location: ""
 };
 
 class CreateMomentScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
     return {
       title: "Create Moment",
-      // headerLeft: (
-      //   <Button
-      //     containerStyle={styles.leftIcon}
-      //     clear
-      //     title='Clear'
-      //     titleStyle={{color: 'blue'}}
-      //     onPress={navigation.getParam('clearEvent')}
-      //   />
-      // ),
       headerRight: (
         <Button
           containerStyle={styles.rightIcon}
@@ -86,7 +86,11 @@ class CreateMomentScreen extends React.Component {
       eventForm: initialEvent,
       imageFile: null,
       visiblePlacesSearch: false,
-      isCreateDisabled: false
+      isCreateDisabled: false,
+      loading: false,
+      localImages: [],
+      selectedEventLocation,
+      rateLimit: null
     };
 
     this.clearEvent = this.clearEvent.bind(this);
@@ -97,13 +101,15 @@ class CreateMomentScreen extends React.Component {
 
   async componentDidMount() {
     const user_data = await authHelper.getParsedUserData();
+    const rateLimit = await commonHelper.getRateLimitFilter();
     this.options.keyPrefix = `user_${user_data.id}/`;
 
     this.props.navigation.setParams({
-      clearEvent: () => this.clearEvent(),
       createEvent: () => this.createEvent(),
       isDisabled: this.state.isCreateDisabled
     });
+
+    this.setState({ rateLimit });
   }
 
   async checkLocation() {
@@ -111,25 +117,27 @@ class CreateMomentScreen extends React.Component {
   }
 
   clearEvent() {
-    let { eventForm } = this.state;
+    let { eventForm, selectedEventLocation } = this.state;
     eventForm = initialEvent;
+    selectedEventLocation.coords = null;
+    selectedEventLocation.address = null;
+    selectedEventLocation.location = "";
 
     this.setState({ eventForm, imageFile: null });
   }
 
-  updatePrivacySettings(val) {
-    const { eventForm } = this.state;
-    eventForm.eventPrivacy = val ? "Public" : "Private";
-
-    this.setState({ eventForm });
-  }
-
-  updateRandomizeLocationState(value) {
-    let { eventForm } = this.state;
-
-    eventForm.randomizeLocation = value;
-    this.setState({ eventForm });
-  }
+  _notifyDisabledCameraPermissions = errorMessage => {
+    Alert.alert("Permissions Issue", errorMessage, [
+      {
+        text: "Cancel",
+        style: "cancel"
+      },
+      {
+        text: "Update",
+        onPress: () => Linking.openURL("app-settings:")
+      }
+    ]);
+  };
 
   createDateString() {
     const time = new Date();
@@ -139,104 +147,131 @@ class CreateMomentScreen extends React.Component {
       1}-${time.getDate()}_${now}`;
   }
 
-  // Check permission on CAMERA_ROLL and store what is needed to upload image to S3.
-  async prepS3Upload() {
-    const result = await commonHelper.selectImage(true);
-
-    if (!result.cancelled) {
-      const { imageFile, eventForm } = this.state;
-
-      imageFile = {
-        uri: result.uri,
-        name: this.createDateString(),
-        type: result.type
-      }; // Required fields for S3 upload
-      eventForm.localImage = result; // Path to image to display to user before S3 upload
-
-      this.setState({ imageFile, eventForm });
-
-      // For images that have location data associated with them via exif.
-      if (result.exif.GPSLatitude && result.exif.GPSLongitude) {
-        const imageCoords = LocationHelper.formatExifCoords(result.exif);
-        const address = await LocationHelper.coordsToAddress(imageCoords);
-        const imageLocation = `${address[0].name}, ${address[0].city ||
-          null}, ${address[0].region}, ${address[0].isoCountryCode}`;
-        const { eventForm } = this.state;
-
-        eventForm.imageLocation = imageLocation;
-        eventForm.imageCoords = imageCoords;
-        eventForm.addressInfo = address[0];
-      } else {
-        eventForm.imageLocation = "";
-        eventForm.imageCoords = null;
-      }
-
-      this.setState({ eventForm });
-    }
-  }
-
   // Custom location selection.  Get address and coords.
   async customImageLocation(data, details) {
     const { location } = details.geometry;
     const { description } = data;
-    let { eventForm } = this.state;
+    let { selectedEventLocation } = this.state;
 
-    eventForm.imageCoords = { latitude: location.lat, longitude: location.lng };
-    const address = await LocationHelper.coordsToAddress(eventForm.imageCoords);
+    selectedEventLocation.coords = {
+      latitude: location.lat,
+      longitude: location.lng
+    };
+    const address = await LocationHelper.coordsToAddress(
+      selectedEventLocation.coords
+    );
 
-    eventForm.imageLocation = description;
-    eventForm.addressInfo = address[0];
+    selectedEventLocation.location = description;
+    selectedEventLocation.address = address[0];
 
-    this.setState({ eventForm, visiblePlacesSearch: false });
+    this.setState({ visiblePlacesSearch: false });
+  }
+
+  // Check permission on CAMERA_ROLL and store what is needed to upload image to S3.
+  async prepS3Upload() {
+    const result = await commonHelper.selectImage(true);
+    if (result.errorMessage) {
+      return this._notifyDisabledCameraPermissions(result.errorMessage);
+    }
+
+    const { localImages, selectedEventLocation } = this.state;
+    const image = {
+      s3: {},
+      data: {}
+    };
+
+    if (result.cancelled) return;
+
+    image.s3.uri = result.uri;
+    image.s3.name = this.createDateString();
+    image.s3.type = result.type;
+
+    // For images that have location data associated with them via exif.
+    if (result.exif.GPSLatitude && result.exif.GPSLongitude) {
+      const imageCoords = LocationHelper.formatExifCoords(result.exif);
+      const address = await LocationHelper.coordsToAddress(imageCoords);
+      const imageLocation = `${address[0].name}, ${address[0].city || null}, ${
+        address[0].region
+      }, ${address[0].isoCountryCode}`;
+
+      image.data.imageLocation = imageLocation;
+      image.data.imageCoords = imageCoords;
+      image.data.addressInfo = address[0];
+
+      if (!selectedEventLocation.coords || !selectedEventLocation.location) {
+        selectedEventLocation.coords = imageCoords;
+        selectedEventLocation.location = imageLocation;
+        selectedEventLocation.address = address[0];
+      }
+    } else {
+      image.data.imageLocation = "";
+      image.data.imageCoords = null;
+    }
+
+    localImages.push(image);
+    this.setState({ localImages, selectedEventLocation });
   }
 
   async createEvent() {
-    this.checkLocation();
-    this.setState({ isCreateDisabled: true }); // Prevent dupe insert
+    this.setState({ isCreateDisabled: true, loading: true });
 
-    let { imageFile, isCreateDisabled } = this.state;
+    let { isCreateDisabled, localImages } = this.state;
+    const { coords, location, address } = this.state.selectedEventLocation;
     const {
       title,
       description,
-      eventPrivacy,
-      imageLocation,
-      imageCoords,
-      addressInfo,
-      randomizeLocation
+      randomizeLocation,
+      displayOnMap
     } = this.state.eventForm;
 
     if (!isCreateDisabled) {
       if (
-        title === "" ||
         description === "" ||
-        imageLocation === "" ||
-        !imageCoords ||
-        title.length > 60 ||
-        description.length > 240
+        location === "" ||
+        !coords ||
+        title.length > 60
       ) {
-        alert("You must include a valid Title, Description, and Image");
+        alert("You must include a valid Description, and Image");
+        this.setState({ isCreateDisabled: false, loading: false });
         return;
       }
+
+      const { latitude, longitude } = randomizeLocation
+        ? LocationHelper.generateRandomPoint(coords, 2500)
+        : coords;
 
       const event = {
         title,
         description,
-        event_type: "moment",
-        privacy: eventPrivacy,
-        city: addressInfo.city,
-        region: addressInfo.region,
-        country_code: addressInfo.isoCountryCode,
-        coordinate: randomizeLocation
-          ? LocationHelper.generateRandomPoint(imageCoords, 2500)
-          : imageCoords
+        map: displayOnMap,
+        random: randomizeLocation,
+        city: address.city,
+        region: address.region,
+        country_code: address.isoCountryCode,
+        latitude,
+        longitude,
+        images: []
       };
 
       try {
-        const s3Upload = await RNS3.put(imageFile, this.options);
-        event.image = s3Upload.body.postResponse;
+        for (let i = 0; i < localImages.length; i++) {
+          const s3Upload = await RNS3.put(localImages[i].s3, this.options);
+          const imageData = {
+            image: s3Upload.body.postResponse.location,
+            ...localImages[i].data.imageCoords
+          };
 
-        const response = await this.props.createEvent(event);
-        if (response.error) throw response.error;
+          event.images.push(imageData);
+          if (i === 0) {
+            event.image = s3Upload.body.postResponse.location; // Shouldn't need this.
+          }
+        }
+
+        await this.props.mutate({
+          CREATE_MOMENT,
+          variables: { ...event },
+          update: this.updateCache
+        });
 
         this.clearEvent();
 
@@ -247,44 +282,94 @@ class CreateMomentScreen extends React.Component {
       }
     }
 
-    this.setState({ isCreateDisabled: false });
+    this.setState({ isCreateDisabled: false, loading: false });
   }
+
+  updateCache = (store, { data: { createMoment } }) => {
+    const { rateLimit } = this.state;
+
+    try {
+      const { allEvents } = store.readQuery({
+        query: ALL_EVENTS_QUERY,
+        variables: { offset: 0, rate_threshold: rateLimit }
+      });
+
+      store.writeQuery({
+        query: ALL_EVENTS_QUERY,
+        variables: { offset: 0, rate_threshold: rateLimit },
+        data: {
+          allEvents: [createMoment, ...allEvents]
+        }
+      });
+    } catch (err) {
+      throw new Error(err);
+    }
+
+    try {
+      const { allEvents } = store.readQuery({
+        query: MAP_MARKERS,
+        variables: { type: "moment" }
+      });
+
+      store.writeQuery({
+        query: MAP_MARKERS,
+        variables: { type: "moment" },
+        data: {
+          allEvents: [createMoment, ...allEvents]
+        }
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   render() {
     const {
-      localImage,
       title,
       description,
-      eventPrivacy,
-      imageLocation,
       randomizeLocation,
-      imageCoords
+      displayOnMap
     } = this.state.eventForm;
-    const { visiblePlacesSearch } = this.state;
+    const { visiblePlacesSearch, loading, localImages, eventForm } = this.state;
+    const { coords, location } = this.state.selectedEventLocation;
+    if (loading)
+      return (
+        <View style={styles.loadingContainer}>
+          <WaveIndicator color={PRIMARY_DARK_COLOR} size={80} />
+        </View>
+      );
     return (
       <View style={{ flex: 1 }}>
         <ScrollView
           contentContainerStyle={{ padding: 15, backgroundColor: "#fff" }}
         >
-          <View style={styles.eventPrivacyContainer}>
-            <Text>Create event as: {eventPrivacy}</Text>
-            <Switch
-              value={eventPrivacy === "Public" ? true : false}
-              onValueChange={value => this.updatePrivacySettings(value)}
-            />
-          </View>
-          <View style={styles.eventPrivacyContainer}>
+          <View style={styles.sliderContainer}>
             <Text>Randomize location within radius nearby?</Text>
             <Switch
               value={randomizeLocation ? true : false}
-              onValueChange={value => this.updateRandomizeLocationState(value)}
+              onValueChange={value =>
+                this.setState({
+                  eventForm: { ...eventForm, randomizeLocation: value }
+                })
+              }
+            />
+          </View>
+          <View style={styles.sliderContainer}>
+            <Text>Show on map?</Text>
+            <Switch
+              value={displayOnMap ? true : false}
+              onValueChange={value =>
+                this.setState({
+                  eventForm: { ...eventForm, displayOnMap: value }
+                })
+              }
             />
           </View>
           <TextField
-            label="Title"
+            label="Title (optional)"
             value={title}
             onChangeText={title =>
-              this.setState({ eventForm: { ...this.state.eventForm, title } })
+              this.setState({ eventForm: { ...eventForm, title } })
             }
             characterRestriction={60}
           />
@@ -292,37 +377,26 @@ class CreateMomentScreen extends React.Component {
             value={description}
             onChangeText={description =>
               this.setState({
-                eventForm: { ...this.state.eventForm, description }
+                eventForm: { ...eventForm, description }
               })
             }
             returnKeyType="next"
             multiline={true}
             blurOnSubmit={true}
             label="Description"
-            characterRestriction={240}
           />
-          <ViewToggle hide={!localImage}>
+          <ViewToggle hide={!localImages.length}>
             <TextField
               label="Event Location"
-              baseColor={!imageCoords ? "red" : "green"}
-              value={imageLocation}
+              baseColor={!coords ? "red" : "green"}
+              value={location}
               onFocus={() => this.setState({ visiblePlacesSearch: true })}
             />
           </ViewToggle>
-          <TouchableHighlight
-            underlayColor="#eee"
-            style={styles.imageUpload}
-            onPress={this.prepS3Upload}
-          >
-            {!localImage ? (
-              <Icon style={styles.iconBtn} color="#d0d0d0" name="add-a-photo" />
-            ) : (
-              <Image
-                style={styles.uploadedImage}
-                source={{ uri: localImage.uri }}
-              />
-            )}
-          </TouchableHighlight>
+          <ImageSelectionComponent
+            images={localImages}
+            prepS3Upload={this.prepS3Upload}
+          />
           <Modal
             animationType="slide"
             transparent={false}
@@ -359,7 +433,7 @@ class CreateMomentScreen extends React.Component {
 }
 
 const styles = StyleSheet.create({
-  eventPrivacyContainer: {
+  sliderContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -386,22 +460,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingTop: Constants.statusBarHeight
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center"
   }
 });
 
-const mapStateToProps = state => {
-  return {
-    loading: state.loading,
-    error: state.error
-  };
-};
-
-const mapDispatchToProps = {
-  createEvent,
-  clearErrors
-};
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(CreateMomentScreen);
+export default graphql(CREATE_MOMENT)(CreateMomentScreen);
