@@ -59,6 +59,7 @@ export const EVENT_QUERY = gql`
       id
       title
       description
+      event_type
       has_randomized_location
       avg_rating
       current_user_rating

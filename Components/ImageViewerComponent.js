@@ -2,7 +2,7 @@ import React from "react";
 import { Modal } from "react-native";
 import ImageViewer from "react-native-image-zoom-viewer";
 
-export default ImageViewerComponent = props => {
+export default (ImageViewerComponent = props => {
   const { visible, image, onClose } = props;
   return (
     <Modal
@@ -21,4 +21,4 @@ export default ImageViewerComponent = props => {
       />
     </Modal>
   );
-};
+});
