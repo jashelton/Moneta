@@ -1,6 +1,6 @@
 import React from "react";
 import Nav from "./Navigation/Navigator";
-import { SENTRY_DNS } from "react-native-dotenv";
+import { SENTRY_DNS, ENDPOINT } from "react-native-dotenv";
 import { authHelper } from "./Helpers";
 import { StatusBar, View } from "react-native";
 import Sentry from "sentry-expo";
@@ -86,7 +86,7 @@ export const client = new ApolloClient({
       cache
     }),
     new HttpLink({
-      uri: "http://192.168.0.6:4000"
+      uri: ENDPOINT
       // credentials: "include"
     })
   ]),
