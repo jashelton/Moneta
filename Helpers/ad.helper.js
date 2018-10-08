@@ -1,44 +1,15 @@
 import React from "react";
-import { View } from "react-native";
-import { AdMobInterstitial, AdMobBanner, PublisherBanner } from "expo";
-import {
-  EVENT_DETAILS_AD_UNIT,
-  FULL_SCREEN_AD_UNIT
-} from "react-native-dotenv";
+import ViewToggle from "../Components/ViewToggle";
+import { PublisherBanner } from "expo";
+import { EVENT_DETAILS_AD_UNIT } from "react-native-dotenv";
 
-export const adHelper = {
-  displayAd,
-  displayBannerAd,
-  displayPublisherBanner
-};
-
-async function displayAd() {
-  AdMobInterstitial.setAdUnitID(
-    process.env.NODE_ENV === "development"
-      ? "ca-app-pub-3940256099942544/6300978111"
-      : FULL_SCREEN_AD_UNIT
-  );
-  AdMobInterstitial.setTestDeviceID("EMULATOR");
-  await AdMobInterstitial.requestAdAsync();
-  await AdMobInterstitial.showAdAsync();
-}
-
-function displayBannerAd() {
+export const PublisherBannerComponent = props => {
+  let adDidError = null;
   return (
-    <AdMobBanner
-      adUnitID={
-        process.env.NODE_ENV === "development"
-          ? "ca-app-pub-3940256099942544/6300978111"
-          : EVENT_DETAILS_AD_UNIT
-      }
-      testDeviceID="EMULATOR"
-    />
-  );
-}
-
-function displayPublisherBanner() {
-  return (
-    <View style={{ alignItems: "center" }}>
+    <ViewToggle
+      hide={adDidError}
+      style={{ alignItems: "center", position: "absolute", bottom: 0 }}
+    >
       <PublisherBanner
         adUnitID={
           process.env.NODE_ENV === "development"
@@ -46,7 +17,12 @@ function displayPublisherBanner() {
             : EVENT_DETAILS_AD_UNIT
         }
         testDeviceID="EMULATOR"
+        onDidFailToReceiveAdWithError={() => {
+          adDidError = true;
+          props.bannerError();
+        }}
+        onAdViewDidReceiveAd={() => (adDidError = false)}
       />
-    </View>
+    </ViewToggle>
   );
-}
+};

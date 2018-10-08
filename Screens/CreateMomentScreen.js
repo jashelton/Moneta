@@ -17,7 +17,7 @@ import { TextField } from "react-native-material-textfield";
 import { RNS3 } from "react-native-aws3";
 import { Haptic, Constants } from "expo";
 import SnackBar from "react-native-snackbar-component";
-import { authHelper, LocationHelper, commonHelper, adHelper } from "../Helpers";
+import { authHelper, LocationHelper, commonHelper } from "../Helpers";
 import {
   AWS_ACCESS_KEY,
   AWS_SECRET_ACCESS_KEY,

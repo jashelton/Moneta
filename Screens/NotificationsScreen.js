@@ -7,7 +7,7 @@ import TimeAgo from "react-native-timeago";
 import { Query } from "react-apollo";
 import ErrorComponent from "../Components/ErrorComponent";
 import { NOTIFICATIONS } from "../graphql/queries";
-import { adHelper } from "../Helpers";
+import { PublisherBannerComponent } from "../Helpers";
 
 export default class NotificationsScreen extends React.Component {
   static navigationOptions = { title: "Notifications" };
@@ -122,9 +122,8 @@ export default class NotificationsScreen extends React.Component {
             );
           }}
         </Query>
-        <View style={{ position: "absolute", bottom: 0 }}>
-          {adHelper.displayPublisherBanner()}
-        </View>
+
+        <PublisherBannerComponent />
       </View>
     );
   }

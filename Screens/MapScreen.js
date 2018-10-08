@@ -4,7 +4,11 @@ import { MAP_MARKERS } from "../graphql/queries";
 import MapView from "react-native-maps";
 import { View, StyleSheet } from "react-native";
 import { Icon } from "react-native-elements";
-import { LocationHelper, authHelper, adHelper } from "../Helpers";
+import {
+  LocationHelper,
+  authHelper,
+  PublisherBannerComponent
+} from "../Helpers";
 import { WaveIndicator } from "react-native-indicators";
 import {
   PRIMARY_DARK_COLOR,
@@ -33,7 +37,8 @@ class MapScreen extends React.Component {
 
     this.state = {
       currentUser: null,
-      region: null
+      region: null,
+      bannerError: false
     };
 
     this.onRegionChange = this.onRegionChange.bind(this);
@@ -95,7 +100,12 @@ class MapScreen extends React.Component {
       );
 
     return (
-      <View style={[styles.container, { paddingBottom: 50 }]}>
+      <View
+        style={[
+          styles.container,
+          !this.state.bannerError ? { paddingBottom: 50 } : null
+        ]}
+      >
         <View style={styles.container}>
           {region && (
             <View style={styles.container}>
@@ -143,9 +153,9 @@ class MapScreen extends React.Component {
             </View>
           )}
         </View>
-        <View style={{ position: "absolute", bottom: 0 }}>
-          {adHelper.displayPublisherBanner()}
-        </View>
+        <PublisherBannerComponent
+          bannerError={() => this.setState({ bannerError: true })}
+        />
       </View>
     );
   }

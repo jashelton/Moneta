@@ -4,7 +4,11 @@ import { ALL_EVENTS_QUERY } from "../graphql/queries";
 import { View, StyleSheet } from "react-native";
 import { Button } from "react-native-elements";
 import { WaveIndicator } from "react-native-indicators";
-import { permissionsHelper, adHelper, commonHelper } from "../Helpers";
+import {
+  permissionsHelper,
+  commonHelper,
+  PublisherBannerComponent
+} from "../Helpers";
 import RecentActivity from "../Components/RecentActivity";
 import ErrorComponent from "../Components/ErrorComponent";
 import FiltersModal from "../Components/FiltersModal";
@@ -29,7 +33,8 @@ export default class HomeScreen extends React.Component {
     super(props);
     this.state = {
       filtersModalVisible: false,
-      filters: {}
+      filters: {},
+      bannerError: false
     };
 
     this._updateFilters = this._updateFilters.bind(this);
@@ -87,7 +92,11 @@ export default class HomeScreen extends React.Component {
                     />
                   );
                 return (
-                  <View style={{ paddingBottom: 55 }}>
+                  <View
+                    style={
+                      !this.state.bannerError ? { paddingBottom: 55 } : null
+                    }
+                  >
                     <RecentActivity
                       loading={loading}
                       navigation={this.props.navigation}
@@ -109,9 +118,10 @@ export default class HomeScreen extends React.Component {
                       noDataMessage="There is no recent activity to display."
                       onRefresh={refetch}
                     />
-                    <View style={{ position: "absolute", bottom: 0 }}>
-                      {adHelper.displayPublisherBanner()}
-                    </View>
+
+                    <PublisherBannerComponent
+                      bannerError={() => this.setState({ bannerError: true })}
+                    />
 
                     <FiltersModal
                       isVisible={filtersModalVisible}
