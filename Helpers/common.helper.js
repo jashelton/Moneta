@@ -12,10 +12,12 @@ export const commonHelper = {
 async function getFilters() {
   let data = await AsyncStorage.getItem("user_filters");
 
-  if (!data) await setFilters(filters);
+  if (!data) {
+    await setFilters(filters);
+  }
+
   data = await AsyncStorage.getItem("user_filters");
-  data = JSON.parse(data);
-  return data;
+  return JSON.parse(data);
 }
 
 async function setFilters(filters) {

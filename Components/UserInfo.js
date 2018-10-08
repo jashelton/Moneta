@@ -32,6 +32,15 @@ export default class UserInfo extends React.Component {
     }
   }
 
+  _updateCache = async ({ data: { toggleFollowing: follow } }) => {
+    const { first_name, last_name, id } = await authHelper.getParsedUserData();
+
+    if (follow.isFollowing && follow.push_token) {
+      const body = `${first_name} ${last_name} has followed you.`;
+      notificationService.sendPushNotification(follow.push_token, body);
+    }
+  };
+
   render() {
     const {
       userDetails,
@@ -110,19 +119,7 @@ export default class UserInfo extends React.Component {
                     onPress={() =>
                       toggleFollowing({
                         variables: { forUserId: userDetails.id }
-                      }).then(async ({ data: { toggleFollowing: follow } }) => {
-                        const {
-                          first_name,
-                          last_name
-                        } = await authHelper.getParsedUserData();
-                        if (follow.isFollowing) {
-                          const body = `${first_name} ${last_name} has followed you.`;
-                          notificationService.sendPushNotification(
-                            follow.push_token,
-                            body
-                          );
-                        }
-                      })
+                      }).then(data => this._updateCache(data))
                     }
                   />
                 )}
