@@ -1,5 +1,6 @@
 import { AsyncStorage } from "react-native";
 import { ImagePicker, Permissions } from "expo";
+import { filters } from "../common/defaults/filters";
 
 export const commonHelper = {
   getFilters,
@@ -10,16 +11,19 @@ export const commonHelper = {
 
 async function getFilters() {
   let data = await AsyncStorage.getItem("user_filters");
+
+  if (!data) await setFilters(filters);
+  data = await AsyncStorage.getItem("user_filters");
   data = JSON.parse(data);
   return data;
 }
 
 async function setFilters(filters) {
-  AsyncStorage.setItem("user_filters", JSON.stringify(filters));
+  await AsyncStorage.setItem("user_filters", JSON.stringify(filters));
 }
 
 async function getRateLimitFilter() {
-  const data = await getFilters();
+  let data = await getFilters();
   return data.events.rateLimit;
 }
 
