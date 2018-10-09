@@ -25,7 +25,9 @@ export default class CreateEventScreen extends React.Component {
           bottomDivider
         />
 
-        <PublisherBannerComponent />
+        <PublisherBannerComponent
+          bannerError={() => console.log("bannerError")}
+        />
       </View>
     );
   }

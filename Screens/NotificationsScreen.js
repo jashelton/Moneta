@@ -122,7 +122,9 @@ export default class NotificationsScreen extends React.Component {
           }}
         </Query>
 
-        <PublisherBannerComponent />
+        <PublisherBannerComponent
+          bannerError={() => console.log("bannerError")}
+        />
       </View>
     );
   }
