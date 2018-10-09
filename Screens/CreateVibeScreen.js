@@ -1,7 +1,12 @@
 import React from "react";
 import { graphql } from "react-apollo";
 import { CREATE_VIBE, ALL_EVENTS_QUERY } from "../graphql/queries";
-import { View, StyleSheet } from "react-native";
+import {
+  View,
+  StyleSheet,
+  KeyboardAvoidingView,
+  ScrollView
+} from "react-native";
 import { Button } from "react-native-elements";
 import { TextField } from "react-native-material-textfield";
 import { DIVIDER_COLOR } from "../common/styles/common-styles";
@@ -86,14 +91,20 @@ class CreateVibeScreen extends React.Component {
 
   render() {
     return (
-      <View style={styles.container}>
-        <TextField
-          label="What's going on?"
-          value={this.state.desc}
-          onChangeText={content => this.setState({ desc: content })}
-          multiline={true}
-        />
-      </View>
+      <KeyboardAvoidingView
+        alwaysVisible={true}
+        behavior="height"
+        style={styles.container}
+      >
+        <ScrollView style={{ flex: 1 }}>
+          <TextField
+            label="What's going on?"
+            value={this.state.desc}
+            onChangeText={content => this.setState({ desc: content })}
+            multiline={true}
+          />
+        </ScrollView>
+      </KeyboardAvoidingView>
     );
   }
 }
@@ -102,6 +113,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
+    paddingBottom: 65,
     backgroundColor: "#fff"
   }
 });
