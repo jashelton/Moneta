@@ -1,5 +1,12 @@
 import React from "react";
-import { View, StyleSheet, FlatList, RefreshControl, Text } from "react-native";
+import {
+  View,
+  StyleSheet,
+  FlatList,
+  RefreshControl,
+  Text,
+  ScrollView
+} from "react-native";
 import { WaveIndicator } from "react-native-indicators";
 import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
 import { ListItem, Avatar, Icon } from "react-native-elements";
@@ -83,15 +90,18 @@ export default class NotificationsScreen extends React.Component {
 
             if (!data.userNotifications.length)
               return (
-                <View
-                  style={{
+                <ScrollView
+                  contentContainerStyle={{
                     flex: 1,
                     alignItems: "center",
                     justifyContent: "center"
                   }}
+                  refreshControl={
+                    <RefreshControl refreshing={loading} onRefresh={refetch} />
+                  }
                 >
                   <Text>No notifications to display.</Text>
-                </View>
+                </ScrollView>
               );
 
             return (

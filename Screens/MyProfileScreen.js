@@ -4,7 +4,7 @@ import { View, StyleSheet, Dimensions } from "react-native";
 import { WaveIndicator } from "react-native-indicators";
 import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
 import RecentActivity from "../Components/RecentActivity";
-import { authHelper } from "../Helpers";
+import { authHelper, commonHelper } from "../Helpers";
 import UserInfo from "../Components/UserInfo";
 import UserStats from "../Components/UserStats";
 import EditProfileModal from "../Components/EditProfileModal";
@@ -27,7 +27,8 @@ export default class MyProfileScreen extends React.Component {
       currentUser: null,
       editProfileModalVisible: false,
       followsModalVisibility: false,
-      query: null
+      query: null,
+      filters: null
     };
 
     this.toggleEditProfile = this.toggleEditProfile.bind(this);
@@ -37,7 +38,9 @@ export default class MyProfileScreen extends React.Component {
 
   async componentDidMount() {
     const currentUser = await authHelper.getCurrentUserId();
-    this.setState({ currentUser });
+    const filters = await commonHelper.getFilters();
+
+    this.setState({ currentUser, filters });
   }
 
   toggleEditProfile() {
@@ -128,12 +131,16 @@ export default class MyProfileScreen extends React.Component {
   };
 
   _renderUserActivity = () => {
-    const { currentUser } = this.state;
+    const { currentUser, filters } = this.state;
 
     return (
       <Query
         query={ALL_EVENTS_QUERY}
-        variables={{ offset: 0, userId: currentUser }}
+        variables={{
+          offset: 0,
+          userId: currentUser,
+          rate_threshold: filters.events.rateLimit
+        }}
       >
         {({ loading, error, data, refetch, fetchMore }) => {
           return (
@@ -142,7 +149,7 @@ export default class MyProfileScreen extends React.Component {
               events={data.allEvents}
               navigation={this.props.navigation}
               refreshing={loading}
-              _onRefresh={refetch}
+              onRefresh={refetch}
               handleScroll={() =>
                 fetchMore({
                   variables: {

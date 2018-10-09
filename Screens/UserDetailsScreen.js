@@ -4,7 +4,7 @@ import { View, StyleSheet } from "react-native";
 import { PRIMARY_DARK_COLOR } from "../common/styles/common-styles";
 import { WaveIndicator } from "react-native-indicators";
 import RecentActivity from "../Components/RecentActivity";
-import { authHelper } from "../Helpers";
+import { authHelper, commonHelper } from "../Helpers";
 import UserInfo from "../Components/UserInfo";
 import UserStats from "../Components/UserStats";
 import EditProfileModal from "../Components/EditProfileModal";
@@ -27,7 +27,8 @@ export default class UserDetailsScreen extends React.Component {
       followsModalVisibility: false,
       userId: null,
       currentUser: null,
-      query: null
+      query: null,
+      filters: null
     };
 
     this.toggleEditProfile = this.toggleEditProfile.bind(this);
@@ -37,8 +38,9 @@ export default class UserDetailsScreen extends React.Component {
   async componentDidMount() {
     const userId = this.props.navigation.getParam("userId", null);
     const currentUser = await authHelper.getCurrentUserId();
+    const filters = await commonHelper.getFilters();
 
-    this.setState({ currentUser, userId });
+    this.setState({ currentUser, userId, filters });
   }
 
   toggleFollowsModal = type => {
@@ -140,10 +142,17 @@ export default class UserDetailsScreen extends React.Component {
   };
 
   _renderUserActivity = () => {
-    const { userId } = this.state;
+    const { userId, filters } = this.state;
 
     return (
-      <Query query={ALL_EVENTS_QUERY} variables={{ offset: 0, userId: userId }}>
+      <Query
+        query={ALL_EVENTS_QUERY}
+        variables={{
+          offset: 0,
+          userId: userId,
+          rate_threshold: filters.events.rateLimit
+        }}
+      >
         {({ loading, error, data, refetch, fetchMore }) => {
           return (
             <RecentActivity
@@ -151,7 +160,7 @@ export default class UserDetailsScreen extends React.Component {
               events={data.allEvents}
               navigation={this.props.navigation}
               refreshing={loading}
-              _onRefresh={refetch}
+              onRefresh={refetch}
               handleScroll={() =>
                 fetchMore({
                   variables: {
