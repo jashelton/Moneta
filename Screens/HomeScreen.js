@@ -1,7 +1,13 @@
 import React from "react";
 import { Query } from "react-apollo";
 import { ALL_EVENTS_QUERY } from "../graphql/queries";
-import { View, StyleSheet } from "react-native";
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  Text,
+  RefreshControl
+} from "react-native";
 import { Button } from "react-native-elements";
 import { WaveIndicator } from "react-native-indicators";
 import {
@@ -91,6 +97,35 @@ export default class HomeScreen extends React.Component {
                       snackBarActionText="Retry"
                     />
                   );
+
+                if (!events.length) {
+                  return (
+                    <ScrollView
+                      contentContainerStyle={styles.loadingContainer}
+                      refreshControl={
+                        <RefreshControl
+                          refreshing={loading}
+                          onRefresh={refetch}
+                        />
+                      }
+                    >
+                      <Text>No recent activity to display.</Text>
+                      <FiltersModal
+                        isVisible={filtersModalVisible}
+                        rateLimit={filters.events.rateLimit}
+                        toggleVisibility={() =>
+                          this.setState({
+                            filtersModalVisible: !filtersModalVisible
+                          })
+                        }
+                        onSetFilters={selected => {
+                          refetch({ offset: 0, rate_threshold: selected.rank });
+                          this._updateFilters(selected.rank);
+                        }}
+                      />
+                    </ScrollView>
+                  );
+                }
                 return (
                   <View
                     style={
