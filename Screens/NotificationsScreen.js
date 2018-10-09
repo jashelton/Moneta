@@ -13,8 +13,7 @@ export default class NotificationsScreen extends React.Component {
   static navigationOptions = { title: "Notifications" };
 
   _renderNotification({ item }) {
-    const { action_type, event, actor } = item;
-    const { user } = item.event;
+    const { action_type, event, actor, action_for_user_id } = item;
     const iconType = {
       like: "favorite",
       comment: "chat-bubble-outline"
@@ -52,7 +51,7 @@ export default class NotificationsScreen extends React.Component {
         onPress={() =>
           this.props.navigation.navigate("EventDetails", {
             eventId: event.id,
-            userId: user.id
+            userId: action_for_user_id
           })
         }
       />

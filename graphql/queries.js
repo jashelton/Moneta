@@ -224,6 +224,8 @@ export const NOTIFICATIONS = gql`
       id
       action_type
       created_at
+      action_for_user_id
+      action_by_user_id
       actor {
         id
         first_name

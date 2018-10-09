@@ -1,6 +1,6 @@
 import React from "react";
 import { Mutation } from "react-apollo";
-import { TOGGLE_FOLLOING } from "../graphql/queries";
+import { TOGGLE_FOLLOING, GET_USER } from "../graphql/queries";
 import {
   View,
   Text,
@@ -110,7 +110,13 @@ export default class UserInfo extends React.Component {
               </Text>
             </View>
             {currentUser !== userDetails.id ? (
-              <Mutation mutation={TOGGLE_FOLLOING}>
+              <Mutation
+                mutation={TOGGLE_FOLLOING}
+                update={this._updateCache}
+                refetchQueries={[
+                  { query: GET_USER, variables: { id: currentUser } }
+                ]}
+              >
                 {toggleFollowing => (
                   <Button
                     title={userDetails.isFollowing ? "Unfollow" : "Follow"}
@@ -119,7 +125,7 @@ export default class UserInfo extends React.Component {
                     onPress={() =>
                       toggleFollowing({
                         variables: { forUserId: userDetails.id }
-                      }).then(data => this._updateCache(data))
+                      })
                     }
                   />
                 )}
