@@ -327,7 +327,7 @@ export const GET_EVENT_LIKES = gql`
 `;
 
 export const TOGGLE_LIKE = gql`
-  mutation ToggleLike($event_id: ID!, $owner_id: ID!) {
+  mutation ToggleLike($event_id: ID!, $owner_id: Int!) {
     toggleLike(event_id: $event_id, action_for_user_id: $owner_id) {
       id
       likes_count
