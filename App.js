@@ -88,7 +88,7 @@ export const client = new ApolloClient({
     new HttpLink({
       uri:
         process.env.NODE_ENV === "development"
-          ? "http://192.168.0.6:4000"
+          ? "http://192.168.0.4:4000"
           : ENDPOINT
       // credentials: "include"
     })

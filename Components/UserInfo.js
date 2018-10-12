@@ -1,6 +1,6 @@
 import React from "react";
 import { Mutation } from "react-apollo";
-import { TOGGLE_FOLLOING, GET_USER } from "../graphql/queries";
+import { TOGGLE_FOLLOWING, GET_USER } from "../graphql/queries";
 import {
   View,
   Text,
@@ -32,12 +32,12 @@ export default class UserInfo extends React.Component {
     }
   }
 
-  _updateCache = async ({ data: { toggleFollowing: follow } }) => {
-    const { first_name, last_name, id } = await authHelper.getParsedUserData();
+  _notify = async following => {
+    const { first_name, last_name } = await authHelper.getParsedUserData();
 
-    if (follow.isFollowing && follow.push_token) {
+    if (following.isFollowing && following.push_token) {
       const body = `${first_name} ${last_name} has followed you.`;
-      notificationService.sendPushNotification(follow.push_token, body);
+      notificationService.sendPushNotification(following.push_token, body);
     }
   };
 
@@ -111,8 +111,8 @@ export default class UserInfo extends React.Component {
             </View>
             {currentUser !== userDetails.id ? (
               <Mutation
-                mutation={TOGGLE_FOLLOING}
-                update={this._updateCache}
+                mutation={TOGGLE_FOLLOWING}
+                // update={this._updateCache}
                 refetchQueries={[
                   { query: GET_USER, variables: { id: currentUser } }
                 ]}
@@ -125,6 +125,8 @@ export default class UserInfo extends React.Component {
                     onPress={() =>
                       toggleFollowing({
                         variables: { forUserId: userDetails.id }
+                      }).then(({ data: { toggleFollowing: following } }) => {
+                        this._notify(following);
                       })
                     }
                   />
