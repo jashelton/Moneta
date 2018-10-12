@@ -344,8 +344,8 @@ export const TOGGLE_LIKE = gql`
   }
 `;
 
-export const TOGGLE_FOLLOING = gql`
-  mutation ToggleFollowing($forUserId: ID!) {
+export const TOGGLE_FOLLOWING = gql`
+  mutation ToggleFollowing($forUserId: Int!) {
     toggleFollowing(forUserId: $forUserId) {
       id
       following_count
