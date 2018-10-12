@@ -6,12 +6,14 @@ export const ALL_EVENTS_QUERY = gql`
     $type: String
     $userId: Int
     $rate_threshold: Float
+    $following: Boolean
   ) {
     allEvents(
       offset: $offset
       event_type: $type
       user_id: $userId
       rating_threshold: $rate_threshold
+      following: $following
     ) {
       id
       title

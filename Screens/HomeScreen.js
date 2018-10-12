@@ -1,23 +1,13 @@
 import React from "react";
-import { Query } from "react-apollo";
-import { ALL_EVENTS_QUERY } from "../graphql/queries";
-import {
-  View,
-  StyleSheet,
-  ScrollView,
-  Text,
-  RefreshControl
-} from "react-native";
-import { Button } from "react-native-elements";
-import { WaveIndicator } from "react-native-indicators";
+import { View, StyleSheet, Dimensions } from "react-native";
 import {
   permissionsHelper,
   commonHelper,
   PublisherBannerComponent
 } from "../Helpers";
-import RecentActivity from "../Components/RecentActivity";
-import ErrorComponent from "../Components/ErrorComponent";
-import FiltersModal from "../Components/FiltersModal";
+import { Button } from "react-native-elements";
+import { TabView, SceneMap } from "react-native-tab-view";
+import { RecentFeedComponent } from "../Components/RecentFeedComponent";
 
 export default class HomeScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
@@ -40,7 +30,13 @@ export default class HomeScreen extends React.Component {
     this.state = {
       filtersModalVisible: false,
       filters: {},
-      bannerError: false
+      bannerError: false,
+      // tabs
+      index: 0,
+      routes: [
+        { key: "first", title: "Public" },
+        { key: "second", title: "Following" }
+      ]
     };
 
     this._updateFilters = this._updateFilters.bind(this);
@@ -65,117 +61,65 @@ export default class HomeScreen extends React.Component {
   }
 
   render() {
-    const { filtersModalVisible, filters } = this.state;
+    const { filtersModalVisible, filters, index } = this.state;
+    const { width, height } = Dimensions.get("window");
 
     return (
       <View style={styles.container}>
         {filters &&
-          filters.events &&
-          filters.events.rateLimit > -1 && (
-            <Query
-              query={ALL_EVENTS_QUERY}
-              variables={{
-                offset: 0,
-                rate_threshold: filters.events.rateLimit
-              }}
-            >
-              {({ loading, error, data: { allEvents: events }, refetch }) => {
-                if (loading)
-                  return (
-                    <View style={styles.loadingContainer}>
-                      <WaveIndicator />
-                    </View>
-                  );
-
-                if (error)
-                  return (
-                    <ErrorComponent
-                      iconName="error"
-                      refetchData={refetch}
-                      errorMessage={error.message}
-                      isSnackBarVisible={error ? true : false}
-                      snackBarActionText="Retry"
-                    />
-                  );
-
-                if (!events.length) {
-                  return (
-                    <ScrollView
-                      contentContainerStyle={styles.loadingContainer}
-                      refreshControl={
-                        <RefreshControl
-                          refreshing={loading}
-                          onRefresh={refetch}
-                        />
-                      }
-                    >
-                      <Text>No recent activity to display.</Text>
-                      <FiltersModal
-                        isVisible={filtersModalVisible}
-                        rateLimit={filters.events.rateLimit}
-                        toggleVisibility={() =>
-                          this.setState({
-                            filtersModalVisible: !filtersModalVisible
-                          })
-                        }
-                        onSetFilters={selected => {
-                          refetch({ offset: 0, rate_threshold: selected.rank });
-                          this._updateFilters(selected.rank);
-                        }}
-                      />
-                    </ScrollView>
-                  );
-                }
-                return (
-                  <View
-                    style={
-                      !this.state.bannerError ? { paddingBottom: 55 } : null
+          filters.events && (
+            <TabView
+              navigationState={this.state}
+              renderScene={SceneMap({
+                first: () => (
+                  <RecentFeedComponent
+                    variables={{
+                      offset: 0,
+                      rate_threshold: filters.events.rateLimit
+                    }}
+                    filters={filters}
+                    filtersModalVisible={filtersModalVisible}
+                    bannerError={this.state.bannerError}
+                    setBannerError={() => this.setState({ bannerError: true })}
+                    navigation={this.props.navigation}
+                    index={index}
+                    thisIndex={0}
+                    updateFiltersVisible={() =>
+                      this.setState({
+                        filtersModalVisible: !filtersModalVisible
+                      })
                     }
-                  >
-                    <RecentActivity
-                      loading={loading}
-                      navigation={this.props.navigation}
-                      events={events}
-                      handleScroll={() =>
-                        fetchMore({
-                          variables: { offset: events.length },
-                          updateQuery: (prev, { fetchMoreResult }) => {
-                            if (!fetchMoreResult) return prev;
-                            return Object.assign({}, prev, {
-                              allEvents: [
-                                ...prev.allEvents,
-                                ...fetchMoreResult.allEvents
-                              ]
-                            });
-                          }
-                        })
-                      }
-                      noDataMessage="There is no recent activity to display."
-                      onRefresh={refetch}
-                    />
-
-                    <PublisherBannerComponent
-                      bannerError={() => this.setState({ bannerError: true })}
-                    />
-
-                    <FiltersModal
-                      isVisible={filtersModalVisible}
-                      rateLimit={filters.events.rateLimit}
-                      toggleVisibility={() =>
-                        this.setState({
-                          filtersModalVisible: !filtersModalVisible
-                        })
-                      }
-                      onSetFilters={selected => {
-                        refetch({ offset: 0, rate_threshold: selected.rank });
-                        this._updateFilters(selected.rank);
-                      }}
-                    />
-                  </View>
-                );
-              }}
-            </Query>
+                  />
+                ),
+                second: () => (
+                  <RecentFeedComponent
+                    variables={{
+                      offset: 0,
+                      rate_threshold: filters.events.rateLimit,
+                      following: true
+                    }}
+                    filters={filters}
+                    filtersModalVisible={filtersModalVisible}
+                    bannerError={this.state.bannerError}
+                    setBannerError={() => this.setState({ bannerError: true })}
+                    navigation={this.props.navigation}
+                    index={index}
+                    thisIndex={1}
+                    updateFiltersVisible={() =>
+                      this.setState({
+                        filtersModalVisible: !filtersModalVisible
+                      })
+                    }
+                  />
+                )
+              })}
+              onIndexChange={index => this.setState({ index })}
+              initialLayout={{ width, height }}
+            />
           )}
+        <PublisherBannerComponent
+          bannerError={() => this.setState({ bannerError: true })}
+        />
       </View>
     );
   }
@@ -187,10 +131,5 @@ const styles = StyleSheet.create({
   },
   leftIcon: {
     marginLeft: 10
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center"
   }
 });
