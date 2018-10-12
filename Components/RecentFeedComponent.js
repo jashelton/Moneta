@@ -49,7 +49,7 @@ export const RecentFeedComponent = props => {
                   <FiltersModal
                     isVisible={props.filtersModalVisible}
                     rateLimit={props.filters.events.rateLimit}
-                    toggleVisibility={props.updateFiltersVisible}
+                    toggleVisibility={props.updateFiltersVisible()}
                     onSetFilters={selected => {
                       refetch({ offset: 0, rate_threshold: selected.rank });
                       this._updateFilters(selected.rank);
@@ -85,10 +85,10 @@ export const RecentFeedComponent = props => {
                 <FiltersModal
                   isVisible={props.filtersModalVisible}
                   rateLimit={props.filters.events.rateLimit}
-                  toggleVisibility={() => props.updateFiltersVisible}
+                  toggleVisibility={() => props.updateFiltersVisible()}
                   onSetFilters={selected => {
                     refetch({ offset: 0, rate_threshold: selected.rank });
-                    this._updateFilters(selected.rank);
+                    props.updateFilters(selected.rank);
                   }}
                 />
               </View>

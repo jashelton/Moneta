@@ -59,6 +59,7 @@ export default class HomeScreen extends React.Component {
 
   _updateFilters(rateLimit) {
     const { filters } = this.state;
+    console.log(filters);
     filters.events.rateLimit = rateLimit;
     this.setState({ filters });
     commonHelper.setFilters(filters);
@@ -98,6 +99,7 @@ export default class HomeScreen extends React.Component {
                     navigation={this.props.navigation}
                     index={index}
                     thisIndex={0}
+                    updateFilters={this._updateFilters}
                     updateFiltersVisible={() =>
                       this.setState({
                         filtersModalVisible: !filtersModalVisible
@@ -119,6 +121,7 @@ export default class HomeScreen extends React.Component {
                     navigation={this.props.navigation}
                     index={index}
                     thisIndex={1}
+                    updateFilters={this._updateFilters}
                     updateFiltersVisible={() =>
                       this.setState({
                         filtersModalVisible: !filtersModalVisible
