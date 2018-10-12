@@ -6,8 +6,12 @@ import {
   PublisherBannerComponent
 } from "../Helpers";
 import { Button } from "react-native-elements";
-import { TabView, SceneMap } from "react-native-tab-view";
+import { TabView, SceneMap, TabBar } from "react-native-tab-view";
 import { RecentFeedComponent } from "../Components/RecentFeedComponent";
+import {
+  PRIMARY_DARK_COLOR,
+  LIGHT_PRIMARY_COLOR
+} from "../common/styles/common-styles";
 
 export default class HomeScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
@@ -60,6 +64,15 @@ export default class HomeScreen extends React.Component {
     commonHelper.setFilters(filters);
   }
 
+  _renderTabBar = props => (
+    <TabBar
+      {...props}
+      style={{ backgroundColor: PRIMARY_DARK_COLOR }}
+      labelStyle={{ color: "#fff" }}
+      indicatorStyle={{ backgroundColor: LIGHT_PRIMARY_COLOR }}
+    />
+  );
+
   render() {
     const { filtersModalVisible, filters, index } = this.state;
     const { width, height } = Dimensions.get("window");
@@ -69,6 +82,7 @@ export default class HomeScreen extends React.Component {
         {filters &&
           filters.events && (
             <TabView
+              renderTabBar={this._renderTabBar}
               navigationState={this.state}
               renderScene={SceneMap({
                 first: () => (
